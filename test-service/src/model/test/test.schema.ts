@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { ApiSchema } from "@nestjs/swagger";
 import { Document } from "mongoose";
 
 export type TestDocument = Test & Document;

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document, Types } from "mongoose";
 import { Test } from "./test.schema";
 import { Question } from "../question/question.schema";
+import { ApiSchema } from "@nestjs/swagger";
 
 export type WritingTestDocument = WritingTest & Document;
 
@@ -29,8 +30,7 @@ export class WritingTaskSectionQuestion{
 export class WritingTaskSection{
     
     @Prop({
-        type: Object,
-        ref: WritingTaskSectionQuestion.name,
+        type: [WritingTaskSectionQuestion],
         required: true
     })
     //Mỗi writing section chỉ có 1 câu hỏi duy nhất, tuy nhiên để dạng mảng để có thể dễ viết DTO hơn
@@ -42,8 +42,7 @@ export class WritingTaskSection{
 export class WritingTask{
     
     @Prop({
-        type: Object,
-        ref: WritingTaskSection.name,
+        type: [WritingTaskSection],
         required: true,
     })
     //Mỗi task bài writing chỉ có 1 section, tuy nhiên để dạng mảng để có thể dễ viết DTO hơn
@@ -52,11 +51,11 @@ export class WritingTask{
 }
 
 @Schema()
+@ApiSchema({name: "Writing test schema"})
 export class WritingTest extends Test{
 
     @Prop({
-        type: [Object],
-        ref: WritingTask.name,
+        type: [WritingTask],
         required: true,
     })
     tasks: WritingTask[];

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document, Types } from "mongoose";
 import { Test } from "./test.schema";
 import { Question } from "../question/question.schema";
+import { ApiSchema } from "@nestjs/swagger";
 
 export type ReadingTestDocument = ReadingTest & Document;
 
@@ -36,8 +37,7 @@ class ReadingTaskSection{
     title: string;
 
      @Prop({
-        type: [Object],
-        ref: ReadingTaskSectionQuestion.name,
+        type: [ReadingTaskSectionQuestion],
         required: true
     })
     //Mỗi section có nhiều câu hỏi
@@ -53,8 +53,7 @@ class ReadingTask{
     passage: string;
 
     @Prop({
-        type: [Object],
-        ref: ReadingTaskSection.name,
+        type: [ReadingTaskSection],
         required: true
     })
     //Mỗi một bài reading có nhiều section khác nhau tương ứng với 1 đề bài
@@ -63,11 +62,11 @@ class ReadingTask{
 }
 
 @Schema()
+@ApiSchema({name: "Reading test schema"})
 export class ReadingTest extends Test{
 
     @Prop({
-        type: [Object],
-        ref: ReadingTask.name,
+        type: [ReadingTask],
         required: true,
     })
     //Một bài reading test có nhiều passage

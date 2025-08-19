@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 import { Question } from "./question.schema";
+import { ApiSchema } from "@nestjs/swagger";
 
 export type ChoiceQuestionDocument = ChoiceQuestion & Document;
 
@@ -18,6 +19,7 @@ export class ChoiceItem{
 export const ChoiceItemSchema = SchemaFactory.createForClass(ChoiceItem);
 
 @Schema()
+@ApiSchema({name: "Choice question schema"})
 export class ChoiceQuestion extends Question{
 
     @Prop({

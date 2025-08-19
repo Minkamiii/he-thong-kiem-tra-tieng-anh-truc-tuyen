@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document, Types } from "mongoose";
 import { Test } from "./test.schema";
 import { Question } from "../question/question.schema";
+import { ApiSchema } from "@nestjs/swagger";
 
 export type ReadingTestDocument = ListeningTest & Document;
 
@@ -35,8 +36,7 @@ class ListeningTaskSection{
     title: string;
     
     @Prop({
-        type: [Object],
-        ref: ListeningTaskSectionQuestion.name,
+        type: [ListeningTaskSectionQuestion],
         required: true
     })
     //Mỗi section có nhiều câu hỏi
@@ -52,8 +52,7 @@ class ListeningTask{
     audio: string;
 
     @Prop({
-        type: [Object],
-        ref: ListeningTaskSection.name,
+        type: [ListeningTaskSection],
         required: true
     })
     //Mỗi một bài lisening có nhiều section khác nhau tương ứng với 1 đề bài
@@ -62,11 +61,11 @@ class ListeningTask{
 }
 
 @Schema()
+@ApiSchema({name: "Listening test schema"})
 export class ListeningTest extends Test{
     
     @Prop({
-        type: [Object],
-        ref: ListeningTask.name,
+        type: [ListeningTask],
         required: true
     })
     tasks: ListeningTask[];

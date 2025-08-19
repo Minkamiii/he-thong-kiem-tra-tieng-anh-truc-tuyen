@@ -13,12 +13,20 @@ import { TestService } from './service/test.service';
 import { QuestionService } from './service/question.service';
 import { ConfigurationService } from './service/config.service';
 import { TestController } from './app.controller';
+import { CacheService } from './service/cache.service';
+import { RedisModule } from '@nestjs-modules/ioredis';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Giúp ConfigModule có sẵn trên toàn ứng dụng
+      isGlobal: true, // Giúp ConfigModule có sẵn trên toàn service
     }),
+
+    CacheModule.register({
+      ttl: 3600, //Mặc định là 1 giờ
+    }),
+
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -26,6 +34,7 @@ import { TestController } from './app.controller';
       }),
       inject: [ConfigService],
     }),
+
     //Feature async cho Question
     MongooseModule.forFeatureAsync([
       {
@@ -42,6 +51,7 @@ import { TestController } from './app.controller';
         }
       }
     ]),
+
     //Feature async cho Test
     MongooseModule.forFeatureAsync([
       {
@@ -58,9 +68,13 @@ import { TestController } from './app.controller';
       }
     ])
   ],
+
   //Khai báo các service 
-  providers: [TestService, QuestionService, ConfigurationService],
+  providers: [TestService, QuestionService, ConfigurationService, CacheService],
+
+  exports: [CacheService],
+
   //Khai báo controller
-  controllers: [TestController],
+  controllers: [TestController],  
 })
 export class AppModule {}
