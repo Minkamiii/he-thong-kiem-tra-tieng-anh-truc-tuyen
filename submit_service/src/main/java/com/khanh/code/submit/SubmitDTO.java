@@ -1,0 +1,110 @@
+package com.khanh.code.submit;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class SubmitDTO {
+    private String id;
+    private String id_user;
+    private String type;
+    private String id_test;
+    private String submit_day;
+
+    private List<Integer> tasks;
+    // int float always default 0 => class for writing
+
+    private Integer numCorrectAnswers;
+    private Integer numOfAnswer;
+    
+    //private Float score;
+
+    public SubmitDTO(Submit submit) 
+    {
+        this.id = submit.getId();
+        this.id_user = submit.getId_user();
+        this.type = submit.getType().toString();
+        this.id_test = submit.getId_test();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
+        this.submit_day = sdf.format(submit.getSubmit_day());  
+        this.tasks=submit.getTasks();       
+        if (submit.getType() == Submit.Type.LISTENING) {
+            Submit_Listening listeningSubmit = (Submit_Listening) submit;
+            this.setNumCorrectAnswers(listeningSubmit.getNumber_of_correct());
+            this.setNumOfAnswer(listeningSubmit.getNum_of_question_to_answer());
+            //this.setScore(listeningSubmit.getScore());
+        }
+
+        else if (submit.getType() == Submit.Type.READING) {
+            Submit_Reading readingSubmit=(Submit_Reading) submit;
+            this.setNumCorrectAnswers(readingSubmit.getNumber_of_correct());
+            this.setNumOfAnswer(readingSubmit.getNum_of_question_to_answer());
+            //this.setScore(readingSubmit.getScore());
+        }
+    }
+
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+    public String getId_user() {
+        return id_user;
+    }
+    public void setId_user(String id_user) {
+        this.id_user = id_user;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public String getId_test() {
+        return id_test;
+    }
+    public void setId_test(String id_test) {
+        this.id_test = id_test;
+    }
+    public String getSubmit_day() {
+        return submit_day;
+    }
+    public void setSubmit_day(String submit_day) {
+        this.submit_day = submit_day;
+    }
+
+    public int getNumCorrectAnswers() {
+        return numCorrectAnswers;
+    }
+
+    public void setNumCorrectAnswers(int numCorrectAnswers) {
+        this.numCorrectAnswers = numCorrectAnswers;
+    }
+
+    public Integer getNumOfAnswer() {
+        return numOfAnswer;
+    }
+
+    public void setNumOfAnswer(Integer numOfAnswer) {
+        this.numOfAnswer = numOfAnswer;
+    }
+
+    public List<Integer> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Integer> tasks) {
+        this.tasks = tasks;
+    }
+
+    // public float getScore() {
+    //     return score;
+    // }
+
+    // public void setScore(float score) {
+    //     this.score = score;
+    // }
+}
