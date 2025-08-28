@@ -24,11 +24,6 @@ import com.khanh.code.api_response.SectionsResponse;
 import com.khanh.code.api_response.TaskResponse;
 import com.khanh.code.api_response.TestResponse;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
 
 @Service
 public class SubmitService {
@@ -410,7 +405,7 @@ public class SubmitService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody);
 
         ResponseEntity<TestResponse> response =
-            restTemplate.exchange(url, HttpMethod.GET, entity, TestResponse.class);
+            restTemplate.exchange(url, HttpMethod.POST, entity, TestResponse.class);
 
         return response.getBody();
 
