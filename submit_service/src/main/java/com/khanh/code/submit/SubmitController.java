@@ -34,7 +34,7 @@ public class SubmitController {
         }
     }
     
-    @GetMapping(path="/user/{userID}")
+    @GetMapping(path="/user/id/{userID}")
     public ResponseEntity<ApiResponse> getSubmitsOfUser(@PathVariable String userID) {
         
         ApiResponse response = new ApiResponse();
@@ -48,8 +48,8 @@ public class SubmitController {
         }
     }
 
-    //Request Param
-    @GetMapping(path="/user/test")
+    
+    @PostMapping(path="/user/test")
     public ResponseEntity<ApiResponse> GetByUserAndTestID(@RequestBody SubmitRequest submitRequest) {
          try {
             ApiResponse response = submitService.getSubmitByUserAndTest(submitRequest);

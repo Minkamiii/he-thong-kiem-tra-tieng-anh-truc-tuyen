@@ -8,7 +8,7 @@ public class SubmitRequest {
 
     private String user_id;
     private String test_id;
-    private String test_type;
+    //private String test_type;
     //private Date submit_day;
     private List<AnswerRequest> answers;
     private List<Integer> tasks;
@@ -25,12 +25,12 @@ public class SubmitRequest {
     public void setTest_id(String test_id) {
         this.test_id = test_id;
     }
-    public String getTest_type() {
-        return test_type;
-    }
-    public void setTest_type(String test_type) {
-        this.test_type = test_type;
-    }
+    // public String getTest_type() {
+    //     return test_type;
+    // }
+    // public void setTest_type(String test_type) {
+    //     this.test_type = test_type;
+    // }
     // public Date getSubmit_day() {
     //     return submit_day;
     // }

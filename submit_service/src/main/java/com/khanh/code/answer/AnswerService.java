@@ -247,8 +247,6 @@ public class AnswerService {
 
                 int number=submit_Reading.calculateNumCorrectAnswers(submit_Reading);
                 submit_Reading.setNumber_of_correct(number);
-                // float score =submit_Reading.calculateIELTSScore(number);
-                // submit_Reading.setScore(score);
                 submit_Reading.setNum_of_question_to_answer();
 
                 submitRepository.save(submit_Reading);
@@ -264,22 +262,32 @@ public class AnswerService {
 
     //add answers of a submit
     //check null
-    public Object AddAnswer(AnswerRequest answerRequest, Submit submit, Question question) {
+    public Object CreateAnswer(AnswerRequest answerRequest, Submit submit, Question question) {
 
         ApiResponse response=new ApiResponse();
 
         String type = question.getType().toUpperCase();
         String id_question=question.get_id();
+        
 
         Answer.Type answer_type;
         Answer answer=new Answer();
 
         try {
             answer_type = Answer.Type.valueOf(type);
-        } 
+        }
+         
         catch (IllegalArgumentException e) {
             response = new ApiResponse();
             response.setMessage("Invalid answer type");
+            response.setStatus(400);
+            return response;
+        }
+        
+        Object userAnswer= (Object) answerRequest.getAnswer();
+
+        if(userAnswer==null){
+            response.setMessage("Answer can not be null");
             response.setStatus(400);
             return response;
         }
@@ -295,28 +303,28 @@ public class AnswerService {
            else 
 
            {
-            Object answerTest= (Object) answerRequest.getAnswer();
+            
             //fill(string) but send other type of object
-            if (!(answerTest instanceof String))
+            if (!(userAnswer instanceof String))
             {
                 response.setMessage("Fill question must be answered by string");
                 response.setStatus(400);
                 return response;
             }
 
-            String answerText =(String) answerRequest.getAnswer(); 
+            String answerFill =(String) userAnswer; 
             String key=question.getKey();
 
-            answerText=answerText.trim().toLowerCase();
+            answerFill=answerFill.trim().toLowerCase();
             key=key.trim().toLowerCase();
 
             boolean check=false;
             
-            if(answerText.equals(key)){
+            if(answerFill.equals(key)){
                 check=true;
             }
             
-            answer = new Answer_Fill(id_question, submit,answer_type,check, answerText);
+            answer = new Answer_Fill(id_question, submit,answer_type,check, answerFill);
 
            }
         }
@@ -331,13 +339,13 @@ public class AnswerService {
 
             boolean check_All_int=true;
 
-            Object answerList = answerRequest.getAnswer();
+            
             List<Integer> listKey=question.getKeys();
 
-            if(answerList instanceof List<?>)
+            if(userAnswer instanceof List<?>)
             {
             
-                List<?>answerCheck =(List<?>) answerList;
+                List<?>answerCheck =(List<?>) userAnswer;
 
                 if(answerCheck.isEmpty()){
 
@@ -369,7 +377,7 @@ public class AnswerService {
                         
                         {
 
-                            List<Integer> answerChoices = (List<Integer>) answerList;
+                            List<Integer> answerChoices = (List<Integer>) userAnswer;
         
                             Map<Integer, Boolean> choices = new HashMap<>();
 
@@ -429,16 +437,16 @@ public class AnswerService {
                 return response; 
             }
             
-            Object answerTest= (Object) answerRequest.getAnswer();
+            //Object answerTest= (Object) answerRequest.getAnswer();
             //essay(string) of writing but send other type of object
-            if (!(answerTest instanceof String)){
+            if (!(userAnswer instanceof String)){
                 response.setMessage("Essay question must be answered by string");
                 response.setStatus(400);
                 return response;
             }
 
-            String answerText = (String) answerRequest.getAnswer();
-            answer = new Answer_Essay(id_question, submit,answer_type,answerText);
+            String answerEssay = (String) userAnswer;
+            answer = new Answer_Essay(id_question, submit,answer_type,answerEssay);
         }
 
         else 

@@ -23,14 +23,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.khanh.code.answer.Answer;
 import com.khanh.code.answer.AnswerDTO;
 import com.khanh.code.answer.AnswerRepository;
+import com.khanh.code.answer.AnswerRequest;
 import com.khanh.code.answer.AnswerService;
 import com.khanh.code.answer.Answer_Choice;
+import com.khanh.code.answer.Answer_Essay;
 import com.khanh.code.answer.Answer_Fill;
 import com.khanh.code.api_response.ApiResponse;
+import com.khanh.code.api_response.Question;
 import com.khanh.code.submit.Submit;
 import com.khanh.code.submit.SubmitRepository;
 import com.khanh.code.submit.SubmitService;
 import com.khanh.code.submit.Submit_Reading;
+import com.khanh.code.submit.Submit_Writing;
 
 import jakarta.transaction.Transactional;
 
@@ -56,6 +60,17 @@ public class AnswerTest {
     private List<Answer>answers=new LinkedList<>();
     private String id_answer;
 
+    private AnswerRequest answerRequest_String=new AnswerRequest();;
+    private AnswerRequest answerRequest_choice=new AnswerRequest();;
+    private AnswerRequest answerRequest_null=new AnswerRequest();;
+    
+    private Question question_Fill=new Question();
+    private Question question_Choice=new Question();
+    private Question question_Essay=new Question()  ;
+
+    private Submit_Reading test_Reading;
+    private Submit_Writing test_Writing;
+
     @BeforeEach
     void setup(){
 
@@ -66,9 +81,12 @@ public class AnswerTest {
         tasks.add(2);
 
         //create submit
-        Submit_Reading test_Reading= new Submit_Reading(
+        test_Reading= new Submit_Reading(
             "123","456",
             Submit.Type.READING,tasks,submit_day,0);
+
+        test_Writing= new Submit_Writing("123","789",
+            Submit.Type.WRITING,tasks,submit_day);
 
         //create 2 answers
         Answer_Fill test_Fill=new Answer_Fill("123", 
@@ -97,6 +115,29 @@ public class AnswerTest {
 
         answers.add(test_Fill);
         answers.add(test_Choice);
+
+        //create answer question when receive for test
+        question_Fill.set_id("125");
+        question_Fill.setType("fill");
+        question_Fill.setKey("Hello");
+
+        question_Choice.set_id("126");
+        question_Choice.setType("choice");
+        List<Integer> keys=new LinkedList<>();
+        keys.add(1);   
+        question_Choice.setKeys(keys);
+
+        question_Essay.set_id("127");
+        question_Essay.setType("essay");
+
+        //create answer request when receive for test
+        answerRequest_String.setAnswer("Hello");
+
+        answerRequest_null.setAnswer(null);
+
+        List<Integer> answer_choice=new LinkedList<>();
+        answer_choice.add(1);
+        answerRequest_choice.setAnswer(answer_choice);
     }
 
     @Test
@@ -291,6 +332,152 @@ public class AnswerTest {
         assertTrue(check);
     }
 
-    //Tests for Add answer
+    //Tests for create answer
+    @Test
+    void ANSWER_021_Create_Answer_Success_Fill()
+    {   
+        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Reading,question_Fill);
+        assertInstanceOf(Answer_Fill.class, answer_Return);
+        Answer_Fill answer=(Answer_Fill) answer_Return;
+        
+        assertEquals(answer.getSubmit().getId(), test_Reading.getId());
+        assertEquals(answer.getAnswer(), "hello");
+        assertEquals(answer.getType(), Answer.Type.FILL);
+        assertEquals(answer.getId_question(), question_Fill.get_id());
+        assertTrue(answer.isCorrect());
+    }
+
+    @Test
+    void ANSWER_022_Create_Answer_Null_UserAnswer()
+    {   
+        Object answer_Return= answerService.CreateAnswer(answerRequest_null, test_Reading,question_Fill);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "Answer can not be null");
+    }
+
+    @Test
+    void ANSWER_023_Create_Answer_Fill_In_Writing()
+    {   
+        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Writing,question_Fill);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "Writing test can not have answer for fill question");
+    }
+
+    @Test
+    void ANSWER_024_Create_Answer_Choice_In_Writing()
+    {   
+        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Writing,question_Choice);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "Writing test can not have answer for choice question");
+    }
+
+    @Test
+    void ANSWER_025_Create_Answer_Essay_Not_In_Writing()
+    {   
+        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Reading,question_Essay);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "Essay question is only for writing test");
+    }
+
+    @Test
+    void ANSWER_026_Create_Answer_Wrong_Type_Fill(){
+        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Reading,question_Fill);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "Fill question must be answered by string");
+    }
+
+    @Test
+    void ANSWER_027_Create_Answer_Wrong_Type_String_For_Choice()
+    {
+        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Reading,question_Choice);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "List must be sent for choice question");
+    }
+
+    @Test
+    void ANSWER_028_Create_Answer_Choice_List_Not_Int()
+    {
+        AnswerRequest answerRequest_wrong=new AnswerRequest();
+        List<String> answer_choice_wrong=new LinkedList<>();
+        answer_choice_wrong.add("Hello");
+        answerRequest_wrong.setAnswer(answer_choice_wrong);
+
+        Object answer_Return= answerService.CreateAnswer(answerRequest_wrong, test_Reading,question_Choice);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "List integer must be sent for choice question");
+    }
+
+    @Test
+    void ANSWER_029_Create_Answer_Choice_Blank_List()
+    {
+        AnswerRequest answerRequest_wrong=new AnswerRequest();
+        List<Integer> answer_choice_wrong=new LinkedList<>();
+        answerRequest_wrong.setAnswer(answer_choice_wrong);
+
+        Object answer_Return= answerService.CreateAnswer(answerRequest_wrong, test_Reading,question_Choice);
+        assertInstanceOf(Answer_Choice.class, answer_Return);
+
+        Answer_Choice answer=(Answer_Choice) answer_Return;
+        assertEquals(answer.getType(), Answer.Type.CHOICE);
+        assertEquals(answer.getId_question(), question_Choice.get_id());
+        assertEquals(answer.getSubmit().getId(), test_Reading.getId());
+        assertEquals(answer.getAnswer().size(),question_Choice.getKeys().size());
+    }
+
+    @Test
+    void ANSWER_030_Create_Answer_Wrong_Type_Essay(){
+        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Reading,question_Essay);
+        assertInstanceOf(ApiResponse.class, answer_Return);
+
+        ApiResponse response=(ApiResponse) answer_Return;
+        assertEquals(response.getStatus(), 400);
+        assertEquals(response.getMessage(), "Essay question is only for writing test");
+    }
+
+    @Test
+    void ANSWER_031_Create_Answer_Success_Choice(){
+        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Reading,question_Choice);
+        assertInstanceOf(Answer_Choice.class, answer_Return);
+        Answer_Choice answer=(Answer_Choice) answer_Return;
+        
+        assertEquals(answer.getSubmit().getId(), test_Reading.getId());
+        assertEquals(answer.getType(), Answer.Type.CHOICE);
+        assertEquals(answer.getId_question(), question_Choice.get_id());
+        assertEquals(answer.getAnswer().size(),question_Choice.getKeys().size());
+    }
+
+    @Test
+    void ANSWER_032_Create_Answer_Success_Essay(){
+        
+        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Writing,question_Essay);
+        assertInstanceOf(Answer_Essay.class, answer_Return);
+        Answer_Essay answer=(Answer_Essay) answer_Return;
+        
+        assertEquals(answer.getSubmit().getId(), test_Writing.getId());
+        assertEquals(answer.getType(), Answer.Type.ESSAY);
+        assertEquals(answer.getId_question(), question_Essay.get_id());
+        assertEquals(answer.getAnswer(), "Hello");
+    }
 
 }

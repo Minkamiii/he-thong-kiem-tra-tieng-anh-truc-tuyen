@@ -9,7 +9,7 @@ public class AnswerDTO {
     private String type;
     private String id_question;
     private Object answer;
-    private Boolean check;
+    private Boolean correct;
 
     public AnswerDTO(Answer answer){
         this.answer_id=answer.getId();
@@ -19,13 +19,13 @@ public class AnswerDTO {
         if(answer.getType()==Answer.Type.CHOICE){
                 Answer_Choice answer_Choice= (Answer_Choice) answer;
                 this.setAnswer(answer_Choice.getAnswer());
-                this.setCheck(answer_Choice.isCorrect());
+                this.setcorrect(answer_Choice.isCorrect());
             }
 
         else if(answer.getType()==Answer.Type.FILL){
                 Answer_Fill answer_Fill= (Answer_Fill) answer;
                 this.setAnswer(answer_Fill.getAnswer());
-                this.setCheck(answer_Fill.isCorrect());
+                this.setcorrect(answer_Fill.isCorrect());
             }
 
         else if(answer.getType()==Answer.Type.ESSAY){
@@ -67,11 +67,11 @@ public class AnswerDTO {
         this.answer = answer;
     }
 
-    public Boolean getCheck() {
-        return check;
+    public Boolean getcorrect() {
+        return correct;
     }
 
-    public void setCheck(Boolean check) {
-        this.check = check;
+    public void setcorrect(Boolean correct) {
+        this.correct = correct;
     }
 }

@@ -6,6 +6,7 @@ public class Question {
     private String _id;
     private String type;
 
+    //essay does not have keys
     private List<Integer> keys;
     private String key;
 

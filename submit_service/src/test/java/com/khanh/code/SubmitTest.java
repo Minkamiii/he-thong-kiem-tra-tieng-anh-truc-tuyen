@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.khanh.code.answer.Answer;
 import com.khanh.code.answer.AnswerRepository;
+import com.khanh.code.answer.AnswerRequest;
 import com.khanh.code.answer.Answer_Choice;
 import com.khanh.code.answer.Answer_Fill;
 import com.khanh.code.api_response.ApiResponse;
@@ -50,12 +51,16 @@ public class SubmitTest {
     private List<Submit>submits=new LinkedList<>();
     int sizeAnswers;
 
+    private SubmitRequest submitRequest=new SubmitRequest();
+
     @BeforeEach
     void setup(){
         Date submit_day=Date.from(java.time.Instant.now());
+
         List<Integer>tasks=new LinkedList<>();
         tasks.add(1);
         tasks.add(2);
+
         //create 2 submits
         Submit_Listening test_Listening= new Submit_Listening(
             "123","456",
@@ -92,7 +97,22 @@ public class SubmitTest {
 
         submits.add(test_Reading);
         submits.add(test_Listening);
+
+        //create submitRequest
+        submitRequest.setTasks(tasks);
+        submitRequest.setUser_id("a68feeb1-14f5-435d-bb44-09700b3560fe");
+        submitRequest.setTest_id("6895ef87eee7210d30ac256c");
+        List<AnswerRequest> submitAnswers=new LinkedList<>();
+        //create answerRequest
+        AnswerRequest answer1=new AnswerRequest();
+        answer1.setId_question("6895ef87eee7210d30ac256a");
+        answer1.setAnswer("jmklasdjdsa");
+        submitAnswers.add(answer1);
+
+        submitRequest.setAnswers(submitAnswers);
+
     }
+
     //Tests
     @Test
     void SUBMIT_001_get_All_Submits_Of_User_Existed(){
@@ -155,7 +175,7 @@ public class SubmitTest {
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
-        assertEquals("ID user and test can not be null or empty", response.getMessage());
+        assertEquals("ID user can not be null or empty", response.getMessage());
 
     }
 
@@ -313,9 +333,314 @@ public class SubmitTest {
      
     }
 
-    //Test for update submit
-
-
     //Tests for add submit
+    @Test
+    void Submit_016_add_Submit_Success(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Submit successfully", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1+1, size_Submit2);
+        assertEquals(size_Answer1+1, size_Answer2);
+    }
+
+    @Test
+    void Submit_017_add_Submit_Null_Task(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTasks(null);
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("List tasks can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2); 
+    }
+
+    @Test
+    void Submit_018_add_Submit_Empty_Task(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTasks(new LinkedList<>());
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("List tasks can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2); 
+    }
+
+    @Test
+    void Submit_019_add_Submit_Id_question_In_AnswerRequest_Non_Existed()
+
+    {
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        AnswerRequest wrongAnswer=new AnswerRequest();
+        wrongAnswer.setId_question("hello");
+        wrongAnswer.setAnswer("jmklasdjdsa");
+        submitRequest.getAnswers().add(wrongAnswer);
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Send answer to non-exited question with ID hello", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+
+    }
+
+
+    @Test
+    void Submit_020_add_Submit_Null_AnswerRequest_List()
+    {
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setAnswers(null);
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Answer list can not be null or empty", response.getMessage());    
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+    }
+
+
+    @Test
+    void Submit_021_add_Submit_Two_Answer_For_One_Question(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        AnswerRequest answer2=new AnswerRequest();
+        answer2.setId_question("6895ef87eee7210d30ac256a");
+        answer2.setAnswer("hello");
+        submitRequest.getAnswers().add(answer2);
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Answer for question with ID 6895ef87eee7210d30ac256a already exists.", response.getMessage()); 
+        
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+        
+    }
+
+    @Test
+    void Submit_022_add_Submit_Id_question_In_AnswerRequest_Empty(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        List<AnswerRequest> answers=new LinkedList<>();
+        submitRequest.setAnswers(answers);
+        
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Answer list can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+        
+    }
+
+    @Test
+    void Submit_023_add_Submit_Id_question_In_AnswerRequest_Null(){
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        List<AnswerRequest> answers=new LinkedList<>();
+        AnswerRequest answer1=new AnswerRequest();
+        answer1.setId_question(null);
+        answer1.setAnswer("jmklasdjdsa");
+        answers.add(answer1);
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Question ID can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);   
+        
+    }
+
+    @Test
+    void Submit_024_add_Submit_Empty_userId_In_Request(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setUser_id("");
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+
+        assertEquals(400, response.getStatus());
+        assertEquals("ID user can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+
+    }
+
+    @Test
+    void Submit_025_add_Submit_Empty_testId_In_Request(){
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTest_id("");
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+
+        assertEquals(400, response.getStatus());
+        assertEquals("ID test can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+    }
+
+    @Test
+    void Submit_026_add_Submit_Null_Both_User_Test_ID(){
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTest_id(null);
+        submitRequest.setUser_id(null);
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+
+        assertEquals(400, response.getStatus());
+        assertEquals("ID user and test can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+    }
+
+    @Test
+    void Submit_027_add_Submit_Empty_Both_User_Test_ID(){
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTest_id("");
+        submitRequest.setUser_id("");
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+
+        assertEquals(400, response.getStatus());
+        assertEquals("ID user and test can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+    }
+
+
+    @Test
+    void Submit_028_add_Submit_Null_userId_In_Request(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setUser_id(null);
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+
+        assertEquals(400, response.getStatus());
+        assertEquals("ID user can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+
+    }
+
+    @Test
+    void Submit_029_add_Submit_Null_testId_In_Request(){
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTest_id(null);
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+
+        assertEquals(400, response.getStatus());
+        assertEquals("ID test can not be null or empty", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+        
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2);
+    }
+
+
+    
+    // @Test
+    // void Submit_030_add_Submit_Non_Existed_UserId(){
+
+    //     int size_Submit1=submitRepository.findAll().size();
+    //     int size_Answer1=answerRepository.findAll().size();
+
+    //     submitRequest.setUser_id("123");
+    //     ApiResponse response=submitService.saveSubmit(submitRequest);
+    //     assertEquals(404, response.getStatus());
+    //     assertEquals("Can not get user in user service with ID 123", response.getMessage());
+
+    //     int size_Submit2=submitRepository.findAll().size();
+    //     int size_Answer2=answerRepository.findAll().size();
+
+    //     assertEquals(size_Submit1, size_Submit2);
+    //     assertEquals(size_Answer1, size_Answer2);
+        
+    // }
+
+    // //wait for status in test service
+    // @Test
+    // void Submit_031_add_Submit_Can_Not_Find_Test(){
+        
+    // }
+    
 
 }

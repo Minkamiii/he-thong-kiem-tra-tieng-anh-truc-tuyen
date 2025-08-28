@@ -24,6 +24,12 @@ import com.khanh.code.api_response.SectionsResponse;
 import com.khanh.code.api_response.TaskResponse;
 import com.khanh.code.api_response.TestResponse;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+
 @Service
 public class SubmitService {
     
@@ -182,7 +188,6 @@ public class SubmitService {
     }
 
     //submit and save answers
-    //check null or ""
     public ApiResponse saveSubmit(SubmitRequest request) {
 
         ApiResponse response = new ApiResponse();
@@ -191,6 +196,15 @@ public class SubmitService {
         Submit submit=new Submit();
 
         String user_id=request.getUser_id();
+        String test_id=request.getTest_id();
+
+        if (answerService.isNullOrBlank(user_id) && answerService.isNullOrBlank(test_id)) 
+        {
+            response.setMessage("ID user and test can not be null or empty");
+            response.setStatus(400);
+            return response;
+            
+        }
 
         if(answerService.isNullOrBlank(user_id)){
             response.setMessage("ID user can not be null or empty");
@@ -198,7 +212,6 @@ public class SubmitService {
             return response;
         }
 
-        String test_id=request.getTest_id();
 
         if(answerService.isNullOrBlank(test_id)){
             response.setMessage("ID test can not be null or empty");
@@ -206,27 +219,35 @@ public class SubmitService {
             return response;
         }
 
-        //Only check 200 and 404
+        //Only check 200 of user service
         boolean check=checkUser(user_id);
 
         if(check==false){
-            response.setMessage("User does not exist");
+            response.setMessage("Can not get user in user service with ID "+user_id);
             response.setStatus(404);
             return response;
         }
 
         List<Integer>tasks=request.getTasks();
 
-        if(tasks.isEmpty()||tasks==null){
+        if( tasks==null||tasks.isEmpty())
+        {
             response.setMessage("List tasks can not be null or empty");
             response.setStatus(400);
             return response;
         }
 
         TestResponse testResponse=testAPI(test_id, tasks);
+
+        if(testResponse==null){
+            response.setMessage("Can not find test in test service with ID "+test_id);
+            response.setStatus(404);
+            return response;
+        }
+
         String type=testResponse.getType().toUpperCase();
 
-        System.out.println(type);
+        //System.out.println(type);
 
         try {
             submitType = Submit.Type.valueOf(type);
@@ -319,7 +340,7 @@ public class SubmitService {
 
                 if (checkedAnswer != null) {
                     submitRepository.delete(submit);
-                    response.setMessage("Answer for question " + questionId + " already exists.");
+                    response.setMessage("Answer for question with ID " + questionId + " already exists.");
                     response.setStatus(400);
                     return response;
                 }
@@ -333,8 +354,8 @@ public class SubmitService {
                     return response;
                 }
 
-                //add
-                Object answer = answerService.AddAnswer(answerRequest, submit,question);
+                //create answer
+                Object answer = answerService.CreateAnswer(answerRequest, submit,question);
 
                 if (answer instanceof ApiResponse) {
                     submitRepository.delete(submit);
@@ -365,7 +386,7 @@ public class SubmitService {
         return response;
     }
 
-    //send to user service
+    //call user service to check user exist
     public boolean checkUser(String userID){
         String url ="http://localhost:8081/userservice/"+userID;
         try{
@@ -378,12 +399,14 @@ public class SubmitService {
         }
     }
 
-    public TestResponse testAPI(String id_test,List<Integer>tasks){
+    //call test service
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setContentType(MediaType.APPLICATION_JSON);
+    public TestResponse testAPI(String id_test,List<Integer>tasks)
+    {
         String url = "http://[::1]:8000/api/test/"+id_test;
 
         Map<String, Object> requestBody = Map.of("tasks", tasks);
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody);
 
         ResponseEntity<TestResponse> response =
