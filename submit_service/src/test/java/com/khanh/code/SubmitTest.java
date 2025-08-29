@@ -101,12 +101,13 @@ public class SubmitTest {
         //create submitRequest
         submitRequest.setTasks(tasks);
         submitRequest.setUser_id("a68feeb1-14f5-435d-bb44-09700b3560fe");
-        submitRequest.setTest_id("6895ef87eee7210d30ac256c");
+        submitRequest.setTest_id("68b1ad6fda6d33637440c21c");
+        
         List<AnswerRequest> submitAnswers=new LinkedList<>();
         //create answerRequest
         AnswerRequest answer1=new AnswerRequest();
-        answer1.setId_question("6895ef87eee7210d30ac256a");
-        answer1.setAnswer("jmklasdjdsa");
+        answer1.setId_question("68b1ad6fda6d33637440c218");
+        answer1.setAnswer("bag");
         submitAnswers.add(answer1);
 
         submitRequest.setAnswers(submitAnswers);
@@ -115,7 +116,7 @@ public class SubmitTest {
 
     //Tests
     @Test
-    void SUBMIT_001_get_All_Submits_Of_User_Existed(){
+    void SUBMIT_01_get_All_Submits_Of_User_Existed(){
 
         ApiResponse response=submitService.getAllSubmitsOfUser("123");
         Object data= response.getData();
@@ -126,7 +127,7 @@ public class SubmitTest {
     }
 
     @Test
-    void SUBMIT_002_get_All_Submits_Of_User_Non_Existed(){
+    void SUBMIT_02_get_All_Submits_Of_User_Non_Existed(){
 
         ApiResponse response=submitService.getAllSubmitsOfUser("124");
         Object data= response.getData();
@@ -136,7 +137,7 @@ public class SubmitTest {
     }
 
     @Test
-    void SUBMIT_003_get_All_Submits_Of_User_NullOrEmpty_ID(){
+    void SUBMIT_03_get_All_Submits_Of_User_NullOrEmpty_ID(){
 
         ApiResponse response=submitService.getAllSubmitsOfUser(null);
         Object data= response.getData();
@@ -146,7 +147,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_004_get_Submit_Of_User_Of_Test_Exisited(){
+    void SUBMIT_04_get_Submit_Of_User_Of_Test_Exisited(){
 
         SubmitRequest submitRequest=new SubmitRequest();
         submitRequest.setTest_id("456");
@@ -165,7 +166,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_005_get_Submit_Of_User_Of_Test_NullOrEmpty_IdUser(){
+    void SUBMIT_05_get_Submit_Of_User_Of_Test_NullOrEmpty_IdUser(){
 
         SubmitRequest submitRequest=new SubmitRequest();
         submitRequest.setTest_id("456");
@@ -180,7 +181,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_006_get_Submit_Of_User_Of_Test_NullOrEmpty_IdTest(){
+    void SUBMIT_06_get_Submit_Of_User_Of_Test_NullOrEmpty_IdTest(){
 
         SubmitRequest submitRequest=new SubmitRequest();
         submitRequest.setTest_id("");
@@ -194,7 +195,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_007_get_Submit_Of_User_Of_Test_NullOrEmpty_Both(){
+    void SUBMIT_07_get_Submit_Of_User_Of_Test_NullOrEmpty_Both(){
 
         SubmitRequest submitRequest=new SubmitRequest();
         submitRequest.setTest_id(null);
@@ -208,7 +209,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_008_get_Submit_Of_User_Of_Test_NonExisited(){
+    void SUBMIT_08_get_Submit_Of_User_Of_Test_NonExisited(){
 
         SubmitRequest submitRequest=new SubmitRequest();
         submitRequest.setTest_id("457");
@@ -224,7 +225,7 @@ public class SubmitTest {
 
     //get all to check befrore and after delete
     @Test
-    void Submit_009_delete_Submit_Id_Existed()
+    void SUBMIT_09_delete_Submit_Id_Existed()
     {
         int size1=submitRepository.findAll().size();
         int size_answers1=answerRepository.findAll().size();
@@ -244,7 +245,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_010_delete_Submit_Id_Non_Existed()
+    void SUBMIT_10_delete_Submit_Id_Non_Existed()
     {
         int size1=submitRepository.findAll().size();
         int size_answers1=answerRepository.findAll().size();
@@ -261,7 +262,7 @@ public class SubmitTest {
     }   
 
     @Test
-    void Submit_011_delete_Submit_Id_Null_Empty()
+    void SUBMIT_11_delete_Submit_Id_Null_Empty()
     {
         int size1=submitRepository.findAll().size();
         int size_answers1=answerRepository.findAll().size();
@@ -279,7 +280,7 @@ public class SubmitTest {
 
     //check answer size
     @Test
-    void Submit_012_delete_Submit_Test_Id_Existed(){
+    void SUBMIT_12_delete_Submit_Test_Id_Existed(){
 
         int size1=submitRepository.findAll().size();
 
@@ -295,7 +296,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_013_delete_Submit_Test_Id_Non_Existed(){
+    void SUBMIT_13_delete_Submit_Test_Id_Non_Existed(){
         int size1=submitRepository.findAll().size();
     
         ApiResponse response=submitService.deleteSubmitByTestId("hello");
@@ -308,7 +309,7 @@ public class SubmitTest {
     }   
 
     @Test
-    void Submit_014_delete_Submit_Test_Id_Null_Empty(){
+    void SUBMIT_14_delete_Submit_Test_Id_Null_Empty(){
         int size1=submitRepository.findAll().size();
     
         ApiResponse response=submitService.deleteSubmitByTestId("");
@@ -321,7 +322,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_015_delete_Submit_List(){
+    void SUBMIT_15_delete_Submit_List(){
 
         int size1=submitRepository.findAll().size();
     
@@ -335,7 +336,7 @@ public class SubmitTest {
 
     //Tests for add submit
     @Test
-    void Submit_016_add_Submit_Success(){
+    void SUBMIT_16_add_Submit_Success(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -352,7 +353,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_017_add_Submit_Null_Task(){
+    void SUBMIT_17_add_Submit_Null_Task(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -371,7 +372,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_018_add_Submit_Empty_Task(){
+    void SUBMIT_18_add_Submit_Empty_Task(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -390,7 +391,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_019_add_Submit_Id_question_In_AnswerRequest_Non_Existed()
+    void SUBMIT_19_add_Submit_Id_question_In_AnswerRequest_Non_Existed()
 
     {
         int size_Submit1=submitRepository.findAll().size();
@@ -415,7 +416,7 @@ public class SubmitTest {
 
 
     @Test
-    void Submit_020_add_Submit_Null_AnswerRequest_List()
+    void SUBMIT_20_add_Submit_Null_AnswerRequest_List()
     {
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -434,19 +435,19 @@ public class SubmitTest {
 
 
     @Test
-    void Submit_021_add_Submit_Two_Answer_For_One_Question(){
+    void SUBMIT_21_add_Submit_Two_Answer_For_One_Question(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
 
         AnswerRequest answer2=new AnswerRequest();
-        answer2.setId_question("6895ef87eee7210d30ac256a");
+        answer2.setId_question("68b1ad6fda6d33637440c218");
         answer2.setAnswer("hello");
         submitRequest.getAnswers().add(answer2);
 
         ApiResponse response=submitService.saveSubmit(submitRequest);
         assertEquals(400, response.getStatus());
-        assertEquals("Answer for question with ID 6895ef87eee7210d30ac256a already exists.", response.getMessage()); 
+        assertEquals("Answer for question with ID "+ answer2.getId_question()+" already exists.", response.getMessage()); 
         
         int size_Submit2=submitRepository.findAll().size();
         int size_Answer2=answerRepository.findAll().size();
@@ -457,7 +458,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_022_add_Submit_Id_question_In_AnswerRequest_Empty(){
+    void SUBMIT_22_add_Submit_Id_question_In_AnswerRequest_Empty(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -478,15 +479,18 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_023_add_Submit_Id_question_In_AnswerRequest_Null(){
+    void SUBMIT_23_add_Submit_Id_question_In_AnswerRequest_Null(){
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
 
         List<AnswerRequest> answers=new LinkedList<>();
         AnswerRequest answer1=new AnswerRequest();
+
         answer1.setId_question(null);
-        answer1.setAnswer("jmklasdjdsa");
+        answer1.setAnswer("bag");
+
         answers.add(answer1);
+        submitRequest.setAnswers(answers);
 
         ApiResponse response=submitService.saveSubmit(submitRequest);
         assertEquals(400, response.getStatus());
@@ -501,7 +505,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_024_add_Submit_Empty_userId_In_Request(){
+    void SUBMIT_24_add_Submit_Empty_userId_In_Request(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -521,7 +525,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_025_add_Submit_Empty_testId_In_Request(){
+    void SUBMIT_25_add_Submit_Empty_testId_In_Request(){
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
 
@@ -539,7 +543,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_026_add_Submit_Null_Both_User_Test_ID(){
+    void SUBMIT_26_add_Submit_Null_Both_User_Test_ID(){
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
 
@@ -558,7 +562,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_027_add_Submit_Empty_Both_User_Test_ID(){
+    void SUBMIT_27_add_Submit_Empty_Both_User_Test_ID(){
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
 
@@ -578,7 +582,7 @@ public class SubmitTest {
 
 
     @Test
-    void Submit_028_add_Submit_Null_userId_In_Request(){
+    void SUBMIT_28_add_Submit_Null_userId_In_Request(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -598,7 +602,7 @@ public class SubmitTest {
     }
 
     @Test
-    void Submit_029_add_Submit_Null_testId_In_Request(){
+    void SUBMIT_29_add_Submit_Null_testId_In_Request(){
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
 
@@ -618,7 +622,7 @@ public class SubmitTest {
 
     
     // @Test
-    // void Submit_030_add_Submit_Non_Existed_UserId(){
+    // void SUBMIT_30_add_Submit_Non_Existed_UserId(){
 
     //     int size_Submit1=submitRepository.findAll().size();
     //     int size_Answer1=answerRepository.findAll().size();
@@ -638,7 +642,7 @@ public class SubmitTest {
 
     // //wait for status in test service
     // @Test
-    // void Submit_031_add_Submit_Can_Not_Find_Test(){
+    // void SUBMIT_31_add_Submit_Can_Not_Find_Test(){
         
     // }
     

@@ -228,7 +228,8 @@ public class AnswerService {
 }
 
     //Update Submit when answer is changed
-    public void updateNumberOfCorrectAndTotalAnswers(Submit submit){
+    public void updateNumberOfCorrectAndTotalAnswers(Submit submit)
+    {
 
         if (submit.getType()==Submit.Type.LISTENING) {
 
@@ -335,7 +336,7 @@ public class AnswerService {
                 response.setMessage("Writing test can not have answer for choice question");
                 response.setStatus(400);
                 return response;
-           }
+            }
 
             boolean check_All_int=true;
 
@@ -350,11 +351,8 @@ public class AnswerService {
                 if(answerCheck.isEmpty()){
 
                     Map<Integer, Boolean> choices = new HashMap<>();
-
-                    for(int i=0;i<listKey.size();i++)
-                    {
-                        choices.put(0, false);
-                    }
+                    
+                    choices.put(-1, false);
 
                     answer = new Answer_Choice(id_question, submit,answer_type, choices);
 
@@ -381,30 +379,32 @@ public class AnswerService {
         
                             Map<Integer, Boolean> choices = new HashMap<>();
 
-                            if(answerChoices.size()<listKey.size())
+                            if(answerChoices.size() < listKey.size())
                             {
 
-                                for(int i:listKey){
-                                    if(!answerChoices.contains(i)){
-                                        choices.put(0, false);
-                                    }
-                                    else{
-                                        choices.put(i, true);
-                                    }
-                                    
-                                }
-                            }
-                            
-                            for(int i:answerChoices)
+                                for(int i:listKey)
                                 {
-                                    if(!listKey.contains(i)){
-                                        choices.put(i, false);
-                                    }
-                                    
-                                    else{
+                                    if(answerChoices.contains(i))
+                                    {
                                         choices.put(i, true);
                                     }
                                 }
+                                choices.put(-1, false); 
+                            }
+
+                            else
+                            {
+                                for(int i:answerChoices)
+                                    {
+                                        if(!listKey.contains(i)){
+                                            choices.put(i, false);
+                                        }
+                                        
+                                        else{
+                                            choices.put(i, true);
+                                        }
+                                    }
+                            }    
 
                             answer = new Answer_Choice(id_question, submit,answer_type, choices);
                             boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();

@@ -95,6 +95,7 @@ public class AnswerTest {
 
         Map<Integer, Boolean> choices = new HashMap<>();
         choices.put(1, true);
+
         Answer_Choice test_Choice=new Answer_Choice("124", 
         test_Reading, Answer.Type.CHOICE,
         choices);
@@ -123,8 +124,10 @@ public class AnswerTest {
 
         question_Choice.set_id("126");
         question_Choice.setType("choice");
+
         List<Integer> keys=new LinkedList<>();
-        keys.add(1);   
+        keys.add(1);
+
         question_Choice.setKeys(keys);
 
         question_Essay.set_id("127");
@@ -478,6 +481,40 @@ public class AnswerTest {
         assertEquals(answer.getType(), Answer.Type.ESSAY);
         assertEquals(answer.getId_question(), question_Essay.get_id());
         assertEquals(answer.getAnswer(), "Hello");
+    }
+
+    @Test
+    void ANSWER_033_Create_Answer_Blank_List_for_Multi_Choice()
+    {
+
+        Question question_multi_Choice=new Question();
+
+        question_multi_Choice.set_id("128");
+        question_multi_Choice.setType("choice");
+
+        List<Integer> keys=new LinkedList<>();
+
+        keys.add(1);
+        keys.add(2);
+        keys.add(3);
+
+        question_multi_Choice.setKeys(keys);
+
+        AnswerRequest answerRequest_multi_choice=new AnswerRequest();
+
+        List<Integer> answer_choice=new LinkedList<>();
+
+        answerRequest_multi_choice.setAnswer(answer_choice);
+
+        Object answer_Return= answerService.CreateAnswer(answerRequest_multi_choice, test_Reading,question_multi_Choice);
+        assertInstanceOf(Answer_Choice.class, answer_Return);
+
+        Answer_Choice answer=(Answer_Choice) answer_Return;
+        
+        assertEquals(answer.getSubmit().getId(), test_Reading.getId());
+        assertEquals(answer.getType(), Answer.Type.CHOICE);
+        assertEquals(answer.getId_question(), question_multi_Choice.get_id());
+        assertEquals(answer.getAnswer().size(),1);
     }
 
 }

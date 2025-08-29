@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 //import org.apache.tomcat.util.http.parser.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,7 +241,7 @@ public class SubmitService {
             return response;
         }
 
-        String type=testResponse.getType().toUpperCase();
+        String type=testResponse.getTestType().toUpperCase();
 
         //System.out.println(type);
 
@@ -326,6 +327,7 @@ public class SubmitService {
                 if(answerService.isNullOrBlank(questionId))
 
                 {
+                    submitRepository.delete(submit);
                     response.setMessage("Question ID can not be null or empty");
                     response.setStatus(400);
                     return response;
@@ -333,7 +335,8 @@ public class SubmitService {
 
                 Answer checkedAnswer = answerService.getAnswerBySubmitIDandQuestionID(submitId, questionId);
 
-                if (checkedAnswer != null) {
+                if (checkedAnswer != null) 
+                {
                     submitRepository.delete(submit);
                     response.setMessage("Answer for question with ID " + questionId + " already exists.");
                     response.setStatus(400);
@@ -399,13 +402,17 @@ public class SubmitService {
     // headers.setContentType(MediaType.APPLICATION_JSON);
     public TestResponse testAPI(String id_test,List<Integer>tasks)
     {
-        String url = "http://[::1]:8000/api/test/"+id_test;
+        String baseUrl = "http://[::1]:8000/api/test/" + id_test + "/questions";
 
-        Map<String, Object> requestBody = Map.of("tasks", tasks);
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody);
+    
+        String tasksParam = tasks.stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(","));
+
+        String url = baseUrl + "?tasks=" + tasksParam;
 
         ResponseEntity<TestResponse> response =
-            restTemplate.exchange(url, HttpMethod.POST, entity, TestResponse.class);
+                restTemplate.exchange(url, HttpMethod.GET, null, TestResponse.class);
 
         return response.getBody();
 
@@ -428,6 +435,7 @@ public class SubmitService {
         }
         return submitDTOs;
     }
+
 
     public Question findById(String id, List<Question>questions)
     {

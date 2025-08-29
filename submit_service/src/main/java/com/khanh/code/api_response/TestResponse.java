@@ -5,15 +5,15 @@ import java.util.List;
 public class TestResponse 
 {
 
-    private String type;
+    private String testType;
     private List<TaskResponse> tasks;
 
-    public String getType() {
-        return type;
+    public String getTestType() {
+        return testType;
     }
 
     public void setType(String testType) {
-        this.type = testType;
+        this.testType = testType;
     }
     
     public List<TaskResponse> getTasks() {

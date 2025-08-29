@@ -22,6 +22,7 @@ public class Answer_Choice extends Answer {
     @Column(name = "correct")
 
     private Map<Integer, Boolean> choices;
+    
     private boolean isCorrect;
 
     public Answer_Choice(String id_question, Submit submit,Type type,
@@ -38,7 +39,8 @@ public class Answer_Choice extends Answer {
         this.choices = choices;
     }
 
-    public boolean isCorrect() {
+    public boolean isCorrect() 
+    {
         return isCorrect;
     }
 
@@ -48,7 +50,7 @@ public class Answer_Choice extends Answer {
     
     public boolean checkChoices(){
         for (Integer choiceId : this.choices.keySet()) {
-            Boolean isCorrect = choices.get(choiceId);
+            boolean isCorrect = choices.get(choiceId);
             if(isCorrect==false){
                 return false;
             }
