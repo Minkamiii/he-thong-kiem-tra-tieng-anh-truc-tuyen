@@ -163,8 +163,8 @@ export class TestController{
     }
 
     @Get(':testId/questions')
-    findQuestionsByTest(@Param('testId') testId: string, @Body() getAllQuestionByTestIDDTO: GetAllQuestionByTestIDDTO){
-        return this.testService.findQuestionsByTestId(testId, getAllQuestionByTestIDDTO);
+    findQuestionsByTest(@Param('testId') testId: string, @Query('tasks') tasks: string){
+        return this.testService.findQuestionsByTestId(testId, tasks);
     }
 
 }

@@ -264,7 +264,7 @@ export class TestService {
         
     }
 
-    async findQuestionsByTestId(testId: string, getAllQuestionByTestIDDTO: GetAllQuestionByTestIDDTO){
+    async findQuestionsByTestId(testId: string, tasks: string){
 
         const data = await this.testModel.findById(testId).populate({ path: 'tasks.sections.questions.question' }).exec() as any;
         if(!data){
@@ -272,9 +272,10 @@ export class TestService {
         }
 
         const returnDataList: any[] = [];
+        const taskSplit: string[] = tasks.split(',');
 
         data.tasks.forEach((task, index) => {
-            if(getAllQuestionByTestIDDTO.tasks.includes(index))
+            if(taskSplit.includes(index.toString()))
                 returnDataList.push(task)
         })
 
@@ -283,7 +284,7 @@ export class TestService {
             tasks: returnDataList
         }
 
-        this.cacheService.set(`test:${testId}:questions?tasks=${getAllQuestionByTestIDDTO.tasks.join(',')}`, returnData)
+        this.cacheService.set(`test:${testId}:questions?tasks=${tasks}`, returnData)
 
         return returnData;
     }
