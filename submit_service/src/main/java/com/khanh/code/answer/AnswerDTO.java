@@ -19,7 +19,7 @@ public class AnswerDTO {
         if(answer.getType()==Answer.Type.CHOICE){
                 Answer_Choice answer_Choice= (Answer_Choice) answer;
                 this.setAnswer(answer_Choice.getAnswer());
-                this.setcorrect(answer_Choice.isCorrect());
+                //this.setcorrect(answer_Choice.isCorrect());
             }
 
         else if(answer.getType()==Answer.Type.FILL){

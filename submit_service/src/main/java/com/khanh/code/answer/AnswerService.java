@@ -262,7 +262,7 @@ public class AnswerService {
     }
 
     //add answers of a submit
-    //check null
+    @SuppressWarnings("unchecked")
     public Object CreateAnswer(AnswerRequest answerRequest, Submit submit, Question question) {
 
         ApiResponse response=new ApiResponse();
@@ -312,6 +312,7 @@ public class AnswerService {
                 response.setStatus(400);
                 return response;
             }
+            
 
             String answerFill =(String) userAnswer; 
             String key=question.getKey();
@@ -351,14 +352,12 @@ public class AnswerService {
                 if(answerCheck.isEmpty()){
 
                     Map<Integer, Boolean> choices = new HashMap<>();
-                    
-                    choices.put(-1, false);
+
+                    //choices.put(-1, false);
 
                     answer = new Answer_Choice(id_question, submit,answer_type, choices);
-
-                    boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
-
-                    ((Answer_Choice) answer).setCorrect(checkAllChoices);
+                    // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
+                    // ((Answer_Choice) answer).setCorrect(checkAllChoices);
                     
                 }
 
@@ -374,14 +373,12 @@ public class AnswerService {
                         if(check_All_int)
                         
                         {
-
                             List<Integer> answerChoices = (List<Integer>) userAnswer;
         
                             Map<Integer, Boolean> choices = new HashMap<>();
 
                             if(answerChoices.size() < listKey.size())
                             {
-
                                 for(int i:listKey)
                                 {
                                     if(answerChoices.contains(i))
@@ -389,7 +386,7 @@ public class AnswerService {
                                         choices.put(i, true);
                                     }
                                 }
-                                choices.put(-1, false); 
+                                //choices.put(-1, false); 
                             }
 
                             else
@@ -407,9 +404,8 @@ public class AnswerService {
                             }    
 
                             answer = new Answer_Choice(id_question, submit,answer_type, choices);
-                            boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
-
-                            ((Answer_Choice) answer).setCorrect(checkAllChoices);
+                            // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
+                            // ((Answer_Choice) answer).setCorrect(checkAllChoices);
                            
                         }
 
@@ -437,7 +433,6 @@ public class AnswerService {
                 return response; 
             }
             
-            //Object answerTest= (Object) answerRequest.getAnswer();
             //essay(string) of writing but send other type of object
             if (!(userAnswer instanceof String)){
                 response.setMessage("Essay question must be answered by string");

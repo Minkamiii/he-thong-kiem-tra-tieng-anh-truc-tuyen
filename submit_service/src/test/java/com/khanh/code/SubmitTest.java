@@ -2,7 +2,6 @@ package com.khanh.code;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Date;
@@ -34,8 +33,7 @@ import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @Transactional
-@SuppressWarnings("unused")
-
+@SuppressWarnings("unchecked")
 public class SubmitTest {
 
     @Autowired

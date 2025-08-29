@@ -14,10 +14,10 @@ public class SubmitDTO {
     private String submit_day;
 
     private List<Integer> tasks;
-    // int float always default 0 => class for writing
+    // int float always default 0 => class for writing with no correct answer and question answered
 
     private Integer numCorrectAnswers;
-    private Integer numOfAnswer;
+    private Integer num_Of_Answered_Questions;
     
     //private Float score;
 
@@ -33,14 +33,14 @@ public class SubmitDTO {
         if (submit.getType() == Submit.Type.LISTENING) {
             Submit_Listening listeningSubmit = (Submit_Listening) submit;
             this.setNumCorrectAnswers(listeningSubmit.getNumber_of_correct());
-            this.setNumOfAnswer(listeningSubmit.getNum_of_question_to_answer());
+            this.setNumOfAnsweredQuestion(listeningSubmit.getNum_of_question_to_answer());
             //this.setScore(listeningSubmit.getScore());
         }
 
         else if (submit.getType() == Submit.Type.READING) {
             Submit_Reading readingSubmit=(Submit_Reading) submit;
             this.setNumCorrectAnswers(readingSubmit.getNumber_of_correct());
-            this.setNumOfAnswer(readingSubmit.getNum_of_question_to_answer());
+            this.setNumOfAnsweredQuestion(readingSubmit.getNum_of_question_to_answer());
             //this.setScore(readingSubmit.getScore());
         }
     }
@@ -84,12 +84,12 @@ public class SubmitDTO {
         this.numCorrectAnswers = numCorrectAnswers;
     }
 
-    public Integer getNumOfAnswer() {
-        return numOfAnswer;
+    public Integer getNumOfAnsweredQuestions() {
+        return num_Of_Answered_Questions;
     }
 
-    public void setNumOfAnswer(Integer numOfAnswer) {
-        this.numOfAnswer = numOfAnswer;
+    public void setNumOfAnsweredQuestion(Integer numOfAnswer) {
+        this.num_Of_Answered_Questions = numOfAnswer;
     }
 
     public List<Integer> getTasks() {

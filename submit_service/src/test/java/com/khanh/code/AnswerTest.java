@@ -40,8 +40,8 @@ import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @Transactional
-@SuppressWarnings("unused")
 
+@SuppressWarnings("unused")
 public class AnswerTest {
 
     @Autowired
@@ -170,6 +170,7 @@ public class AnswerTest {
         assertEquals(400, response.getStatus());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void ANSWER_004_get_Answers_By_ID_Submit_Existed(){
         ApiResponse response=answerService.getAnswersBySubmitId(id_Submit);
@@ -445,7 +446,7 @@ public class AnswerTest {
         assertEquals(answer.getType(), Answer.Type.CHOICE);
         assertEquals(answer.getId_question(), question_Choice.get_id());
         assertEquals(answer.getSubmit().getId(), test_Reading.getId());
-        assertEquals(answer.getAnswer().size(),question_Choice.getKeys().size());
+        assertEquals(answer.getAnswer().size(),0);
     }
 
     @Test
@@ -514,7 +515,7 @@ public class AnswerTest {
         assertEquals(answer.getSubmit().getId(), test_Reading.getId());
         assertEquals(answer.getType(), Answer.Type.CHOICE);
         assertEquals(answer.getId_question(), question_multi_Choice.get_id());
-        assertEquals(answer.getAnswer().size(),1);
+        assertEquals(answer.getAnswer().size(),0);
     }
 
 }

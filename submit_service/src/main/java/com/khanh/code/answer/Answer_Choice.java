@@ -23,10 +23,9 @@ public class Answer_Choice extends Answer {
 
     private Map<Integer, Boolean> choices;
     
-    private boolean isCorrect;
+    //private boolean isCorrect;
 
-    public Answer_Choice(String id_question, Submit submit,Type type,
-    Map<Integer, Boolean> answer) {
+    public Answer_Choice(String id_question, Submit submit, Type type, Map<Integer, Boolean> answer) {
         super(id_question, submit,type);
         this.choices = answer;
     }
@@ -39,24 +38,24 @@ public class Answer_Choice extends Answer {
         this.choices = choices;
     }
 
-    public boolean isCorrect() 
-    {
-        return isCorrect;
-    }
+    // public boolean isCorrect() 
+    // {
+    //     return isCorrect;
+    // }
 
-    public void setCorrect(boolean correct) {
-        this.isCorrect = correct;
-    }
+    // public void setCorrect(boolean correct) {
+    //     this.isCorrect = correct;
+    // }
     
-    public boolean checkChoices(){
-        for (Integer choiceId : this.choices.keySet()) {
-            boolean isCorrect = choices.get(choiceId);
-            if(isCorrect==false){
-                return false;
-            }
-        }
+    // public boolean checkChoices(){
+    //     for (Integer choiceId : this.choices.keySet()) {
+    //         boolean isCorrect = choices.get(choiceId);
+    //         if(isCorrect==false){
+    //             return false;
+    //         }
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
 }

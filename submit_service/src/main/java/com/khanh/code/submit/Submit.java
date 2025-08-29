@@ -3,6 +3,8 @@ package com.khanh.code.submit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
 //import java.util.Map;
 import com.khanh.code.answer.Answer_Choice;
 import org.hibernate.annotations.UuidGenerator;
@@ -126,8 +128,16 @@ public class Submit {
         for (Answer answer : answers) {
             if (answer.getType()==Answer.Type.CHOICE) {
                 Answer_Choice answerChoice = (Answer_Choice) answer; 
-                if(answerChoice.isCorrect()){
-                    dem++;
+                // if(answerChoice.isCorrect()){
+                //     dem++;
+                // }
+                Map<Integer, Boolean> choices = answerChoice.getAnswer();
+
+                for(int key : choices.keySet()){
+                    boolean isCorrect = choices.get(key);
+                    if(isCorrect==true){
+                        dem++;
+                    }
                 }
             }
 
