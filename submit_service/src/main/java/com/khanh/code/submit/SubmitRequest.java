@@ -12,6 +12,7 @@ public class SubmitRequest {
     //private Date submit_day;
     private List<AnswerRequest> answers;
     private List<Integer> tasks;
+    private String kind;
     
     public String getUser_id() {
         return user_id;
@@ -49,5 +50,12 @@ public class SubmitRequest {
     }
     public void setTasks(List<Integer> task) {
         this.tasks = task;
+    }
+    
+    public String getKind() {
+        return kind;
+    }
+    public void setKind(String kind) {
+        this.kind = kind;
     }
 }

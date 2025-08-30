@@ -20,7 +20,7 @@ public interface AnswerRepository extends JpaRepository<Answer, String> {
     List<Answer_Choice> findChoiceAnswersByQuestionId(String questionId);
 
     @Query("SELECT a FROM Answer_Fill a WHERE a.id_question = ?1")
-    List<Answer_Fill> findFillAnswersByUserId(String id_question);
+    List<Answer_Fill> findFillAnswersByQuestionId(String id_question);
 
     
     @Query("SELECT a FROM Answer a WHERE a.submit.id = ?1")

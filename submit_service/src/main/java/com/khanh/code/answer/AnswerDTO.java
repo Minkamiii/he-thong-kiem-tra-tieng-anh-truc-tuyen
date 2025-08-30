@@ -10,11 +10,13 @@ public class AnswerDTO {
     private String id_question;
     private Object answer;
     private Boolean correct;
+    private int number_of_requiremient_to_answer;
 
     public AnswerDTO(Answer answer){
         this.answer_id=answer.getId();
         this.type=answer.getType().toString();
         this.id_question=answer.getId_question();
+        this.number_of_requiremient_to_answer=answer.getNumber_of_requiremient_to_answer();
 
         if(answer.getType()==Answer.Type.CHOICE){
                 Answer_Choice answer_Choice= (Answer_Choice) answer;
@@ -74,4 +76,14 @@ public class AnswerDTO {
     public void setcorrect(Boolean correct) {
         this.correct = correct;
     }
+
+    public int getNumber_of_requiremient_to_answer() {
+        return number_of_requiremient_to_answer;
+    }
+
+    public void setNumber_of_requiremient_to_answer(int number_of_requiremient_to_answer) {
+        this.number_of_requiremient_to_answer = number_of_requiremient_to_answer;
+    }
+
+    
 }

@@ -36,6 +36,11 @@ public class Submit {
         WRITING, LISTENING, READING
     }
 
+    public enum Kind{
+        PRACTICE,
+        EXAM
+    }
+
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @Column(name = "id", updatable = false, nullable = false)
@@ -43,6 +48,9 @@ public class Submit {
 
     @Enumerated(EnumType.STRING)
     private Type type;
+
+    @Enumerated(EnumType.STRING)
+    private Kind kind;
     
     @NotNull
     private String id_user;
@@ -59,6 +67,8 @@ public class Submit {
     private List<Integer> tasks = new ArrayList<>();
 
     private int num_of_question_to_answer;
+
+    private int total_Requirement_to_answer;
 
     @OneToMany(mappedBy = "submit", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -121,6 +131,43 @@ public class Submit {
         this.answers = answers;
     }
     
+
+    public int getNum_of_question_to_answer() {
+        return num_of_question_to_answer;
+    }
+
+    public void setNum_of_question_to_answer() {
+        this.num_of_question_to_answer = this.answers.size();
+    }
+
+    // public void setNum_of_question_to_answer(int num_of_question_to_answer) {
+    //     this.num_of_question_to_answer = num_of_question_to_answer;
+    // }
+
+    public List<Integer> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Integer> tasks) {
+        this.tasks = tasks;
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
+    public void setKind(Kind kind) {
+        this.kind = kind;
+    }
+
+    public int getTotal_Requirement_to_answer() {
+        return total_Requirement_to_answer;
+    }
+
+    public void setTotal_Requirement_to_answer(int total_Requirement_to_answer) {
+        this.total_Requirement_to_answer = total_Requirement_to_answer;
+    }
+
     //calculate number of correct answers
     public int calculateNumCorrectAnswers(Submit submit) {
         int dem=0;
@@ -151,23 +198,16 @@ public class Submit {
         return dem;
     }
 
-    public int getNum_of_question_to_answer() {
-        return num_of_question_to_answer;
+    //calculate total number of requirements to answer
+    public int calculateTotalRequirementToAnswer(Submit submit) {
+        int total=0;
+        List<Answer> answers = submit.getAnswers();
+        for (Answer answer : answers) {
+            total+=answer.getNumber_of_requiremient_to_answer();
+        }
+        return total;
     }
 
-    public void setNum_of_question_to_answer() {
-        this.num_of_question_to_answer = this.answers.size();
-    }
-
-    public List<Integer> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Integer> tasks) {
-        this.tasks = tasks;
-    }
-    
-    
 }
 
 

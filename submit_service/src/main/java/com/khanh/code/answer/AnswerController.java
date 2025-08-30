@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.khanh.code.api_response.ApiResponse;
+import com.khanh.code.submit.SubmitRequest;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,8 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-//import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 
@@ -103,10 +105,19 @@ public class AnswerController {
     } 
 
     //Put 
-    // @PutMapping(path="/answers/update/{questionId}")
-    // public String updateAnswersByQuestion(@PathVariable String questionId) 
-    // {
-    //     return questionId;
-    // }
+    @PutMapping(path="/answers/update")
+    public ResponseEntity<ApiResponse> updateAnswersByQuestion(@RequestBody SubmitRequest request) 
+    {
+        try{
+            ApiResponse response = answerService.updateAnswers(request);
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
+        catch(Exception e){
+            ApiResponse errorResponse = new ApiResponse();
+            errorResponse.setMessage("Error: " + e.getMessage());
+            errorResponse.setStatus(500);
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
     
 }

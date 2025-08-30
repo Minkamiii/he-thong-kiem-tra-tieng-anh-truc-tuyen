@@ -12,12 +12,14 @@ public class SubmitDTO {
     private String type;
     private String id_test;
     private String submit_day;
+    private String kind;
 
     private List<Integer> tasks;
     // int float always default 0 => class for writing with no correct answer and question answered
 
     private Integer numCorrectAnswers;
     private Integer num_Of_Answered_Questions;
+    private int total_Requirement_to_answer;
     
     //private Float score;
 
@@ -29,7 +31,10 @@ public class SubmitDTO {
         this.id_test = submit.getId_test();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
         this.submit_day = sdf.format(submit.getSubmit_day());  
-        this.tasks=submit.getTasks();       
+        this.tasks=submit.getTasks();
+        this.kind=submit.getKind().toString();
+        this.total_Requirement_to_answer=submit.getTotal_Requirement_to_answer();
+               
         if (submit.getType() == Submit.Type.LISTENING) {
             Submit_Listening listeningSubmit = (Submit_Listening) submit;
             this.setNumCorrectAnswers(listeningSubmit.getNumber_of_correct());
@@ -98,6 +103,22 @@ public class SubmitDTO {
 
     public void setTasks(List<Integer> tasks) {
         this.tasks = tasks;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public int getTotal_Requirement_to_answer() {
+        return total_Requirement_to_answer;
+    }
+
+    public void setTotal_Requirement_to_answer(int total_Requirement_to_answer) {
+        this.total_Requirement_to_answer = total_Requirement_to_answer;
     }
 
     // public float getScore() {

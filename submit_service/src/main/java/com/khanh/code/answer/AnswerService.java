@@ -12,6 +12,7 @@ import com.khanh.code.api_response.ApiResponse;
 import com.khanh.code.api_response.Question;
 import com.khanh.code.submit.Submit;
 import com.khanh.code.submit.SubmitRepository;
+import com.khanh.code.submit.SubmitRequest;
 import com.khanh.code.submit.Submit_Listening;
 import com.khanh.code.submit.Submit_Reading;
 
@@ -230,13 +231,17 @@ public class AnswerService {
     //Update Submit when answer is changed
     public void updateNumberOfCorrectAndTotalAnswers(Submit submit)
     {
-
+        
         if (submit.getType()==Submit.Type.LISTENING) {
 
                 Submit_Listening submit_Listening= submitRepository.findListeningById(submit.getId());
 
                 int number=submit_Listening.calculateNumCorrectAnswers(submit_Listening);
                 submit_Listening.setNumber_of_correct(number);
+
+                int requirements=submit_Listening.calculateTotalRequirementToAnswer(submit_Listening);
+                submit_Listening.setTotal_Requirement_to_answer(requirements);
+
                 submit_Listening.setNum_of_question_to_answer();
 
                 submitRepository.save(submit_Listening);
@@ -248,10 +253,26 @@ public class AnswerService {
 
                 int number=submit_Reading.calculateNumCorrectAnswers(submit_Reading);
                 submit_Reading.setNumber_of_correct(number);
+
+                int requirements=submit_Reading.calculateTotalRequirementToAnswer(submit_Reading);
+                submit_Reading.setTotal_Requirement_to_answer(requirements);
+
                 submit_Reading.setNum_of_question_to_answer();
 
                 submitRepository.save(submit_Reading);
             }
+
+        else if (submit.getType()==Submit.Type.WRITING) {
+
+            Submit submit_Writing= submitRepository.findById(submit.getId()).orElse(null);
+
+            int requirements=submit.calculateTotalRequirementToAnswer(submit_Writing);
+            submit.setTotal_Requirement_to_answer(requirements);
+
+            submit.setNum_of_question_to_answer();
+
+            submitRepository.save(submit);
+        }
     }
 
     //check null or blank
@@ -304,7 +325,6 @@ public class AnswerService {
            else 
 
            {
-            
             //fill(string) but send other type of object
             if (!(userAnswer instanceof String))
             {
@@ -313,7 +333,6 @@ public class AnswerService {
                 return response;
             }
             
-
             String answerFill =(String) userAnswer; 
             String key=question.getKey();
 
@@ -327,6 +346,7 @@ public class AnswerService {
             }
             
             answer = new Answer_Fill(id_question, submit,answer_type,check, answerFill);
+            answer.setNumber_of_requiremient_to_answer(1);
 
            }
         }
@@ -356,6 +376,7 @@ public class AnswerService {
                     //choices.put(-1, false);
 
                     answer = new Answer_Choice(id_question, submit,answer_type, choices);
+                    answer.setNumber_of_requiremient_to_answer(listKey.size());
                     // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
                     // ((Answer_Choice) answer).setCorrect(checkAllChoices);
                     
@@ -377,20 +398,20 @@ public class AnswerService {
         
                             Map<Integer, Boolean> choices = new HashMap<>();
 
-                            if(answerChoices.size() < listKey.size())
-                            {
-                                for(int i:listKey)
-                                {
-                                    if(answerChoices.contains(i))
-                                    {
-                                        choices.put(i, true);
-                                    }
-                                }
-                                //choices.put(-1, false); 
-                            }
+                            // if(answerChoices.size() < listKey.size())
+                            // {
+                            //     for(int i:listKey)
+                            //     {
+                            //         if(answerChoices.contains(i))
+                            //         {
+                            //             choices.put(i, true);
+                            //         }
+                            //     }
+                            //     //choices.put(-1, false); 
+                            // }
 
-                            else
-                            {
+                            // else
+                            // {
                                 for(int i:answerChoices)
                                     {
                                         if(!listKey.contains(i)){
@@ -401,9 +422,10 @@ public class AnswerService {
                                             choices.put(i, true);
                                         }
                                     }
-                            }    
+                            //}    
 
                             answer = new Answer_Choice(id_question, submit,answer_type, choices);
+                            answer.setNumber_of_requiremient_to_answer(listKey.size());
                             // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
                             // ((Answer_Choice) answer).setCorrect(checkAllChoices);
                            
@@ -425,7 +447,8 @@ public class AnswerService {
                 }
         }
 
-        else if (answer_type==Answer.Type.ESSAY) {
+        else if (answer_type==Answer.Type.ESSAY) 
+        {
             //essay but not in writing
             if(submit.getType()!=Submit.Type.WRITING) {
                 response.setMessage("Essay question is only for writing test");
@@ -442,6 +465,7 @@ public class AnswerService {
 
             String answerEssay = (String) userAnswer;
             answer = new Answer_Essay(id_question, submit,answer_type,answerEssay);
+            answer.setNumber_of_requiremient_to_answer(1);
         }
 
         else 
@@ -453,6 +477,126 @@ public class AnswerService {
         
         // return answerRepository.save(answer);
         return answer;
+    }
+
+    //update answers of a submit and its result
+    @SuppressWarnings("unchecked")
+    public ApiResponse updateAnswers(SubmitRequest submitRequest)
+    {
+        ApiResponse response=new ApiResponse();
+        List<AnswerRequest> answerRequests=submitRequest.getAnswers();
+
+        if(answerRequests==null||answerRequests.isEmpty())
+        {
+            response.setMessage("Answer list can not be null or empty");
+            response.setStatus(400);
+            return response;
+        }
+
+        for(AnswerRequest answerRequest:answerRequests)
+        {
+            Object newAnswer= answerRequest.getAnswer();
+            String questionId=answerRequest.getId_question();
+
+            //send invalid question id => skip
+            if(isNullOrBlank(questionId)){
+                continue;
+            }
+
+            if(newAnswer instanceof List<?>)
+            {
+                boolean check=true;
+                List<?> answerCheck = (List<?>) newAnswer;
+
+                for(Object item : answerCheck) {
+                    if(!(item instanceof Integer)) {
+                        check = false;
+                        break;
+                    }
+                }
+
+                //wrong type in list => skip (int but send list has other type)
+                if (!check) 
+                {
+                    continue;
+                }
+
+                else
+                {
+                    List<Integer> answerChoices = (List<Integer>) newAnswer;
+
+                    List<Answer_Choice> answers= answerRepository.findChoiceAnswersByQuestionId(questionId);
+
+                    //can not find => skip
+                    if(answers==null||answers.isEmpty()){
+                        continue;
+                    }
+                    for(Answer_Choice answer:answers)
+                    {
+                        Map<Integer, Boolean> chosen_Before = answer.getAnswer();
+
+                        for(int key:chosen_Before.keySet())
+                        {
+                            if(answerChoices.contains(key))
+                            {
+                                chosen_Before.put(key, true);
+                            }
+
+                            else
+                            {
+                                chosen_Before.put(key, false);
+                            }
+                        }
+                        answer.setAnswer(chosen_Before);
+                        answer.setNumber_of_requiremient_to_answer(answerChoices.size());
+                        answerRepository.save(answer);;
+                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());   
+                    }
+
+                }
+            }
+
+            else if (newAnswer instanceof String)
+            {
+                String answerFill=(String) newAnswer;
+
+                List<Answer_Fill> answers= answerRepository.findFillAnswersByQuestionId(questionId);
+                
+                //can not find => skip
+                if(answers==null||answers.isEmpty())
+                {
+                    continue;
+                }
+
+                for(Answer_Fill answer:answers)
+                {
+                    answerFill=answerFill.trim().toLowerCase();
+                    String answered_Before=answer.getAnswer();
+
+                    if (answerFill.equals(answered_Before)){
+                        answer.setCorrect(true);
+                        answerRepository.save(answer);
+                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
+                    }
+
+                    else
+                    {
+                        answer.setCorrect(false);
+                        answerRepository.save(answer);
+                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
+                    }
+                }
+            }
+
+            //invalid type of answer => skip
+            else {
+                continue;   
+            }
+
+        }
+        response.setMessage("Answers are updated");
+        response.setStatus(200);
+        return response;
     }
 
 }

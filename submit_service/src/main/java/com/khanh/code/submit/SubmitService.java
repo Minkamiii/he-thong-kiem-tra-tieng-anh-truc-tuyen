@@ -191,6 +191,8 @@ public class SubmitService {
         Submit.Type submitType;
         Submit submit=new Submit();
 
+        Submit.Kind testKind;
+
         String user_id=request.getUser_id();
         String test_id=request.getTest_id();
 
@@ -281,6 +283,19 @@ public class SubmitService {
             Date.from(java.time.Instant.now()));
         }
 
+        String kind=request.getKind().toUpperCase();
+
+        try {
+            testKind = Submit.Kind.valueOf(kind);
+        } 
+        catch (IllegalArgumentException e) {
+            response.setMessage("Invalid test kind");
+            response.setStatus(400);
+            return response;
+        }
+
+        submit.setKind(testKind);
+
         //submit.setTasks(tasks);
         submitRepository.save(submit);
         String submitId = submit.getId();
@@ -345,7 +360,8 @@ public class SubmitService {
 
                 Question question=findById(questionId, questions); //find question
 
-                if(question==null){
+                if(question==null)
+                {
                     submitRepository.delete(submit);
                     response.setMessage("Send answer to non-exited question with ID "+questionId);
                     response.setStatus(400);
@@ -417,7 +433,6 @@ public class SubmitService {
         return response.getBody();
 
     }
-
 
     //delete list submits
     public void deleteListSubmits(List<Submit> submits) {

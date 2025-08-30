@@ -39,6 +39,8 @@ public class Answer {
     @NotNull
     private String id_question;
 
+    private int number_of_requiremient_to_answer;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "submit_id", nullable = false)
     @JsonBackReference
@@ -81,6 +83,14 @@ public class Answer {
 
     public void setSubmit(Submit submit) {
         this.submit = submit;
+    }
+
+    public int getNumber_of_requiremient_to_answer() {
+        return number_of_requiremient_to_answer;
+    }
+
+    public void setNumber_of_requiremient_to_answer(int number_of_requiremient_to_answer) {
+        this.number_of_requiremient_to_answer = number_of_requiremient_to_answer;
     }
     
 }

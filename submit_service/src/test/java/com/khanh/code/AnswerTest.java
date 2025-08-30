@@ -469,6 +469,7 @@ public class AnswerTest {
         assertEquals(answer.getType(), Answer.Type.CHOICE);
         assertEquals(answer.getId_question(), question_Choice.get_id());
         assertEquals(answer.getAnswer().size(),question_Choice.getKeys().size());
+        assertEquals(question_Choice.getKeys().size(), answer.getNumber_of_requiremient_to_answer());
     }
 
     @Test
@@ -482,6 +483,7 @@ public class AnswerTest {
         assertEquals(answer.getType(), Answer.Type.ESSAY);
         assertEquals(answer.getId_question(), question_Essay.get_id());
         assertEquals(answer.getAnswer(), "Hello");
+        assertEquals(answer.getNumber_of_requiremient_to_answer(), 1);
     }
 
     @Test
@@ -516,6 +518,7 @@ public class AnswerTest {
         assertEquals(answer.getType(), Answer.Type.CHOICE);
         assertEquals(answer.getId_question(), question_multi_Choice.get_id());
         assertEquals(answer.getAnswer().size(),0);
+        assertEquals(answer.getNumber_of_requiremient_to_answer(), keys.size());
     }
 
 }
