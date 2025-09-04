@@ -423,7 +423,6 @@ public class AnswerService {
                                         }
                                     }
                             //}    
-
                             answer = new Answer_Choice(id_question, submit,answer_type, choices);
                             answer.setNumber_of_requiremient_to_answer(listKey.size());
                             // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
@@ -592,11 +591,10 @@ public class AnswerService {
             else {
                 continue;   
             }
-
         }
+        
         response.setMessage("Answers are updated");
         response.setStatus(200);
         return response;
     }
-
 }

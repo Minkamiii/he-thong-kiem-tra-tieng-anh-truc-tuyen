@@ -1,15 +1,10 @@
 package com.khanh.code.submit;
 
-//import java.net.http.HttpHeaders;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-//import java.util.Map;
 import java.util.stream.Collectors;
-
-//import org.apache.tomcat.util.http.parser.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -50,7 +45,8 @@ public class SubmitService {
             return response;
         }
 
-        List<Submit> submits = submitRepository.findByUserId(userId);
+        List<Submit> submits = submitRepository.findByUserIdOrderBySubmitDayAsc(userId);
+        //submitRepository.findByUserId(userId);
         
         if(submits == null || submits.isEmpty()) {
             response.setMessage("This user did not submit any test" );
@@ -58,6 +54,7 @@ public class SubmitService {
             return response;
         }
         else {
+            
             List<SubmitDTO> submitDTOs = transferSubmit(submits);
             response.setMessage("Get all submits successfully");
             response.setStatus(200);
@@ -96,7 +93,8 @@ public class SubmitService {
             return response;
         }
 
-        List<Submit> submits=submitRepository.findByUserIdAndTestId(id_user, id_test);
+        List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayAsc(id_user, id_test);
+        //submitRepository.findByUserIdAndTestId(id_user, id_test);
 
         if(submits==null||submits.isEmpty()){
             ApiResponse response = new ApiResponse();
