@@ -37,10 +37,10 @@ export class TestService {
                 section.questions.forEach((question, questionIndex) => {
 
                     if(testData.type === TestType.WRITING && question.question.type !== QuestionType.ESSAY)
-                        throw new HttpException({statusCode: HttpStatus.BAD_REQUEST, message: 'Writing test must have essay question'}, HttpStatus.BAD_REQUEST)
+                        throw new HttpException('Writing test must have essay question', HttpStatus.BAD_REQUEST)
 
                     if(testData.type !== TestType.WRITING && question.question.type === QuestionType.ESSAY)
-                        throw new HttpException({statusCode: HttpStatus.BAD_REQUEST, message: `${testData.type} test can't have essay question`}, HttpStatus.BAD_REQUEST)
+                        throw new HttpException(`${testData.type} test can't have essay question`, HttpStatus.BAD_REQUEST)
 
                     //Đặt initialIndex của từng câu trả lời dạng Choice (Type = CHOICE) là index của mảng đó
                     question.question.choices?.forEach((choice, index) => {
@@ -128,7 +128,7 @@ export class TestService {
         const data = await this.testModel.findById(id).populate({ path: 'tasks.sections.questions.question' }).exec();
 
         if(!data){
-            throw new HttpException({statusCode: HttpStatus.NOT_FOUND, message: `Test with id ${id} not found`}, HttpStatus.NOT_FOUND);
+            throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND);
         }
         
         this.cacheService.set(`test:${id}`, data); //Lưu vào cache service
@@ -178,7 +178,7 @@ export class TestService {
 
         const foundTest = await this.testModel.findById(id).exec() as any;
         if(!foundTest){
-            throw new HttpException({statusCode: HttpStatus.NOT_FOUND, message: `Test with id ${id} not found`}, HttpStatus.NOT_FOUND);
+            throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND);
         }
 
         const deleteQuestionIds: any[] = [];
@@ -204,7 +204,7 @@ export class TestService {
 
         const foundTest = await this.testModel.findById(id).exec();
         if(!foundTest){
-            throw new HttpException({statusCode: HttpStatus.NOT_FOUND, message: `Test with id ${id} not found`}, HttpStatus.NOT_FOUND)
+            throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND)
         }
 
         const questionUpdates: {id: string, updateQuestionDTO: UpdateQuestionDTO}[] = [];
@@ -214,10 +214,10 @@ export class TestService {
                 for(const question of section.questions){
 
                     if(updateTestDTO.type === TestType.WRITING && question.question.type !== QuestionType.ESSAY)
-                        throw new HttpException({statusCode: HttpStatus.BAD_REQUEST, message: 'Writing test must have essay question'}, HttpStatus.BAD_REQUEST)
+                        throw new HttpException('Writing test must have essay question', HttpStatus.BAD_REQUEST)
 
                     if(updateTestDTO.type !== TestType.WRITING && question.question.type === QuestionType.ESSAY)
-                        throw new HttpException({statusCode: HttpStatus.BAD_REQUEST, message: `${updateTestDTO.type} test can't have essay question`}, HttpStatus.BAD_REQUEST)
+                        throw new HttpException(`${updateTestDTO.type} test can't have essay question`, HttpStatus.BAD_REQUEST)
 
                     questionUpdates.push({
                         id: question.question._id,
@@ -266,9 +266,15 @@ export class TestService {
 
     async findQuestionsByTestId(testId: string, tasks: string){
 
+        const cacheData = await this.cacheService.get<any>(`test:${testId}:questions?tasks=${tasks}`); //Lấy data từ cache nếu có
+
+        if(cacheData){
+            return cacheData; //Nếu có data từ cache trả về luôn
+        }
+
         const data = await this.testModel.findById(testId).populate({ path: 'tasks.sections.questions.question' }).exec() as any;
         if(!data){
-            throw new HttpException({statusCode: HttpStatus.NOT_FOUND, message: `Test with id ${testId} not found`}, HttpStatus.NOT_FOUND);
+            throw new HttpException(`Test with id ${testId} not found`, HttpStatus.NOT_FOUND);
         }
 
         const returnDataList: any[] = [];

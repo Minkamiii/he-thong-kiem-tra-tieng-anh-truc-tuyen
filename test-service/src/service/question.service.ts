@@ -29,7 +29,7 @@ export class QuestionService {
         
         const foundQuestion = await this.questionModel.findById(this.objectId(id)).exec();
         if(!foundQuestion){
-            throw new HttpException({statusCode: HttpStatus.NOT_FOUND, message: `Question with id ${id} not found`}, HttpStatus.NOT_FOUND)
+            throw new HttpException(`Question with id ${id} not found`, HttpStatus.NOT_FOUND)
         }
 
         const updatedQuestion = {...updateQuestionDTO};
