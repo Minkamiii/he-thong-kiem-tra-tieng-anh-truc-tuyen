@@ -3,10 +3,10 @@ package com.example.userservice.dto.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse <T> {
+public class ApiResponse {
     private int code=200;
     private String message="successfully";
-    private T result;
+    private Object result;
 
     public int getCode() {
         return code;
@@ -20,10 +20,10 @@ public class ApiResponse <T> {
     public void setMessage(String message) {
         this.message = message;
     }
-    public T getResult() {
+    public Object getResult() {
         return result;
     }
-    public void setResult(T result) {
+    public void setResult(Object result) {
         this.result = result;
     }
 
