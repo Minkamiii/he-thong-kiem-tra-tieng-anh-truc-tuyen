@@ -88,4 +88,21 @@ public class SubmitController {
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
+
+    @DeleteMapping(path="/delete/user/{userID}")
+    public ResponseEntity<ApiResponse> deleteSubmitByUserId(@PathVariable String userID)
+    {
+
+        try{
+            ApiResponse response=submitService.deleteSubmitByUserId(userID);
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
+
+        catch(Exception e){
+            ApiResponse errorResponse = new ApiResponse();
+            errorResponse.setMessage("Error: " + e.getMessage());
+            errorResponse.setStatus(500);
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
 }

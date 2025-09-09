@@ -109,6 +109,7 @@ public class SubmitTest {
         submitAnswers.add(answer1);
 
         submitRequest.setAnswers(submitAnswers);
+        
 
     }
 
@@ -616,33 +617,55 @@ public class SubmitTest {
         assertEquals(size_Submit1, size_Submit2);
         assertEquals(size_Answer1, size_Answer2);
     }
-
-
     
-    // @Test
-    // void SUBMIT_30_add_Submit_Non_Existed_UserId(){
+    @Test
+    void SUBMIT_30_delete_Submit_By_User_id_success(){
+        int size1=submitRepository.findAll().size();
+        int size_answers1=answerRepository.findAll().size();
 
-    //     int size_Submit1=submitRepository.findAll().size();
-    //     int size_Answer1=answerRepository.findAll().size();
-
-    //     submitRequest.setUser_id("123");
-    //     ApiResponse response=submitService.saveSubmit(submitRequest);
-    //     assertEquals(404, response.getStatus());
-    //     assertEquals("Can not get user in user service with ID 123", response.getMessage());
-
-    //     int size_Submit2=submitRepository.findAll().size();
-    //     int size_Answer2=answerRepository.findAll().size();
-
-    //     assertEquals(size_Submit1, size_Submit2);
-    //     assertEquals(size_Answer1, size_Answer2);
+        ApiResponse response=submitService.deleteSubmitByUserId("123");
+        List<Submit> check=submitRepository.findByUserId("123");
+        assertEquals(0, check.size());
         
-    // }
+        int size2=submitRepository.findAll().size();
+        int size_answers2=answerRepository.findAll().size();
 
-    // //wait for status in test service
-    // @Test
-    // void SUBMIT_31_add_Submit_Can_Not_Find_Test(){
+        assertEquals(size1-2, size2);
+        assertEquals(size_answers1-2, size_answers2);
+        assertEquals(200, response.getStatus());
+        assertEquals("Deleted all submits for user ID: 123", response.getMessage());
+    }
+
+    @Test
+    void SUBMIT_31_delete_Submit_By_User_id_No_Submit(){
+        int size1=submitRepository.findAll().size();
+        int size_answers1=answerRepository.findAll().size();    
+        ApiResponse response=submitService.deleteSubmitByUserId("hello");
         
-    // }
+        int size2=submitRepository.findAll().size();
+        int size_answers2=answerRepository.findAll().size();
+        assertEquals("No submits found for user ID: hello", response.getMessage());
+        assertEquals(404, response.getStatus());
+
+        assertEquals(size1, size2);
+        assertEquals(size_answers1, size_answers2);
+    }
     
+    @Test
+    void SUBMIT_32_delete_Submit_By_User_id_Null_Empty(){
+
+        int size1=submitRepository.findAll().size();
+        int size_answers1=answerRepository.findAll().size();    
+        ApiResponse response=submitService.deleteSubmitByUserId("");
+        
+        int size2=submitRepository.findAll().size();
+        int size_answers2=answerRepository.findAll().size();
+        assertEquals("User ID can not be null or empty", response.getMessage());
+        assertEquals(400, response.getStatus());
+
+        assertEquals(size1, size2);
+        assertEquals(size_answers1, size_answers2);
+        
+    }
 
 }

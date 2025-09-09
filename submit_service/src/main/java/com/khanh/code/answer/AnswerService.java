@@ -336,12 +336,13 @@ public class AnswerService {
             String answerFill =(String) userAnswer; 
             String key=question.getKey();
 
-            answerFill=answerFill.trim().toLowerCase();
+            //trim and lower case for both answer and key before comparing
+            String answerFillChange=answerFill.trim().toLowerCase();
             key=key.trim().toLowerCase();
 
             boolean check=false;
             
-            if(answerFill.equals(key)){
+            if(answerFillChange.equals(key)){
                 check=true;
             }
             
@@ -397,7 +398,6 @@ public class AnswerService {
                             List<Integer> answerChoices = (List<Integer>) userAnswer;
         
                             Map<Integer, Boolean> choices = new HashMap<>();
-
                             // if(answerChoices.size() < listKey.size())
                             // {
                             //     for(int i:listKey)
@@ -551,7 +551,6 @@ public class AnswerService {
                         answerRepository.save(answer);;
                         updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());   
                     }
-
                 }
             }
 
@@ -570,7 +569,7 @@ public class AnswerService {
                 for(Answer_Fill answer:answers)
                 {
                     answerFill=answerFill.trim().toLowerCase();
-                    String answered_Before=answer.getAnswer();
+                    String answered_Before=answer.getAnswer().trim().toLowerCase();
 
                     if (answerFill.equals(answered_Before)){
                         answer.setCorrect(true);

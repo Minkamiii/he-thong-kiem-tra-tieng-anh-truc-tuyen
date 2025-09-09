@@ -144,6 +144,38 @@ public class SubmitService {
             return response;
     }
 
+    //delete submits by user id
+    public ApiResponse deleteSubmitByUserId(String userId) {
+        ApiResponse response = new ApiResponse();
+
+        if(answerService.isNullOrBlank(userId)){
+            response.setMessage("User ID can not be null or empty");
+            response.setStatus(400);
+            return response;
+        }
+
+        List<Submit> submits = submitRepository.findByUserId(userId);
+
+        if(submits==null||submits.isEmpty()){
+            response.setMessage("No submits found for user ID: " + userId);
+            response.setStatus(404);
+            return response;
+        }
+            deleteListSubmits(submits);
+            List<Submit> submitCheck = submitRepository.findByUserId(userId);
+
+            if(submitCheck.size()!=0){
+                response.setMessage("Fail to delete test with ID: " + userId);
+                response.setStatus(400);
+                return response;
+            }
+           
+            response.setMessage("Deleted all submits for user ID: " + userId);
+            response.setStatus(200);
+            return response;
+
+    }
+
     //delete submit by id of submit
     public ApiResponse deleteSubmitbyID(String submitId) {
 
@@ -411,7 +443,7 @@ public class SubmitService {
         }
     }
 
-    //call test service
+    // call test service
     // HttpHeaders headers = new HttpHeaders();
     // headers.setContentType(MediaType.APPLICATION_JSON);
     public TestResponse testAPI(String id_test,List<Integer>tasks)
@@ -448,7 +480,6 @@ public class SubmitService {
         }
         return submitDTOs;
     }
-
 
     public Question findById(String id, List<Question>questions)
     {
