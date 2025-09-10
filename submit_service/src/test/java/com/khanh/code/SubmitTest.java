@@ -63,10 +63,12 @@ public class SubmitTest {
         Submit_Listening test_Listening= new Submit_Listening(
             "123","456",
             Submit.Type.LISTENING,tasks,submit_day,0);
+            test_Listening.setKind(Submit.Kind.EXAM);
 
         Submit_Reading test_Reading= new Submit_Reading(
             "123","457",
             Submit.Type.READING,tasks,submit_day,0);
+            test_Reading.setKind(Submit.Kind.PRACTICE);
 
         //create 2 answers
         Answer_Fill test_Fill=new Answer_Fill("123", 
@@ -100,6 +102,7 @@ public class SubmitTest {
         submitRequest.setTasks(tasks);
         submitRequest.setUser_id("a68feeb1-14f5-435d-bb44-09700b3560fe");
         submitRequest.setTest_id("68b1ad6fda6d33637440c21c");
+        submitRequest.setKind("exam");
         
         List<AnswerRequest> submitAnswers=new LinkedList<>();
         //create answerRequest
@@ -110,7 +113,6 @@ public class SubmitTest {
 
         submitRequest.setAnswers(submitAnswers);
         
-
     }
 
     //Tests
@@ -148,11 +150,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_04_get_Submit_Of_User_Of_Test_Exisited(){
 
-        SubmitRequest submitRequest=new SubmitRequest();
-        submitRequest.setTest_id("456");
-        submitRequest.setUser_id("123");
-
-        ApiResponse response=submitService.getSubmitByUserAndTest(submitRequest);
+        ApiResponse response=submitService.getSubmitByUserAndTest("123","456");
         Object data= response.getData();
         assertInstanceOf(List.class, data);
         List<SubmitDTO> data1=(List<SubmitDTO>) response.getData();
@@ -167,11 +165,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_05_get_Submit_Of_User_Of_Test_NullOrEmpty_IdUser(){
 
-        SubmitRequest submitRequest=new SubmitRequest();
-        submitRequest.setTest_id("456");
-        submitRequest.setUser_id("");
-
-        ApiResponse response=submitService.getSubmitByUserAndTest(submitRequest);
+        ApiResponse response=submitService.getSubmitByUserAndTest("","456");
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -182,11 +176,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_06_get_Submit_Of_User_Of_Test_NullOrEmpty_IdTest(){
 
-        SubmitRequest submitRequest=new SubmitRequest();
-        submitRequest.setTest_id("");
-        submitRequest.setUser_id("123");
-
-        ApiResponse response=submitService.getSubmitByUserAndTest(submitRequest);
+        ApiResponse response=submitService.getSubmitByUserAndTest("123","");
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -196,11 +186,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_07_get_Submit_Of_User_Of_Test_NullOrEmpty_Both(){
 
-        SubmitRequest submitRequest=new SubmitRequest();
-        submitRequest.setTest_id(null);
-        submitRequest.setUser_id(null);
-
-        ApiResponse response=submitService.getSubmitByUserAndTest(submitRequest);
+        ApiResponse response=submitService.getSubmitByUserAndTest(null,null);
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -209,12 +195,8 @@ public class SubmitTest {
 
     @Test
     void SUBMIT_08_get_Submit_Of_User_Of_Test_NonExisited(){
-
-        SubmitRequest submitRequest=new SubmitRequest();
-        submitRequest.setTest_id("457");
-        submitRequest.setUser_id("124");
-
-        ApiResponse response=submitService.getSubmitByUserAndTest(submitRequest);
+        
+        ApiResponse response=submitService.getSubmitByUserAndTest("124","457");
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());

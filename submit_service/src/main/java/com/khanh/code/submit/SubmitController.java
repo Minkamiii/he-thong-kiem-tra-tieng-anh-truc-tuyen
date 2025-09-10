@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.khanh.code.api_response.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @Controller
 //@CrossOrigin(origins = "http://localhost:3000")
@@ -48,11 +50,12 @@ public class SubmitController {
         }
     }
 
-    
-    @PostMapping(path="/user/test")
-    public ResponseEntity<ApiResponse> GetByUserAndTestID(@RequestBody SubmitRequest submitRequest) {
-         try {
-            ApiResponse response = submitService.getSubmitByUserAndTest(submitRequest);
+    @GetMapping(path="/user/test")
+    public ResponseEntity<ApiResponse> GetByUserAndTestID(
+        @RequestParam String userID,
+        @RequestParam String testID) {
+        try {
+            ApiResponse response = submitService.getSubmitByUserAndTest(userID, testID);
             return ResponseEntity.status(response.getStatus()).body(response);
         } catch (Exception e) {
             ApiResponse errorResponse = new ApiResponse();
@@ -61,7 +64,7 @@ public class SubmitController {
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
-    
+        
     @DeleteMapping(path="/delete/test/{testID}")
     public ResponseEntity<ApiResponse> deleteSubmitById(@PathVariable String testID) {
         try {

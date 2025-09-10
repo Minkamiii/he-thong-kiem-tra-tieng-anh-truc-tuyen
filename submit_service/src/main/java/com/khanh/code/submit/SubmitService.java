@@ -64,11 +64,8 @@ public class SubmitService {
     }
 
     //get submit by user ID and test ID
-    public ApiResponse getSubmitByUserAndTest(SubmitRequest submitRequest)
+    public ApiResponse getSubmitByUserAndTest(String id_user,String id_test)
     {
-
-        String id_test=submitRequest.getTest_id();
-        String id_user=submitRequest.getUser_id();
 
         if(answerService.isNullOrBlank(id_test) && answerService.isNullOrBlank(id_user)){
             ApiResponse response = new ApiResponse();

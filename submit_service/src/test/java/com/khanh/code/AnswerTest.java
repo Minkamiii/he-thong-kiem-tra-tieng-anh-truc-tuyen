@@ -32,6 +32,7 @@ import com.khanh.code.api_response.ApiResponse;
 import com.khanh.code.api_response.Question;
 import com.khanh.code.submit.Submit;
 import com.khanh.code.submit.SubmitRepository;
+import com.khanh.code.submit.SubmitRequest;
 import com.khanh.code.submit.SubmitService;
 import com.khanh.code.submit.Submit_Reading;
 import com.khanh.code.submit.Submit_Writing;
@@ -345,7 +346,7 @@ public class AnswerTest {
         Answer_Fill answer=(Answer_Fill) answer_Return;
         
         assertEquals(answer.getSubmit().getId(), test_Reading.getId());
-        assertEquals(answer.getAnswer(), "hello");
+        assertEquals(answer.getAnswer(), "Hello");
         assertEquals(answer.getType(), Answer.Type.FILL);
         assertEquals(answer.getId_question(), question_Fill.get_id());
         assertTrue(answer.isCorrect());
@@ -470,6 +471,7 @@ public class AnswerTest {
         assertEquals(answer.getId_question(), question_Choice.get_id());
         assertEquals(answer.getAnswer().size(),question_Choice.getKeys().size());
         assertEquals(question_Choice.getKeys().size(), answer.getNumber_of_requiremient_to_answer());
+
     }
 
     @Test
@@ -521,6 +523,138 @@ public class AnswerTest {
         assertEquals(answer.getNumber_of_requiremient_to_answer(), keys.size());
     }
 
-    
+    //update answer
+    @Test
+    void ANSWER_034_Update_Answer_Existed_Fill_Success(){
+
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("123");
+        answerRequest.setAnswer("Hi");
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Fill answer=answerRepository.findFillAnswersByQuestionId("123").get(0);
+        assertEquals("Hello", answer.getAnswer());
+        assertFalse(answer.isCorrect());
+
+    }
+
+    @Test
+    void ANSWER_035_Update_Answer_Existed_Fill_Wrong_Type_NewAnswer(){
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("123");
+        LinkedList<Integer> newAnswer=new LinkedList<>();
+        newAnswer.add(1);
+        answerRequest.setAnswer(newAnswer);
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Fill answer=answerRepository.findFillAnswersByQuestionId("123").get(0);
+        assertEquals("Hello", answer.getAnswer());
+        assertTrue(answer.isCorrect());
+    }
+
+    @Test
+    void ANSWER_036_Update_Answer_Existed_Fill_Null_Blank_NewAnswer(){
+
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("123");
+        
+        answerRequest.setAnswer(" ");
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Fill answer=answerRepository.findFillAnswersByQuestionId("123").get(0);
+        assertEquals("Hello", answer.getAnswer());
+        assertTrue(answer.isCorrect());
+    }
+
+    @Test
+    void ANSWER_037_Update_Answer_Existed_Choice_Null_Blank_NewAnswer(){
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("124");
+        
+        answerRequest.setAnswer(new LinkedList<Integer>());
+
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
+        assertEquals(1, answer.getAnswer().size());
+        assertEquals(answer.getAnswer().get(1), true);
+    }
+
+    @Test
+    void ANSWER_038_Update_Answer_Existed_Choice_Wrong_Type_NewAnswer(){
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("124");
+        
+        answerRequest.setAnswer("hello");
+
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
+        assertEquals(1, answer.getAnswer().size());
+        assertEquals(answer.getAnswer().get(1), true);
+    }
+
+    @Test
+    void ANSWER_039_Update_Answer_Existed_Choice_Success(){
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("124");
+        LinkedList<Integer> newAnswer=new LinkedList<Integer>();
+        newAnswer.add(2);
+        answerRequest.setAnswer(newAnswer);
+
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
+        assertEquals(1, answer.getAnswer().size());
+        assertEquals(answer.getAnswer().get(1), false);
+    }
 
 }

@@ -278,7 +278,7 @@ public class AnswerService {
     //check null or blank
     public boolean isNullOrBlank(String a){
         if(a==null) return true;
-        else if(a.equals("")) return true;
+        else if(a.isBlank()) return true;
         return false;
     }
 
@@ -502,10 +502,18 @@ public class AnswerService {
                 continue;
             }
 
+            if(newAnswer==null){
+                continue;
+            }
+
             if(newAnswer instanceof List<?>)
             {
                 boolean check=true;
                 List<?> answerCheck = (List<?>) newAnswer;
+
+                if(answerCheck.isEmpty()){
+                    continue;
+                }
 
                 for(Object item : answerCheck) {
                     if(!(item instanceof Integer)) {
@@ -513,7 +521,6 @@ public class AnswerService {
                         break;
                     }
                 }
-
                 //wrong type in list => skip (int but send list has other type)
                 if (!check) 
                 {
@@ -556,7 +563,13 @@ public class AnswerService {
 
             else if (newAnswer instanceof String)
             {
+                
                 String answerFill=(String) newAnswer;
+
+                if(answerFill.isBlank())
+                {
+                    continue;
+                }
 
                 List<Answer_Fill> answers= answerRepository.findFillAnswersByQuestionId(questionId);
                 
