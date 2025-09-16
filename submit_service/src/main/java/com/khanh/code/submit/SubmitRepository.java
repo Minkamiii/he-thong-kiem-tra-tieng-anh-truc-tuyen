@@ -38,5 +38,8 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
     @Query("SELECT s FROM Submit_Reading s WHERE s.id = ?1")
     Submit_Reading findReadingById(String id);
 
+    @Query("SELECT s FROM Submit_Writing s WHERE s.id = ?1")
+    Submit_Writing findWritingById(String id);
+
 }
     

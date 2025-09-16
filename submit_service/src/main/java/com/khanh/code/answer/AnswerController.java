@@ -19,12 +19,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
 @Controller
+//@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping(path = "/api")
 @Validated
-
 public class AnswerController {
     @Autowired
     private AnswerService answerService;

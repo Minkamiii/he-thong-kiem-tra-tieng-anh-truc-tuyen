@@ -15,6 +15,7 @@ import com.khanh.code.submit.SubmitRepository;
 import com.khanh.code.submit.SubmitRequest;
 import com.khanh.code.submit.Submit_Listening;
 import com.khanh.code.submit.Submit_Reading;
+import com.khanh.code.submit.Submit_Writing;
 
 
 @Service
@@ -93,7 +94,7 @@ public class AnswerService {
         for (Answer answer : answers) {
             Submit submit=answer.getSubmit();
                 submit.getAnswers().remove(answer);
-                submitRepository.save(submit);
+                //submitRepository.save(submit);
                 updateNumberOfCorrectAndTotalAnswers(submit); 
         }
     }
@@ -174,7 +175,7 @@ public class AnswerService {
     Submit submit=answer.getSubmit();
 
     submit.getAnswers().remove(answer);
-    submitRepository.save(submit);
+    //submitRepository.save(submit);
     updateNumberOfCorrectAndTotalAnswers(submit);
 
     boolean stillExist = answerRepository.existsById(answerID);
@@ -264,14 +265,14 @@ public class AnswerService {
 
         else if (submit.getType()==Submit.Type.WRITING) {
 
-            Submit submit_Writing= submitRepository.findById(submit.getId()).orElse(null);
+            Submit_Writing submit_Writing= submitRepository.findWritingById(submit.getId());
 
             int requirements=submit.calculateTotalRequirementToAnswer(submit_Writing);
-            submit.setTotal_Requirement_to_answer(requirements);
+            submit_Writing.setTotal_Requirement_to_answer(requirements);
 
-            submit.setNum_of_question_to_answer();
+            submit_Writing.setNum_of_question_to_answer();
 
-            submitRepository.save(submit);
+            submitRepository.save(submit_Writing);
         }
     }
 
@@ -337,14 +338,8 @@ public class AnswerService {
             String key=question.getKey();
 
             //trim and lower case for both answer and key before comparing
-            String answerFillChange=answerFill.trim().toLowerCase();
-            key=key.trim().toLowerCase();
 
-            boolean check=false;
-            
-            if(answerFillChange.equals(key)){
-                check=true;
-            }
+            boolean check=checkAnswer(answerFill, key);
             
             answer = new Answer_Fill(id_question, submit,answer_type,check, answerFill);
             answer.setNumber_of_requiremient_to_answer(1);
@@ -362,7 +357,6 @@ public class AnswerService {
 
             boolean check_All_int=true;
 
-            
             List<Integer> listKey=question.getKeys();
 
             if(userAnswer instanceof List<?>)
@@ -426,10 +420,8 @@ public class AnswerService {
                             answer = new Answer_Choice(id_question, submit,answer_type, choices);
                             answer.setNumber_of_requiremient_to_answer(listKey.size());
                             // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
-                            // ((Answer_Choice) answer).setCorrect(checkAllChoices);
-                           
+                            // ((Answer_Choice) answer).setCorrect(checkAllChoices);       
                         }
-
                         else {
                             response.setMessage("List integer must be sent for choice question");
                             response.setStatus(400);
@@ -553,10 +545,12 @@ public class AnswerService {
                                 chosen_Before.put(key, false);
                             }
                         }
+
                         answer.setAnswer(chosen_Before);
                         answer.setNumber_of_requiremient_to_answer(answerChoices.size());
-                        answerRepository.save(answer);;
-                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());   
+
+                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());  
+                        answerRepository.save(answer); 
                     }
                 }
             }
@@ -564,9 +558,9 @@ public class AnswerService {
             else if (newAnswer instanceof String)
             {
                 
-                String answerFill=(String) newAnswer;
+                String keyFill=(String) newAnswer;
 
-                if(answerFill.isBlank())
+                if(keyFill.isBlank())
                 {
                     continue;
                 }
@@ -581,21 +575,11 @@ public class AnswerService {
 
                 for(Answer_Fill answer:answers)
                 {
-                    answerFill=answerFill.trim().toLowerCase();
-                    String answered_Before=answer.getAnswer().trim().toLowerCase();
+                    String answered_Before= answer.getAnswer();
+                    answer.setCorrect(checkAnswer(answered_Before,keyFill));
 
-                    if (answerFill.equals(answered_Before)){
-                        answer.setCorrect(true);
-                        answerRepository.save(answer);
-                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
-                    }
-
-                    else
-                    {
-                        answer.setCorrect(false);
-                        answerRepository.save(answer);
-                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
-                    }
+                    updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
+                    answerRepository.save(answer);
                 }
             }
 
@@ -609,4 +593,64 @@ public class AnswerService {
         response.setStatus(200);
         return response;
     }
+
+    //generate all possible keys for fill question
+    public List<String> allPossibleKey(List<List<String>> optional) {
+        List<String> results = new LinkedList<>();
+        results.add(""); // start with empty string
+
+        for (int i = 0; i < optional.size(); i++) {
+            List<String> current = optional.get(i);
+            List<String> newResults = new LinkedList<>();
+
+            for (String result : results) {
+                for (String option : current) {
+                    // build new combination and trim to avoid leading/trailing spaces
+                    newResults.add((result + " " + option).trim());
+                }
+            }
+            results = newResults;
+        }
+        return results;
+    }
+
+    //generate all possible keys from a key string
+    public List<String> generateAllCombinations(String key) {
+        key = key.toLowerCase().trim();
+        List<List<String>> optional = new LinkedList<>();
+        String[] words = key.split(" ");
+
+        for (String word : words) {
+            List<String> group = new LinkedList<>();
+            String[] parts = word.split("/");
+
+            for (String part : parts) {
+                if(part.contains("(") && part.contains(")")) {
+                    String with = part.replaceAll("[()]", "");      
+                    String without = part.replaceAll("\\(.*?\\)", "");
+                    group.add(with);
+                    group.add(without);
+                } else {
+                    group.add(part);
+                }
+            }
+            optional.add(group);
+        }
+        return allPossibleKey(optional);
+    }
+
+    //check answer for fill question
+    public boolean checkAnswer(String userAnswer, String keyFill) {
+        List<String> possibleKeys = generateAllCombinations(keyFill);
+        String check = userAnswer.toLowerCase().trim();
+
+        for (String key : possibleKeys) {
+            if (check.equals(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

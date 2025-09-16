@@ -204,8 +204,12 @@ public class AnswerTest {
     @Test
     void ANSWER_007_Delete_List_Answer(){
         int size1=answerRepository.findAll().size();
+        int size_in_Submit=submitRepository.findById(id_Submit).get().getAnswers().size();
+
         answerService.deleteListAnswer(answers);
         int size2=answerRepository.findAll().size();
+        int size_in_Submit_after=submitRepository.findById(id_Submit).get().getAnswers().size();
+        assertEquals(size_in_Submit-answers.size(), size_in_Submit_after);
         assertEquals(size1-answers.size(), size2);
 
     }
@@ -655,6 +659,23 @@ public class AnswerTest {
         Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
         assertEquals(1, answer.getAnswer().size());
         assertEquals(answer.getAnswer().get(1), false);
+    }
+
+    @Test
+    void ANSWER_040_TestCheckAnwer(){
+
+    assertTrue(answerService.checkAnswer("5 per meter", "5/five (people) per meter(s)"));
+    assertTrue(answerService.checkAnswer("5 per meters", "5/five (people) per meter(s)"));
+    assertTrue(answerService.checkAnswer("five per meter", "5/five (people) per meter(s)"));
+    assertTrue(answerService.checkAnswer("five per meters", "5/five (people) per meter(s)"));
+
+    assertTrue(answerService.checkAnswer("5 people per meter", "5/five (people) per meter(s)"));
+    assertTrue(answerService.checkAnswer("5 people per meters", "5/five (people) per meter(s)"));
+    assertTrue(answerService.checkAnswer("five people per meter", "5/five (people) per meter(s)"));
+    assertTrue(answerService.checkAnswer("five people per meters", "5/five (people) per meter(s)"));
+
+    assertFalse(answerService.checkAnswer("5  per meters", "5/five (people) per meter(s)")); 
+    
     }
 
 }
