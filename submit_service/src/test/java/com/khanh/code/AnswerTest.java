@@ -61,10 +61,6 @@ public class AnswerTest {
     private List<Answer>answers=new LinkedList<>();
     private String id_answer;
 
-    private AnswerRequest answerRequest_String=new AnswerRequest();;
-    private AnswerRequest answerRequest_choice=new AnswerRequest();;
-    private AnswerRequest answerRequest_null=new AnswerRequest();;
-    
     private Question question_Fill=new Question();
     private Question question_Choice=new Question();
     private Question question_Essay=new Question()  ;
@@ -105,12 +101,12 @@ public class AnswerTest {
         test_Reading.getAnswers().add(test_Choice);
         test_Reading.getAnswers().add(test_Fill);
 
-        //update then save 2 sbumits
-        test_Reading.setNum_of_question_to_answer();
-        test_Reading.setNum_of_question_to_answer();  
+        submitRepository.save(test_Reading);
+        submitRepository.save(test_Writing);
 
-        submitRepository.save(test_Reading);
-        submitRepository.save(test_Reading);
+        answerService.updateNumberOfCorrectAndTotalAnswers(test_Reading);
+        answerService.updateNumberOfCorrectAndTotalAnswers(test_Writing);
+
 
         id_Submit=test_Reading.getId();
         id_answer=test_Fill.getId();
@@ -134,14 +130,6 @@ public class AnswerTest {
         question_Essay.set_id("127");
         question_Essay.setType("essay");
 
-        //create answer request when receive for test
-        answerRequest_String.setAnswer("Hello");
-
-        answerRequest_null.setAnswer(null);
-
-        List<Integer> answer_choice=new LinkedList<>();
-        answer_choice.add(1);
-        answerRequest_choice.setAnswer(answer_choice);
     }
 
     @Test
@@ -227,7 +215,7 @@ public class AnswerTest {
         assertEquals(200, response.getStatus());
     }
     @Test
-    void ANSWER_009_Get_Answer_Submit_ID_Question_ID_Non_Existed(){
+    void ANSWER_009_Get_Answer_Submit_ID_Question_ID_Non_ExistedQuestionId(){
         ApiResponse response=answerService.getAnswerInSubmitWithQuestionID(id_Submit,"hello");
 
         Object data=response.getData();
@@ -247,7 +235,7 @@ public class AnswerTest {
     }
 
     @Test
-    void ANSWER_011_Get_Answers_Submit_ID_Question_ID_NullOrEmpty_Both(){
+    void ANSWER_011_Get_Answer_Submit_ID_Question_ID_NullOrEmpty_Both(){
         ApiResponse response=answerService.getAnswerInSubmitWithQuestionID("",null);
 
         Object data=response.getData();
@@ -262,6 +250,8 @@ public class AnswerTest {
         ApiResponse response=answerService.deleteAnswerByID(id_answer);
         int size2=answerRepository.findAll().size();
 
+        Answer a=answerRepository.findById(id_answer).orElse(null);
+        assertNull(a);
         assertEquals(response.getMessage(), "Delete answer successfully");
         assertEquals(response.getStatus(), 200);
         assertEquals(size1-1, size2);
@@ -301,7 +291,7 @@ public class AnswerTest {
     }
 
     @Test
-    void ANSWER_016_Delete_Answer_ID_Non_Existed(){
+    void ANSWER_016_Delete_Answer_QUestion_ID_Non_Existed(){
         int size1=answerRepository.findAll().size();
         ApiResponse response=answerService.deleteAnswerByQuestionID("hello");
         
@@ -312,7 +302,7 @@ public class AnswerTest {
     }
 
     @Test
-    void ANSWER_017_Delete_Answer_ID_NullOrEmpty(){
+    void ANSWER_017_Delete_Answer_QUestion_ID_NullOrEmpty(){
         int size1=answerRepository.findAll().size();
         ApiResponse response=answerService.deleteAnswerByQuestionID(null);
         
@@ -345,7 +335,7 @@ public class AnswerTest {
     @Test
     void ANSWER_021_Create_Answer_Success_Fill()
     {   
-        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Reading,question_Fill);
+        Object answer_Return= answerService.CreateAnswer("Hello", test_Reading,question_Fill);
         assertInstanceOf(Answer_Fill.class, answer_Return);
         Answer_Fill answer=(Answer_Fill) answer_Return;
         
@@ -359,7 +349,7 @@ public class AnswerTest {
     @Test
     void ANSWER_022_Create_Answer_Null_UserAnswer()
     {   
-        Object answer_Return= answerService.CreateAnswer(answerRequest_null, test_Reading,question_Fill);
+        Object answer_Return= answerService.CreateAnswer(null, test_Reading,question_Fill);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -370,7 +360,7 @@ public class AnswerTest {
     @Test
     void ANSWER_023_Create_Answer_Fill_In_Writing()
     {   
-        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Writing,question_Fill);
+        Object answer_Return= answerService.CreateAnswer("Hello", test_Writing,question_Fill);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -381,7 +371,9 @@ public class AnswerTest {
     @Test
     void ANSWER_024_Create_Answer_Choice_In_Writing()
     {   
-        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Writing,question_Choice);
+        List<Integer> answers=new LinkedList<>();
+        answers.add(1);
+        Object answer_Return= answerService.CreateAnswer(answers, test_Writing,question_Choice);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -392,7 +384,7 @@ public class AnswerTest {
     @Test
     void ANSWER_025_Create_Answer_Essay_Not_In_Writing()
     {   
-        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Reading,question_Essay);
+        Object answer_Return= answerService.CreateAnswer("Hello", test_Reading,question_Essay);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -402,7 +394,10 @@ public class AnswerTest {
 
     @Test
     void ANSWER_026_Create_Answer_Wrong_Type_Fill(){
-        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Reading,question_Fill);
+
+        List<Integer> answers=new LinkedList<>();
+        answers.add(1);
+        Object answer_Return= answerService.CreateAnswer(answers, test_Reading,question_Fill);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -413,7 +408,7 @@ public class AnswerTest {
     @Test
     void ANSWER_027_Create_Answer_Wrong_Type_String_For_Choice()
     {
-        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Reading,question_Choice);
+        Object answer_Return= answerService.CreateAnswer("Hello", test_Reading,question_Choice);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -424,12 +419,11 @@ public class AnswerTest {
     @Test
     void ANSWER_028_Create_Answer_Choice_List_Not_Int()
     {
-        AnswerRequest answerRequest_wrong=new AnswerRequest();
+        
         List<String> answer_choice_wrong=new LinkedList<>();
         answer_choice_wrong.add("Hello");
-        answerRequest_wrong.setAnswer(answer_choice_wrong);
-
-        Object answer_Return= answerService.CreateAnswer(answerRequest_wrong, test_Reading,question_Choice);
+       
+        Object answer_Return= answerService.CreateAnswer(answer_choice_wrong, test_Reading,question_Choice);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -440,11 +434,10 @@ public class AnswerTest {
     @Test
     void ANSWER_029_Create_Answer_Choice_Blank_List()
     {
-        AnswerRequest answerRequest_wrong=new AnswerRequest();
+        
         List<Integer> answer_choice_wrong=new LinkedList<>();
-        answerRequest_wrong.setAnswer(answer_choice_wrong);
-
-        Object answer_Return= answerService.CreateAnswer(answerRequest_wrong, test_Reading,question_Choice);
+       
+        Object answer_Return= answerService.CreateAnswer(answer_choice_wrong, test_Reading,question_Choice);
         assertInstanceOf(Answer_Choice.class, answer_Return);
 
         Answer_Choice answer=(Answer_Choice) answer_Return;
@@ -456,7 +449,9 @@ public class AnswerTest {
 
     @Test
     void ANSWER_030_Create_Answer_Wrong_Type_Essay(){
-        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Reading,question_Essay);
+        List<Integer> answers=new LinkedList<>();
+        answers.add(1);
+        Object answer_Return= answerService.CreateAnswer(answers, test_Reading,question_Essay);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
@@ -466,7 +461,10 @@ public class AnswerTest {
 
     @Test
     void ANSWER_031_Create_Answer_Success_Choice(){
-        Object answer_Return= answerService.CreateAnswer(answerRequest_choice, test_Reading,question_Choice);
+
+        List<Integer> answers=new LinkedList<>();
+        answers.add(1);
+        Object answer_Return= answerService.CreateAnswer(answers, test_Reading,question_Choice);
         assertInstanceOf(Answer_Choice.class, answer_Return);
         Answer_Choice answer=(Answer_Choice) answer_Return;
         
@@ -481,7 +479,7 @@ public class AnswerTest {
     @Test
     void ANSWER_032_Create_Answer_Success_Essay(){
         
-        Object answer_Return= answerService.CreateAnswer(answerRequest_String, test_Writing,question_Essay);
+        Object answer_Return= answerService.CreateAnswer("Hello", test_Writing,question_Essay);
         assertInstanceOf(Answer_Essay.class, answer_Return);
         Answer_Essay answer=(Answer_Essay) answer_Return;
         
@@ -493,7 +491,7 @@ public class AnswerTest {
     }
 
     @Test
-    void ANSWER_033_Create_Answer_Blank_List_for_Multi_Choice()
+    void ANSWER_033_Create_Answer_Multi_Choice_Success()
     {
 
         Question question_multi_Choice=new Question();
@@ -509,13 +507,12 @@ public class AnswerTest {
 
         question_multi_Choice.setKeys(keys);
 
-        AnswerRequest answerRequest_multi_choice=new AnswerRequest();
-
         List<Integer> answer_choice=new LinkedList<>();
+        answer_choice.add(1);
+        answer_choice.add(2);
+        answer_choice.add(4);
 
-        answerRequest_multi_choice.setAnswer(answer_choice);
-
-        Object answer_Return= answerService.CreateAnswer(answerRequest_multi_choice, test_Reading,question_multi_Choice);
+        Object answer_Return= answerService.CreateAnswer(answer_choice, test_Reading,question_multi_Choice);
         assertInstanceOf(Answer_Choice.class, answer_Return);
 
         Answer_Choice answer=(Answer_Choice) answer_Return;
@@ -523,8 +520,12 @@ public class AnswerTest {
         assertEquals(answer.getSubmit().getId(), test_Reading.getId());
         assertEquals(answer.getType(), Answer.Type.CHOICE);
         assertEquals(answer.getId_question(), question_multi_Choice.get_id());
-        assertEquals(answer.getAnswer().size(),0);
+        assertEquals(answer.getAnswer().size(),3);
         assertEquals(answer.getNumber_of_requiremient_to_answer(), keys.size());
+
+        assertTrue(answer.getAnswer().get(1));
+        assertTrue(answer.getAnswer().get(2));
+        assertFalse(answer.getAnswer().get(4));
     }
 
     //update answer
@@ -536,7 +537,7 @@ public class AnswerTest {
         AnswerRequest answerRequest=new AnswerRequest();
 
         answerRequest.setId_question("123");
-        answerRequest.setAnswer("Hi");
+        answerRequest.setAnswer("OK");
         answerRequests.add(answerRequest);
         submitRequest.setAnswers(answerRequests);
 
@@ -548,10 +549,15 @@ public class AnswerTest {
         assertEquals("Hello", answer.getAnswer());
         assertFalse(answer.isCorrect());
 
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 1);
+
     }
 
     @Test
-    void ANSWER_035_Update_Answer_Existed_Fill_Wrong_Type_NewAnswer(){
+    void ANSWER_035_Update_Answer_Existed_Fill_Wrong_Type_NewKey(){
         SubmitRequest submitRequest=new SubmitRequest();
         List<AnswerRequest> answerRequests=new LinkedList<>();
         AnswerRequest answerRequest=new AnswerRequest();
@@ -570,10 +576,16 @@ public class AnswerTest {
         Answer_Fill answer=answerRepository.findFillAnswersByQuestionId("123").get(0);
         assertEquals("Hello", answer.getAnswer());
         assertTrue(answer.isCorrect());
+
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 2);
+
     }
 
     @Test
-    void ANSWER_036_Update_Answer_Existed_Fill_Null_Blank_NewAnswer(){
+    void ANSWER_036_Update_Answer_Existed_Fill_Null_Blank_NewKey(){
 
         SubmitRequest submitRequest=new SubmitRequest();
         List<AnswerRequest> answerRequests=new LinkedList<>();
@@ -592,10 +604,16 @@ public class AnswerTest {
         Answer_Fill answer=answerRepository.findFillAnswersByQuestionId("123").get(0);
         assertEquals("Hello", answer.getAnswer());
         assertTrue(answer.isCorrect());
+
+         Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 2);
+
     }
 
     @Test
-    void ANSWER_037_Update_Answer_Existed_Choice_Null_Blank_NewAnswer(){
+    void ANSWER_037_Update_Answer_Existed_Choice_Null_Blank_NewKey(){
         SubmitRequest submitRequest=new SubmitRequest();
         List<AnswerRequest> answerRequests=new LinkedList<>();
         AnswerRequest answerRequest=new AnswerRequest();
@@ -614,10 +632,16 @@ public class AnswerTest {
         Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
         assertEquals(1, answer.getAnswer().size());
         assertEquals(answer.getAnswer().get(1), true);
+
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 2);
+
     }
 
     @Test
-    void ANSWER_038_Update_Answer_Existed_Choice_Wrong_Type_NewAnswer(){
+    void ANSWER_038_Update_Answer_Existed_Choice_Wrong_Type_NewKey(){
         SubmitRequest submitRequest=new SubmitRequest();
         List<AnswerRequest> answerRequests=new LinkedList<>();
         AnswerRequest answerRequest=new AnswerRequest();
@@ -636,6 +660,12 @@ public class AnswerTest {
         Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
         assertEquals(1, answer.getAnswer().size());
         assertEquals(answer.getAnswer().get(1), true);
+
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 2);
+
     }
 
     @Test
@@ -659,6 +689,12 @@ public class AnswerTest {
         Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
         assertEquals(1, answer.getAnswer().size());
         assertEquals(answer.getAnswer().get(1), false);
+
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 1);
+
     }
 
     @Test
@@ -677,5 +713,78 @@ public class AnswerTest {
     assertFalse(answerService.checkAnswer("5  per meters", "5/five (people) per meter(s)")); 
     
     }
+
+    @Test
+    void ANSWER_041_Get_Answer_Submit_ID_Question_ID_Non_ExistedSubmitId(){
+        ApiResponse response=answerService.getAnswerInSubmitWithQuestionID("123","123");
+
+        Object data=response.getData();
+        assertNull(data);
+        assertEquals(response.getMessage(), "Can not find the answer");
+        assertEquals(404, response.getStatus());
+    }
+
+    @Test
+    void ANSWER_042_Get_Answer_Submit_ID_Question_ID_Non_ExistedBoth(){
+        ApiResponse response=answerService.getAnswerInSubmitWithQuestionID("hello","hello");
+
+        Object data=response.getData();
+        assertNull(data);
+        assertEquals(response.getMessage(), "Can not find the answer");
+        assertEquals(404, response.getStatus());
+    }
+
+    @Test
+    void ANSWER_043_Update_Answer_Existed_Choice_List_Not_Int(){
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+        AnswerRequest answerRequest=new AnswerRequest();
+
+        answerRequest.setId_question("124");
+        LinkedList<String> newAnswer=new LinkedList<String>();
+        newAnswer.add("hello");
+        answerRequest.setAnswer(newAnswer);
+
+        answerRequests.add(answerRequest);
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(200, response.getStatus());
+        assertEquals("Answers are updated", response.getMessage());
+
+        Answer_Choice answer=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
+        assertEquals(1, answer.getAnswer().size());
+        assertEquals(answer.getAnswer().get(1), true);
+
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 2);
+    }
+
+    @Test
+    void ANSWER_044_Update_Answer_Empty_AnswerList(){
+        SubmitRequest submitRequest=new SubmitRequest();
+        List<AnswerRequest> answerRequests=new LinkedList<>();
+       
+        submitRequest.setAnswers(answerRequests);
+
+        ApiResponse response=answerService.updateAnswers(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Answer list can not be null or empty", response.getMessage());
+
+        Answer_Choice answer_Choice=answerRepository.findChoiceAnswersByQuestionId("124").get(0);
+        Answer_Fill answer_Fill=answerRepository.findFillAnswersByQuestionId("123").get(0);
+
+        assertEquals(answer_Choice.getAnswer().get(1), true);
+
+        assertTrue(answer_Fill.isCorrect());
+
+        Submit_Reading submit_Reading= submitRepository.findReadingById(id_Submit);
+        assertEquals(2, submit_Reading.getNum_of_question_to_answer());
+
+        assertEquals(submit_Reading.getNumber_of_correct(), 2);
+    }
+
 
 }

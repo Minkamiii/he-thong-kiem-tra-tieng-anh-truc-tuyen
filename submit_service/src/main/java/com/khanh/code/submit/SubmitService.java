@@ -396,7 +396,8 @@ public class SubmitService {
                 }
 
                 //create answer
-                Object answer = answerService.CreateAnswer(answerRequest, submit,question);
+                Object userAnswer= answerRequest.getAnswer();
+                Object answer = answerService.CreateAnswer(userAnswer, submit,question);
 
                 if (answer instanceof ApiResponse) {
                     submitRepository.delete(submit);

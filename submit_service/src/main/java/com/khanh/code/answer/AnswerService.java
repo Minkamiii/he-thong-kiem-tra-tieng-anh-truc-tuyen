@@ -285,14 +285,13 @@ public class AnswerService {
 
     //add answers of a submit
     @SuppressWarnings("unchecked")
-    public Object CreateAnswer(AnswerRequest answerRequest, Submit submit, Question question) {
+    public Object CreateAnswer(Object userAnswer, Submit submit, Question question) {
 
         ApiResponse response=new ApiResponse();
 
         String type = question.getType().toUpperCase();
         String id_question=question.get_id();
         
-
         Answer.Type answer_type;
         Answer answer=new Answer();
 
@@ -307,8 +306,6 @@ public class AnswerService {
             return response;
         }
         
-        Object userAnswer= (Object) answerRequest.getAnswer();
-
         if(userAnswer==null){
             response.setMessage("Answer can not be null");
             response.setStatus(400);
@@ -392,20 +389,7 @@ public class AnswerService {
                             List<Integer> answerChoices = (List<Integer>) userAnswer;
         
                             Map<Integer, Boolean> choices = new HashMap<>();
-                            // if(answerChoices.size() < listKey.size())
-                            // {
-                            //     for(int i:listKey)
-                            //     {
-                            //         if(answerChoices.contains(i))
-                            //         {
-                            //             choices.put(i, true);
-                            //         }
-                            //     }
-                            //     //choices.put(-1, false); 
-                            // }
-
-                            // else
-                            // {
+                            
                                 for(int i:answerChoices)
                                     {
                                         if(!listKey.contains(i)){
@@ -415,8 +399,7 @@ public class AnswerService {
                                         else{
                                             choices.put(i, true);
                                         }
-                                    }
-                            //}    
+                                    }   
                             answer = new Answer_Choice(id_question, submit,answer_type, choices);
                             answer.setNumber_of_requiremient_to_answer(listKey.size());
                             // boolean checkAllChoices = ((Answer_Choice) answer).checkChoices();
@@ -466,7 +449,6 @@ public class AnswerService {
             return response;
         }
         
-        // return answerRepository.save(answer);
         return answer;
     }
 
@@ -548,9 +530,8 @@ public class AnswerService {
 
                         answer.setAnswer(chosen_Before);
                         answer.setNumber_of_requiremient_to_answer(answerChoices.size());
-
-                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());  
                         answerRepository.save(answer); 
+                        updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());  
                     }
                 }
             }
@@ -577,9 +558,8 @@ public class AnswerService {
                 {
                     String answered_Before= answer.getAnswer();
                     answer.setCorrect(checkAnswer(answered_Before,keyFill));
-
-                    updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
                     answerRepository.save(answer);
+                    updateNumberOfCorrectAndTotalAnswers(answer.getSubmit());
                 }
             }
 
