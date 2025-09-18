@@ -451,12 +451,12 @@ public class AnswerTest {
     void ANSWER_030_Create_Answer_Wrong_Type_Essay(){
         List<Integer> answers=new LinkedList<>();
         answers.add(1);
-        Object answer_Return= answerService.CreateAnswer(answers, test_Reading,question_Essay);
+        Object answer_Return= answerService.CreateAnswer(answers, test_Writing,question_Essay);
         assertInstanceOf(ApiResponse.class, answer_Return);
 
         ApiResponse response=(ApiResponse) answer_Return;
         assertEquals(response.getStatus(), 400);
-        assertEquals(response.getMessage(), "Essay question is only for writing test");
+        assertEquals(response.getMessage(), "Essay question must be answered by string");
     }
 
     @Test
