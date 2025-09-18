@@ -95,7 +95,7 @@ public class SubmitService {
 
         if(submits==null||submits.isEmpty()){
             ApiResponse response = new ApiResponse();
-            response.setMessage("This user did not submit anything for test with ID " + id_test);
+            response.setMessage("User with id "+ id_user+ " did not submit anything for test with ID " + id_test);
             response.setStatus(404);
             return response;
         }

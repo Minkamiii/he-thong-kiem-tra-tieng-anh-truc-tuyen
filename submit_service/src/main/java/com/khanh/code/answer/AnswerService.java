@@ -515,6 +515,8 @@ public class AnswerService {
                     {
                         Map<Integer, Boolean> chosen_Before = answer.getAnswer();
 
+                        //different size => fix if key size is not smaller?
+
                         for(int key:chosen_Before.keySet())
                         {
                             if(answerChoices.contains(key))

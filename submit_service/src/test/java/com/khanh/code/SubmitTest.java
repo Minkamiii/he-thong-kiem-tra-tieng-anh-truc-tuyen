@@ -194,13 +194,13 @@ public class SubmitTest {
     }
 
     @Test
-    void SUBMIT_08_get_Submit_Of_User_Of_Test_NonExisited(){
+    void SUBMIT_08_get_Submit_Of_User_Of_Test_NonExisited_UserID(){
         
         ApiResponse response=submitService.getSubmitByUserAndTest("124","457");
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());
-        assertEquals("This user did not submit anything for test with ID 457", response.getMessage());
+        assertEquals("User with id 124 did not submit anything for test with ID 457", response.getMessage());
 
     }
 
@@ -317,7 +317,7 @@ public class SubmitTest {
 
     //Tests for add submit
     @Test
-    void SUBMIT_16_add_Submit_Success(){
+    void SUBMIT_16_add_Submit_Reading_Success(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
@@ -649,5 +649,28 @@ public class SubmitTest {
         assertEquals(size_answers1, size_answers2);
         
     }
+
+    @Test
+    void SUBMIT_33_get_Submit_Of_User_Of_Test_NonExisited_TestID(){
+        
+        ApiResponse response=submitService.getSubmitByUserAndTest("123","459");
+        Object data= response.getData();
+        assertNull(data);
+        assertEquals(404, response.getStatus());
+        assertEquals("User with id 123 did not submit anything for test with ID 459", response.getMessage());
+
+    }
+
+    @Test
+    void SUBMIT_34_get_Submit_Of_User_Of_Test_NonExisited_Both(){
+        
+        ApiResponse response=submitService.getSubmitByUserAndTest("Hello","Hello");
+        Object data= response.getData();
+        assertNull(data);
+        assertEquals(404, response.getStatus());
+        assertEquals("User with id Hello did not submit anything for test with ID Hello", response.getMessage());
+
+    }
+    //submit write and listen success (test 35,36)
 
 }
