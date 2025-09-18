@@ -125,6 +125,7 @@ public class SubmitTest {
         List<SubmitDTO> data1=(List<SubmitDTO>) response.getData();
         assertEquals(data1.size(), 2);
         assertEquals(200, response.getStatus());
+        assertEquals(response.getMessage(), "Get all submits successfully");
     }
 
     @Test
@@ -160,6 +161,10 @@ public class SubmitTest {
 
         assertEquals("456", submit.getId_test());
         assertEquals("123", submit.getId_user());
+        assertEquals("LISTENING", submit.getType());
+        assertEquals("Get all submits successfully", response.getMessage());
+        assertEquals("EXAM", submit.getKind());
+        
     }
 
     @Test
@@ -306,12 +311,15 @@ public class SubmitTest {
     void SUBMIT_15_delete_Submit_List(){
 
         int size1=submitRepository.findAll().size();
+        int size1_answer=answerRepository.findAll().size();
     
         submitService.deleteListSubmits(submits);
 
         int size2=submitRepository.findAll().size();
+        int size2_answer=answerRepository.findAll().size();
 
         assertEquals(size1-submits.size(), size2);
+        assertEquals(size1_answer-2, size2_answer);
      
     }
 
@@ -331,6 +339,19 @@ public class SubmitTest {
 
         assertEquals(size_Submit1+1, size_Submit2);
         assertEquals(size_Answer1+1, size_Answer2);
+
+        Submit submit=submitRepository.findAllOrderDay().get(size_Submit2-1);
+
+        assertEquals(submit.getId_test(), "68b1ad6fda6d33637440c21c");
+        assertEquals(submit.getId_user(), "a68feeb1-14f5-435d-bb44-09700b3560fe");
+        assertEquals(submit.getType().toString(), "READING");
+        assertEquals(submit.getKind().toString(), "EXAM");
+
+        Answer answer= submit.getAnswers().get(0);
+        assertEquals(answer.getType().toString(), "FILL");
+        
+        Answer_Fill answer_Fill=(Answer_Fill) answer;
+        assertEquals("bag", answer_Fill.getAnswer());
     }
 
     @Test

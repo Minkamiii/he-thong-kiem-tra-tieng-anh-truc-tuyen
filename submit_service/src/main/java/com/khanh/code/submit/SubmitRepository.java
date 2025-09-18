@@ -41,5 +41,9 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
     @Query("SELECT s FROM Submit_Writing s WHERE s.id = ?1")
     Submit_Writing findWritingById(String id);
 
+    @Query("SELECT s FROM Submit s ORDER BY s.submit_day ASC")
+    List<Submit> findAllOrderDay(); 
+    
+
 }
     
