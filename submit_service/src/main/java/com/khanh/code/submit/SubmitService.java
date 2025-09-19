@@ -109,6 +109,36 @@ public class SubmitService {
         return response;
     }
 
+    //get all tests that have been done
+     public ApiResponse getAllTestDone(String userID) {
+
+        ApiResponse response = new ApiResponse();
+
+        if(answerService.isNullOrBlank(userID)){
+            response.setMessage("User ID can not be null or empty");
+            response.setStatus(400);
+            return response;
+        }
+
+        List<String> allTest=submitRepository.findDistinctIdTestByUserId(userID);
+
+        if(allTest==null||allTest.isEmpty()){
+            
+            response.setMessage("User with id "+ userID +" has not done any test");
+            response.setStatus(404);
+            return response;
+        }
+
+        else{
+            response.setMessage("Find all test done of user with id "+ userID);
+            response.setStatus(200);
+            response.setData(allTest);
+            return response;
+        }
+
+        
+    }
+
     //delete Submits by test id
     public ApiResponse deleteSubmitByTestId(String testId) {
 

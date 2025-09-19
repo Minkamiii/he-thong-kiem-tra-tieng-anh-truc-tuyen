@@ -692,6 +692,47 @@ public class SubmitTest {
         assertEquals("User with id 124 did not submit anything for test with ID 456", response.getMessage());
 
     }
-    //submit write and listen success (test 35,36)
+    
+    @Test
+    void SUBMIT_35_get_All_Test_BeenDone_Of_User_UserID_Existed(){
+        
+        ApiResponse response=submitService.getAllTestDone("123");
+        Object data= response.getData();
 
+        assertInstanceOf(List.class,data);
+        assertEquals(200, response.getStatus());
+        assertEquals("Find all test done of user with id 123", response.getMessage());
+
+        List<?>data1=(List<?>) data;
+        assertEquals(2, data1.size());
+
+        Object inside=data1.get(0);
+        assertInstanceOf(String.class, inside);
+        assertEquals("457", inside);
+
+    }
+
+    @Test
+    void SUBMIT_36_get_All_Test_BeenDone_Of_User_UserID_Non_Existed(){
+        
+        ApiResponse response=submitService.getAllTestDone("hello");
+        Object data= response.getData();
+
+        assertNull(data);
+        assertEquals(404, response.getStatus());
+        assertEquals("User with id hello has not done any test", response.getMessage());
+    }
+
+    @Test
+    void SUBMIT_37_get_All_Test_BeenDone_Of_User_UserID_NullOrEmpty(){
+        
+        ApiResponse response=submitService.getAllTestDone(null);
+        Object data= response.getData();
+
+        assertNull(data);
+        assertEquals(400, response.getStatus());
+        assertEquals("User ID can not be null or empty", response.getMessage());
+    }
+
+    //submit write and listen success (test 38,39)
 }

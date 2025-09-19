@@ -50,6 +50,20 @@ public class SubmitController {
         }
     }
 
+    @GetMapping(path="/allTest/user/id/{userID}")
+    public ResponseEntity<ApiResponse> getAllTestDoneOfUser(@PathVariable String userID) {
+        
+        ApiResponse response = new ApiResponse();
+        try {
+           response = submitService.getAllTestDone(userID);
+           return ResponseEntity.status(response.getStatus()).body(response);
+        } catch (Exception e) {
+            response.setStatus(500);
+            response.setMessage("Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
     @GetMapping(path="/user/test")
     public ResponseEntity<ApiResponse> GetByUserAndTestID(
         @RequestParam String userID,
