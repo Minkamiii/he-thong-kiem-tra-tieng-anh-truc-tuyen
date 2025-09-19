@@ -45,7 +45,7 @@ public class SubmitService {
             return response;
         }
 
-        List<Submit> submits = submitRepository.findByUserIdOrderBySubmitDayAsc(userId);
+        List<Submit> submits = submitRepository.findByUserIdOrderBySubmitDayDESC(userId);
         //submitRepository.findByUserId(userId);
         
         if(submits == null || submits.isEmpty()) {
@@ -90,7 +90,7 @@ public class SubmitService {
             return response;
         }
 
-        List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayAsc(id_user, id_test);
+        List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayDESC(id_user, id_test);
         //submitRepository.findByUserIdAndTestId(id_user, id_test);
 
         if(submits==null||submits.isEmpty()){

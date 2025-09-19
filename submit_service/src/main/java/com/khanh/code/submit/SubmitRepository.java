@@ -14,11 +14,11 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
     @Query("SELECT s FROM Submit s WHERE s.id_user = ?1")
     List<Submit> findByUserId(String userId);
 
-    @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day ASC")
-    List<Submit> findByUserIdOrderBySubmitDayAsc(String userId);  
+    @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day DESC")
+    List<Submit> findByUserIdOrderBySubmitDayDESC(String userId);  
     
-    @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.id_test = ?2 ORDER BY s.submit_day ASC")
-    List<Submit> findByUserIdAndTestIdBySubmitDayAsc(String userId, String testId);
+    @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.id_test = ?2 ORDER BY s.submit_day DESC")
+    List<Submit> findByUserIdAndTestIdBySubmitDayDESC(String userId, String testId);
 
     @Query("SELECT s FROM Submit s WHERE s.id_test = ?1")
     List<Submit> findByTestId(String testId);
@@ -41,8 +41,8 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
     @Query("SELECT s FROM Submit_Writing s WHERE s.id = ?1")
     Submit_Writing findWritingById(String id);
 
-    @Query("SELECT s FROM Submit s ORDER BY s.submit_day ASC")
-    List<Submit> findAllOrderDay(); 
+    @Query("SELECT s FROM Submit s ORDER BY s.submit_day DESC")
+    List<Submit> findAllOrderDayDESC(); 
     
 
 }

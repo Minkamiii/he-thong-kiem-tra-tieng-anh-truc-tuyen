@@ -340,7 +340,7 @@ public class SubmitTest {
         assertEquals(size_Submit1+1, size_Submit2);
         assertEquals(size_Answer1+1, size_Answer2);
 
-        Submit submit=submitRepository.findAllOrderDay().get(size_Submit2-1);
+        Submit submit=submitRepository.findAllOrderDayDESC().get(0);
 
         assertEquals(submit.getId_test(), "68b1ad6fda6d33637440c21c");
         assertEquals(submit.getId_user(), "a68feeb1-14f5-435d-bb44-09700b3560fe");
