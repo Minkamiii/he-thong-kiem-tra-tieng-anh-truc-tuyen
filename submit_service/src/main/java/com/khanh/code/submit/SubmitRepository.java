@@ -18,6 +18,9 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
     @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day DESC")
     Page<Submit> findByUserIdOrderBySubmitDayDESC(String userId, Pageable pageable);
 
+    @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.type = ?2 ORDER BY s.submit_day DESC")
+    Page<Submit> findByUserIdAndTypeOrderBySubmitDayDesc(String userId, Submit.Type type, Pageable pageable);
+
     @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.id_test = ?2 ORDER BY s.submit_day DESC")
     List<Submit> findByUserIdAndTestIdBySubmitDayDESC(String userId, String testId);
 
@@ -41,6 +44,7 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
 
     // @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day DESC")
     // List<Submit> findByUserIdOrderBySubmitDayDESC(String userId);
+
 
     // @Query("SELECT s FROM Submit_Writing s WHERE s.id_user = ?1")
     // List<Submit_Writing> findWritingSubmissionsByUserId(String userId);

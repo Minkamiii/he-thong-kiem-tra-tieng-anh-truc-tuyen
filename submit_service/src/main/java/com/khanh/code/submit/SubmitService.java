@@ -41,7 +41,7 @@ public class SubmitService {
     }
     
     //get all submits of user
-    public ApiResponse getAllSubmitsOfUser(String userId,int page) {
+    public ApiResponse getAllSubmitsOfUser(String userId,int page,String type) {
         ApiResponse response = new ApiResponse();
 
         if(answerService.isNullOrBlank(userId)){
@@ -50,18 +50,46 @@ public class SubmitService {
             return response;
         }
 
-        Pageable pageable = PageRequest.of(page-1, 12);
-        Page<Submit> submitPage = submitRepository.findByUserIdOrderBySubmitDayDESC(userId, pageable);
-        
-        if (submitPage.isEmpty()) {
-        response.setMessage("This user did not submit any test");
-        response.setStatus(404);
-        return response;
-    }
-        else {
-            
-            List<SubmitDTO> submitDTOs = transferSubmit(submitPage.getContent());
+        if(page<1){
+            response.setMessage("Page number must be greater than 0");
+            response.setStatus(400);
+            return response;
+        }
 
+        Pageable pageable = PageRequest.of(page-1, 12);
+
+        Page<Submit> submitPage;
+
+        if(answerService.isNullOrBlank(type)) {
+            submitPage = submitRepository.findByUserIdOrderBySubmitDayDESC(userId, pageable);
+        } 
+        
+        else {
+            Submit.Type typeTest;
+
+            try {
+                typeTest = Submit.Type.valueOf(type.toUpperCase());
+            } 
+            
+            catch (IllegalArgumentException e) 
+            {
+                response.setMessage("Invalid type: " + type);
+                response.setStatus(400);
+                return response;
+            }
+
+            submitPage = submitRepository.findByUserIdAndTypeOrderBySubmitDayDesc(userId, typeTest, pageable);
+        }
+
+        if (submitPage.isEmpty()) {
+            response.setMessage("This user did not submit any test");
+            response.setStatus(404);
+            return response;
+        }
+
+        else {
+
+            List<SubmitDTO> submitDTOs = transferSubmit(submitPage.getContent());
             Map<String, Object> data = new HashMap<>();
             data.put("submits", submitDTOs);
             data.put("currentPage", submitPage.getNumber());
@@ -416,7 +444,6 @@ public class SubmitService {
                     return response;
                 }
 
-                //Answer checkedAnswer = answerService.getAnswerBySubmitIDandQuestionID(submitId, questionId);
                 boolean answered = answers.stream()
                                         .anyMatch(a -> a.getId_question().equals(questionId));
                 if (answered) 

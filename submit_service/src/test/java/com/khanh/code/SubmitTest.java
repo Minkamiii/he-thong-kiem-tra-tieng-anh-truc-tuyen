@@ -118,7 +118,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_001_get_All_Submits_Of_User_Existed(){
 
-        ApiResponse response=submitService.getAllSubmitsOfUser("123", 1);
+        ApiResponse response=submitService.getAllSubmitsOfUser("123", 1,"READING");
         Object data= response.getData();
         assertInstanceOf(Map.class, data);
         Map<String, Object> data1=(Map<String, Object>) response.getData();
@@ -143,7 +143,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_002_get_All_Submits_Of_User_Non_Existed(){
 
-        ApiResponse response=submitService.getAllSubmitsOfUser("124",1);
+        ApiResponse response=submitService.getAllSubmitsOfUser("124",1,"reading");
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());
@@ -153,7 +153,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_003_get_All_Submits_Of_User_NullOrEmpty_ID(){
 
-        ApiResponse response=submitService.getAllSubmitsOfUser(null,0);
+        ApiResponse response=submitService.getAllSubmitsOfUser(null,1,"reading");
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -161,7 +161,8 @@ public class SubmitTest {
     }
 
     @Test
-    void SUBMIT_004_get_Submit_Of_User_Of_Test_Exisited(){
+    void SUBMIT_004_get_Submit_Of_User_Of_Test_Exisited()
+    {
 
         ApiResponse response=submitService.getSubmitByUserAndTest("123","456");
         Object data= response.getData();
@@ -176,7 +177,7 @@ public class SubmitTest {
         assertEquals("READING", submit.getType());
         assertEquals("Get all submits successfully", response.getMessage());
         assertEquals("PRACTICE", submit.getKind());
-        
+
     }
 
     @Test
@@ -745,6 +746,41 @@ public class SubmitTest {
         assertNull(data);
         assertEquals(400, response.getStatus());
         assertEquals("User ID can not be null or empty", response.getMessage());
+    }
+
+    @Test
+    void SUBMIT_038_get_All_Submits_Of_User_Existed_NoSpecificType(){
+
+        ApiResponse response=submitService.getAllSubmitsOfUser("123",1,"");
+        Object data= response.getData();
+        assertInstanceOf(Map.class, data);
+        Map<String, Object> data1=(Map<String, Object>) response.getData();
+        
+        List<?> data2=(List<?>) data1.get("submits");
+        assertInstanceOf(List.class, data2);
+
+        assertInstanceOf(SubmitDTO.class, data2.get(0));
+        List<SubmitDTO> data3=(List<SubmitDTO>) data1.get("submits");
+        assertEquals(data3.size(), 1);
+        
+        SubmitDTO submit=data3.get(0);
+        assertEquals("456", submit.getId_test());
+        assertEquals("123", submit.getId_user());
+        assertEquals("READING", submit.getType());
+        assertEquals("PRACTICE", submit.getKind());  
+
+        assertEquals(200, response.getStatus());
+        assertEquals(response.getMessage(), "Get all submits successfully");
+    }
+
+    @Test
+    void SUBMIT_039_get_All_Submits_Of_User_Existed_TypeNotExist(){
+
+        ApiResponse response=submitService.getAllSubmitsOfUser("124",1,"hello");
+        Object data= response.getData();
+        assertNull(data);
+        assertEquals(400, response.getStatus());
+        assertEquals(response.getMessage(), "Invalid type: hello" );
     }
 
     //submit write and listen success (test 38,39)
