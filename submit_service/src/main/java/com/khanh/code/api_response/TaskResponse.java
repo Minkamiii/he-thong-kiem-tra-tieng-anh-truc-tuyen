@@ -10,7 +10,7 @@ public class TaskResponse {
         return sections;
     }
 
-    public void setSessions(List<SectionsResponse> sessions) {
-        this.sections = sessions;
+    public void setSections(List<SectionsResponse> sections) {
+        this.sections =sections;
     }
 }

@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 public interface AnswerRepository extends JpaRepository<Answer, String> {
 
-
     @Query("SELECT a FROM Answer a WHERE a.id_question = ?1")
     List<Answer> findByQuestionId(String questionId);
     
@@ -35,7 +34,6 @@ public interface AnswerRepository extends JpaRepository<Answer, String> {
     @Query("SELECT a FROM Answer_Fill a WHERE a.submit.id = ?1")
     List<Answer_Fill> findFillAnswersBySubmitId(String submitId);
 
-    //Check gui 2 lan 1 mot cau hoi trong cung 1 de thi
     @Query("SELECT a from Answer a where a.submit.id = ?1 and a.id_question = ?2")
     Answer findBySubmitIdAndQuestionId(String submitId, String questionId);
 }

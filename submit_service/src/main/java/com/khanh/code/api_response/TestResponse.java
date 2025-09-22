@@ -7,14 +7,6 @@ public class TestResponse
 
     private String testType;
     private List<TaskResponse> tasks;
-
-    public String getTestType() {
-        return testType;
-    }
-
-    public void setType(String testType) {
-        this.testType = testType;
-    }
     
     public List<TaskResponse> getTasks() {
         return tasks;
@@ -22,6 +14,14 @@ public class TestResponse
 
     public void setTasks(List<TaskResponse> tasks) {
         this.tasks = tasks;
+    }
+
+    public String getTestType() {
+        return testType;
+    }
+
+    public void setTestType(String testType) {
+        this.testType = testType;
     }
 
 }

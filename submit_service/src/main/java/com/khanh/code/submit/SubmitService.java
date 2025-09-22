@@ -1,10 +1,15 @@
 package com.khanh.code.submit;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,7 +41,7 @@ public class SubmitService {
     }
     
     //get all submits of user
-    public ApiResponse getAllSubmitsOfUser(String userId) {
+    public ApiResponse getAllSubmitsOfUser(String userId,int page) {
         ApiResponse response = new ApiResponse();
 
         if(answerService.isNullOrBlank(userId)){
@@ -45,20 +50,28 @@ public class SubmitService {
             return response;
         }
 
-        List<Submit> submits = submitRepository.findByUserIdOrderBySubmitDayDESC(userId);
-        //submitRepository.findByUserId(userId);
+        Pageable pageable = PageRequest.of(page-1, 12);
+        Page<Submit> submitPage = submitRepository.findByUserIdOrderBySubmitDayDESC(userId, pageable);
         
-        if(submits == null || submits.isEmpty()) {
-            response.setMessage("This user did not submit any test" );
-            response.setStatus(404);
-            return response;
-        }
+        if (submitPage.isEmpty()) {
+        response.setMessage("This user did not submit any test");
+        response.setStatus(404);
+        return response;
+    }
         else {
             
-            List<SubmitDTO> submitDTOs = transferSubmit(submits);
+            List<SubmitDTO> submitDTOs = transferSubmit(submitPage.getContent());
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("submits", submitDTOs);
+            data.put("currentPage", submitPage.getNumber());
+            data.put("pageSize", submitPage.getSize());
+            data.put("totalItems", submitPage.getTotalElements());
+            data.put("totalPages", submitPage.getTotalPages());
+
             response.setMessage("Get all submits successfully");
             response.setStatus(200);
-            response.setData(submitDTOs);
+            response.setData(data);
             return response;
         }
     }
@@ -135,7 +148,6 @@ public class SubmitService {
             response.setData(allTest);
             return response;
         }
-
         
     }
 
@@ -293,16 +305,14 @@ public class SubmitService {
         }
 
         TestResponse testResponse=testAPI(test_id, tasks);
-
+        
         if(testResponse==null){
             response.setMessage("Can not find test in test service with ID "+test_id);
             response.setStatus(404);
             return response;
         }
-
+    
         String type=testResponse.getTestType().toUpperCase();
-
-        //System.out.println(type);
 
         try {
             submitType = Submit.Type.valueOf(type);
@@ -353,9 +363,9 @@ public class SubmitService {
 
         submit.setKind(testKind);
 
-        //submit.setTasks(tasks);
-        submitRepository.save(submit);
-        String submitId = submit.getId();
+        submit.setTasks(tasks);
+        // submitRepository.save(submit);
+        // String submitId = submit.getId();
         
         List<Answer> answers = submit.getAnswers();
         List<AnswerRequest> answerRequests=request.getAnswers();
@@ -372,11 +382,12 @@ public class SubmitService {
         {
             //get all question inside 
             List<Question> questions=new LinkedList<>();
+            System.out.println(testResponse.getTasks());
 
             List<TaskResponse> taskResponses=testResponse.getTasks();
 
             for(TaskResponse taskResponse :taskResponses){
-
+               
                 List<SectionsResponse> sectionResponses=taskResponse.getSections();
 
                 for(SectionsResponse sectionResponse: sectionResponses){
@@ -405,9 +416,10 @@ public class SubmitService {
                     return response;
                 }
 
-                Answer checkedAnswer = answerService.getAnswerBySubmitIDandQuestionID(submitId, questionId);
-
-                if (checkedAnswer != null) 
+                //Answer checkedAnswer = answerService.getAnswerBySubmitIDandQuestionID(submitId, questionId);
+                boolean answered = answers.stream()
+                                        .anyMatch(a -> a.getId_question().equals(questionId));
+                if (answered) 
                 {
                     submitRepository.delete(submit);
                     response.setMessage("Answer for question with ID " + questionId + " already exists.");
@@ -420,7 +432,7 @@ public class SubmitService {
                 if(question==null)
                 {
                     submitRepository.delete(submit);
-                    response.setMessage("Send answer to non-exited question with ID "+questionId);
+                    response.setMessage("Send answer to non-exited question with ID "+ questionId);
                     response.setStatus(400);
                     return response;
                 }
@@ -436,10 +448,9 @@ public class SubmitService {
                 
                 answers.add((Answer) answer);
             }
-
-        submitRepository.save(submit);
+            submitRepository.save(submit);
     }
-
+        String submitId = submit.getId();
         Submit savedSubmit = submitRepository.findById(submitId).orElse(null);
         
         if(savedSubmit != null) {
@@ -476,7 +487,7 @@ public class SubmitService {
     // headers.setContentType(MediaType.APPLICATION_JSON);
     public TestResponse testAPI(String id_test,List<Integer>tasks)
     {
-        String baseUrl = "http://[::1]:8000/api/test/" + id_test + "/questions";
+        String baseUrl = "http://[::1]:8000/api/test/" + id_test+"/questions";
 
     
         String tasksParam = tasks.stream()

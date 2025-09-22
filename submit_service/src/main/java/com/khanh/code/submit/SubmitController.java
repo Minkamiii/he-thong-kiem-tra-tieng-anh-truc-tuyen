@@ -37,11 +37,12 @@ public class SubmitController {
     }
     
     @GetMapping(path="/user/id/{userID}")
-    public ResponseEntity<ApiResponse> getSubmitsOfUser(@PathVariable String userID) {
-        
+    public ResponseEntity<ApiResponse> getSubmitsOfUser(
+        @PathVariable String userID,
+        @RequestParam(required = false, defaultValue = "1") Integer page){
         ApiResponse response = new ApiResponse();
         try {
-           response = submitService.getAllSubmitsOfUser(userID);
+           response = submitService.getAllSubmitsOfUser(userID,page);
            return ResponseEntity.status(response.getStatus()).body(response);
         } catch (Exception e) {
             response.setStatus(500);
@@ -49,6 +50,8 @@ public class SubmitController {
             return ResponseEntity.status(500).body(response);
         }
     }
+
+    
 
     @GetMapping(path="/allTest/user/id/{userID}")
     public ResponseEntity<ApiResponse> getAllTestDoneOfUser(@PathVariable String userID) {
