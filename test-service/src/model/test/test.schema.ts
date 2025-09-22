@@ -23,6 +23,12 @@ export class Test{
     // })
     // type: TestType;
 
+    @Prop({
+        type: String,
+        required: true,
+    })
+    testName: string;
+
 }
 
 export const TestSchema = SchemaFactory.createForClass(Test);

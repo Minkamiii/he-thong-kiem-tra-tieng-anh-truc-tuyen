@@ -14,7 +14,6 @@ import { QuestionService } from './service/question.service';
 import { ConfigurationService } from './service/config.service';
 import { TestController } from './app.controller';
 import { CacheService } from './service/cache.service';
-import { RedisModule } from '@nestjs-modules/ioredis';
 import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({

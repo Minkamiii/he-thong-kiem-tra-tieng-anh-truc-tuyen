@@ -1,14 +1,18 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateTestDTO } from 'src/dto/test/create/create-test.dto';
+import { CreateTestDTO, TestTaskDTO, TestTaskSectionDTO, TestTaskSectionQuestionDTO } from 'src/dto/test/create/create-test.dto';
 import { UpdateTestDTO } from 'src/dto/test/update/update-test.dto';
 import { Test, TestDocument, TestType } from 'src/model/test/test.schema';
 import { QuestionService } from './question.service';
 import { UpdateQuestionDTO } from 'src/dto/question/update/update-question.dto';
 import { CacheService } from './cache.service';
-import { GetAllQuestionByTestIDDTO } from 'src/dto/question/get/get-all-question.dto';
 import { QuestionType } from 'src/model/question/question.schema';
+import * as xlsx from "xlsx";
+import * as fs from "fs";
+import { ChoiceItem } from 'src/model/question/choiceQuestion.schema';
+import { CreateQuestionDTO } from 'src/dto/question/create/create-question.dto';
+import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 
 @Injectable()
 export class TestService {
@@ -207,7 +211,7 @@ export class TestService {
             throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND)
         }
 
-        const questionUpdates: {id: string, updateQuestionDTO: UpdateQuestionDTO}[] = [];
+        const questionUpdates: UpdateQuestionDTO[] = [];
         
         for(const task of updateTestDTO.tasks){
             for(const section of task.sections){
@@ -219,22 +223,12 @@ export class TestService {
                     if(updateTestDTO.type !== TestType.WRITING && question.question.type === QuestionType.ESSAY)
                         throw new HttpException(`${updateTestDTO.type} test can't have essay question`, HttpStatus.BAD_REQUEST)
 
-                    questionUpdates.push({
-                        id: question.question._id,
-                        updateQuestionDTO: question.question
-                    })
+                    questionUpdates.push(question.question)
                 }
             }
         }
 
-        try{
-            await this.questionService.bulkUpdateQuestions(questionUpdates); 
-        }
-        catch(err){
-            throw new Error(
-                `Bulk update questions failed: ${err.message|| err}`
-            )
-        }
+        const updatedQuestion = await this.questionService.bulkUpdateQuestions(questionUpdates);
 
         const updatedTasks: any[] = updateTestDTO.tasks.map((task) => {
             const updatedSections = task.sections.map((section) => {
@@ -254,6 +248,7 @@ export class TestService {
         foundTest.set({
             type: updateTestDTO.type,
             tasks: updatedTasks,
+            testName: updateTestDTO.testName
         })
 
         await this.cacheService.del(`test:${id}`); //Xóa cache cũ
@@ -294,4 +289,270 @@ export class TestService {
 
         return returnData;
     }
+
+    convertToCreateTestDTO(
+        data: xlsx.WorkBook | GoogleSpreadsheet, 
+        testName: string,
+        taskSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
+        sectionSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
+        questionSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
+        maxTaskRowCount: number, 
+        maxTaskColumnCount: number, 
+        maxSectionRowCount: number, 
+        maxSectionColumnCount: number, 
+        maxQuestionRowCount: number, 
+        maxQuestionColumnCount: number,
+        taskSheetStartRow: number,
+        taskSheetStartColumn: number,
+        sectionSheetStartRow: number,
+        sectionSheetStartColumn: number,
+        questionSheetStartRow: number,
+        questionSheetStartColumn: number){
+    
+          //Tạo return DTO
+          const returnData = new CreateTestDTO;
+          returnData.testName = testName;
+          returnData.tasks = [];
+          returnData.type = TestType.READING;
+    
+           //Dữ liệu cần để xử lý
+          const taskSectionIndexes: {
+            taskIndex: number,
+            sectionIndex: number
+          }[] = [];
+    
+          let haveTask: boolean = true;
+          for(let row = taskSheetStartRow; row < maxTaskRowCount; row++){
+            if(!haveTask) break;
+            for(let col = taskSheetStartColumn; col < maxTaskColumnCount; col++){
+              const cellValue = data instanceof GoogleSpreadsheet ? 
+                                taskSheet.getCell(row, col).value : 
+                                taskSheet[xlsx.utils.encode_cell({r: row, c: col})]?.v;
+              if(col===0 && !cellValue){
+                haveTask = false;
+                break;
+              }
+              if(!cellValue) continue;
+    
+              switch(col){
+                case 1:
+                  const taskData = new TestTaskDTO;
+                  taskData.sections = [];
+                  taskData.passage = cellValue;
+    
+                  if(!taskData.audio) delete taskData.audio;
+                  if(!taskData.passage) delete taskData.passage;
+    
+                  returnData.tasks.push(taskData)
+    
+                  break;
+                case 2:
+                  break;
+              }
+            }
+          }
+    
+          let hasSection: boolean = true;
+          for(let row = sectionSheetStartRow; row < maxSectionRowCount; row++){
+            if(!hasSection) break;
+            let taskPosition: number = -1;
+            for(let col = sectionSheetStartColumn; col < maxSectionColumnCount; col++){
+              const cellValue = data instanceof GoogleSpreadsheet ? 
+                                sectionSheet.getCell(row, col).value : 
+                                sectionSheet[xlsx.utils.encode_cell({r: row, c: col})]?.v;
+              if(col===0 && !cellValue){
+                hasSection = false;
+                break;
+              }
+              if(!cellValue) continue;
+    
+              switch(col){
+                case 1:
+                  taskPosition = cellValue as any;
+                  break;
+                case 2:
+                  const sectionData = new TestTaskSectionDTO;
+                  sectionData.title = cellValue as any;
+                  sectionData.questions = [];
+                  returnData.tasks[taskPosition-1].sections.push(sectionData);
+    
+                  taskSectionIndexes.push({
+                    taskIndex: taskPosition,
+                    sectionIndex: returnData.tasks[taskPosition-1].sections.length
+                  })
+    
+                  break;
+              }
+            }
+          }
+    
+          let hasQuestion: boolean = true;
+          for(let row = questionSheetStartRow; row < maxQuestionRowCount; row++){
+            if(!hasQuestion) break;
+            let sectionPosition: number = -1;
+            let taskPosition: number = -1;
+            const question = new CreateQuestionDTO;
+            let stt: number = 1;
+            let questionType: any;
+            let numberOfChoices: number = 0;
+            for(let col = questionSheetStartColumn; col < maxQuestionColumnCount; col++){
+              const cellValue = data instanceof GoogleSpreadsheet ? 
+                                questionSheet.getCell(row, col).formattedValue : 
+                                questionSheet[xlsx.utils.encode_cell({r: row, c: col})]?.w;
+              if(col===0 && !cellValue){
+                hasQuestion = false;
+                break;
+              }
+    
+              switch(col){
+                // case 0:
+                //   if(!cellValue)
+                //     throw new HttpException(`Question ${row-1} field "STT" is must have`, HttpStatus.BAD_REQUEST);
+                //   stt = cellValue as number;
+                case 1:
+                  if(!cellValue)
+                    throw new HttpException(`Question ${row-1} field "STT Section" is must have`, HttpStatus.BAD_REQUEST);
+                  sectionPosition = taskSectionIndexes[cellValue as number-1].sectionIndex-1;
+                  taskPosition = taskSectionIndexes[cellValue as number-1].taskIndex-1;
+                  break;
+                case 2:
+                  if(!cellValue)
+                    throw new HttpException(`Question ${row-1} field "Question type" is must have`, HttpStatus.BAD_REQUEST);
+                  questionType = cellValue;
+                  question.type = questionType;
+                  switch(questionType){
+                    case QuestionType.FILL:
+                      break;
+                    case QuestionType.CHOICE:
+                      question.choices = [];
+                      break;
+                    case QuestionType.ESSAY:
+                      break;
+                  }
+                  break;
+                case 3:
+                  if(!cellValue) continue;
+                  const questionTitle = cellValue;
+                  question.question = questionTitle as any;
+                  break;
+                case 4: //TO-DO
+                  console.log(cellValue);
+                  break;
+                case maxQuestionColumnCount-1:
+                  const choiceTypeQuestionRegex = /^(?:[0-9]|10)(?:,(?:[0-9]|10)){0,10}$/;
+                  switch(questionType){
+                    case QuestionType.FILL:
+                      if(!cellValue) 
+                        throw new HttpException(`Fill question ${stt} must have key`, HttpStatus.BAD_REQUEST);
+                      const key = cellValue as string;
+                      if(choiceTypeQuestionRegex.test(key))
+                        throw new HttpException(``, HttpStatus.BAD_REQUEST);
+                      question.key = key;
+                      break;
+                    case QuestionType.CHOICE:
+                      if(!cellValue) 
+                        throw new HttpException(`Choice question ${stt} must have keys`, HttpStatus.BAD_REQUEST);
+                      const value = cellValue;
+                      if(!choiceTypeQuestionRegex.test(value))
+                        throw new HttpException(
+                          `Choice question ${stt} must have at most 11 keys, separated by comma, each keys must in range 0 to 10`, 
+                          HttpStatus.BAD_REQUEST);
+                      const choiceKeys = value.toString().split(',');
+                      const keys: number[] = [];
+                      choiceKeys.map(key => keys.push(parseInt(key)-1));
+                      question.keys = keys;
+                      break;
+                    case QuestionType.ESSAY:
+                      if(cellValue)
+                        throw new HttpException(`Essay question ${stt} must not have key`, HttpStatus.BAD_REQUEST);
+                      break;
+                  }
+    
+                  if(!question.question) question.question = "";
+                  if(!question.choices) delete question.choices;
+                  if(!question.keys) delete question.keys;
+                  if(!question.key) delete question.key;
+    
+                  const taskSectionQuestion = new TestTaskSectionQuestionDTO;
+                  taskSectionQuestion.index = 0;
+                  taskSectionQuestion.question = question;
+                  returnData.tasks[taskPosition]
+                            .sections[sectionPosition]
+                            .questions.push(taskSectionQuestion);
+    
+                  break;
+                default:
+                  if(questionType===QuestionType.CHOICE){
+                    if(!cellValue) continue;
+                    const choiceItem = new ChoiceItem;
+                    choiceItem.text = cellValue.toString();
+                    choiceItem.initialChoiceIndex = numberOfChoices;
+                    numberOfChoices++;
+                    question.choices?.push(choiceItem);
+                    break;
+                  }
+              }
+            }
+          }
+    
+          //Gắn index vào từng câu hỏi
+          let questionNumberCount = 0;
+          returnData.tasks.forEach((task, index) => {
+            task.sections.forEach((section, index) => {
+              section.questions.forEach((question, index) => {
+                question.index = questionNumberCount;
+                questionNumberCount++;
+              })
+            })
+          })
+    
+          return returnData;
+      }
+    
+      readExcel(file: Express.Multer.File){
+          //Đọc file
+          const fileData = xlsx.readFile(file.path);
+    
+          //Lấy tên sheet
+          const taskSheet = fileData.SheetNames[0];
+          const sectionSheet = fileData.SheetNames[1];
+          const questionSheet = fileData.SheetNames[2];
+    
+          //Xử lý ở sheet task
+          const taskSheetData = fileData.Sheets[taskSheet];
+          const taskSheetRange = xlsx.utils.decode_range(taskSheetData['!ref'] as string);
+    
+          const sectionSheetData = fileData.Sheets[sectionSheet];
+          const sectionSheetRange = xlsx.utils.decode_range(sectionSheetData['!ref'] as string);
+    
+          const questionSheetData = fileData.Sheets[questionSheet];
+          const questionSheetRange = xlsx.utils.decode_range(questionSheetData['!ref'] as string);
+    
+          const returnData = this.convertToCreateTestDTO(
+            fileData,
+            file.filename,
+            taskSheetData,
+            sectionSheetData,
+            questionSheetData,
+            taskSheetRange.e.r+1,
+            taskSheetRange.e.c+1,
+            sectionSheetRange.e.r+1,
+            sectionSheetRange.e.c+1,
+            questionSheetRange.e.r+1,
+            questionSheetRange.e.c+1,
+            taskSheetRange.s.r+1,
+            taskSheetRange.s.c,
+            sectionSheetRange.s.r+1,
+            sectionSheetRange.s.c,
+            questionSheetRange.s.r+1,
+            questionSheetRange.s.c
+          );
+    
+          //Xoá file vừa thêm vào
+          fs.unlink(file.path, (err) => {
+            if(err) console.log(err);
+          });
+    
+          return returnData;
+      }
 }

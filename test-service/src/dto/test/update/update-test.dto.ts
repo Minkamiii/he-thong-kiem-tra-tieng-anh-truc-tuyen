@@ -101,6 +101,13 @@ export class UpdateTestDTO{
     })
     type: TestType;
 
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        type: String,
+    })
+    testName?: String;
+
     @IsArray()
     @ArrayNotEmpty()
     @ValidateNested({each: true})

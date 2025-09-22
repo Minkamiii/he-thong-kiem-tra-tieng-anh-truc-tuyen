@@ -5,7 +5,7 @@ import { CreateQuestionDTO } from "src/dto/question/create/create-question.dto";
 import { TestType } from "src/model/test/test.schema";
 import { TestQuestionsMatchType } from "../custom-validate/question.validator";
 
-class TestTaskSectionQuestionDTO{
+export class TestTaskSectionQuestionDTO{
 
     @IsNumber()
     @Min(0)
@@ -27,7 +27,7 @@ class TestTaskSectionQuestionDTO{
 
 }
 
-class TestTaskSectionDTO{
+export class TestTaskSectionDTO{
 
     @ValidateIf((obj) => obj.object.type !== TestType.WRITING)
     @IsString()
@@ -52,7 +52,7 @@ class TestTaskSectionDTO{
 
 }
 
-class TestTaskDTO{
+export class TestTaskDTO{
 
     @ValidateIf((obj) => obj.object.type === TestType.READING)
     @IsString()
@@ -101,6 +101,13 @@ export class CreateTestDTO{
         }
     })
     type: TestType;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        type: String,
+    })
+    testName: String;
 
     @IsArray()
     @ArrayNotEmpty()

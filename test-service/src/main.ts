@@ -35,7 +35,7 @@ async function bootstrap() {
 
   //Static dir
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads',
+    prefix: '/uploads/',
   });
 
   //Enable CORS

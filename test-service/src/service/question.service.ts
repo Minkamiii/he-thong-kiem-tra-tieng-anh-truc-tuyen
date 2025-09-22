@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateQuestionDTO } from 'src/dto/question/create/create-question.dto';
@@ -73,44 +73,49 @@ export class QuestionService {
         return await foundQuestion.save();
     }
     
-    async bulkUpdateQuestions(updateQuestions: {id: string, updateQuestionDTO: UpdateQuestionDTO}[]): Promise<any>{
-        const updatedQuestions = updateQuestions.map(({id, updateQuestionDTO}) => {
-            let updatePayload: any = {};
+    async bulkUpdateQuestions(updateQuestions: UpdateQuestionDTO[]): Promise<any>{
+        const updatePayload = updateQuestions.map(question => {
 
-            switch(updateQuestionDTO.type){
+            const payload: any = {
+                question: question.question,
+            };
+
+            switch(question.type){
                 case QuestionType.CHOICE:
-                    const choiceItems = updateQuestionDTO.choices?.map((choice, index) => ({
-                        ...choice,
-                        initialChoiceIndex: index
-                    }))
+                    const choiceItems = question.choices?.map((choice, index) => {
+                        return {
+                            ...choice,
+                            initialChoiceIndex: index
+                        }
+                    })
 
-                    const keys = updateQuestionDTO.keys ?? [];
+                    const keys = question.keys ?? [];
 
-                    updatePayload = {
-                        choices: choiceItems,
-                        keys: keys
-                    }
+                    payload.choices = choiceItems;
+                    payload.keys = keys;
 
                     break;
-
                 case QuestionType.FILL:
-                    updatePayload = {
-                        key: updateQuestionDTO.key
-                    }
+                    const key = question.key ?? "";
+                    payload.key = key;
                     break;
             }
 
             return {
                 updateOne: {
-                    filter: {_id: this.objectId(id)},
+                    filter: {_id: this.objectId(question._id)},
                     update: {
-                        $set: updatePayload
+                        $set: {
+                            ...payload,
+                        }
                     }
                 }
             }
         })
 
-        return this.questionModel.bulkWrite(updatedQuestions);
+        updatePayload.map(item => console.log(item.updateOne.update.$set))
+
+        return this.questionModel.bulkWrite(updatePayload);
     }
 
     async deleteQuestion(id: string): Promise<void> {

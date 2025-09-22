@@ -3,7 +3,7 @@ import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsNumber, IsObject, IsString, Min, ValidateIf, ValidateNested } from "class-validator";
 import { QuestionType } from "src/model/question/question.schema";
 
-class ChoiceItem{
+export class ChoiceItem{
 
     @IsString()
     @IsNotEmpty()

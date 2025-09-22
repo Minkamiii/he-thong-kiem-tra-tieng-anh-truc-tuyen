@@ -9,7 +9,6 @@ import { extname } from "path";
 import * as crypto from "crypto";
 import { ConfigService } from "@nestjs/config";
 import { ApiBody, ApiConsumes, ApiParam, ApiQuery } from "@nestjs/swagger";
-import { GetAllQuestionByTestIDDTO } from "./dto/question/get/get-all-question.dto";
 
 
 @Controller('/api/test')
@@ -123,6 +122,32 @@ export class TestController{
     uploadImage(@UploadedFile() file: Express.Multer.File){
         const fileURL = `${this.configService.get<string>('BASE_URL')}/uploads/images/${file.filename}`;
         return { url: fileURL};
+    }
+
+    @Post('/excel')
+    @HttpCode(201)
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/excel',
+            filename: (req, file, cb) => {
+                return cb(null, `${file.originalname}`);
+            }
+        })
+    }))
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema:{
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary'
+                }
+            }
+        }
+    })
+    uploadExcel(@UploadedFile() file: Express.Multer.File){
+        return this.testService.readExcel(file);
     }
 
     @Get()
