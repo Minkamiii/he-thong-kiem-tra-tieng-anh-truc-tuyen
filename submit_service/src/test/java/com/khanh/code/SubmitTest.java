@@ -776,12 +776,41 @@ public class SubmitTest {
     @Test
     void SUBMIT_039_get_All_Submits_Of_User_Existed_TypeNotExist(){
 
-        ApiResponse response=submitService.getAllSubmitsOfUser("124",1,"hello");
+        ApiResponse response=submitService.getAllSubmitsOfUser("123",1,"hello");
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
         assertEquals(response.getMessage(), "Invalid type: hello" );
     }
 
-    //submit write and listen success (test 38,39)
+    @Test
+    void SUBMIT_040_get_All_Submits_Of_User_Existed_PageSmallerthan1(){
+
+        ApiResponse response=submitService.getAllSubmitsOfUser("123",0,"hello");
+        Object data= response.getData();
+        assertNull(data);
+        assertEquals(400, response.getStatus());
+        assertEquals(response.getMessage(), "Page number must be greater than 0" );
+    }
+
+    @Test
+    void SUBMIT_041_Add_Submit_WrongType(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setKind("Hello");
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(400, response.getStatus());
+        assertEquals("Invalid test kind", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2); 
+    }
+
+    //submit write and listen success (test 43,44)
 }
