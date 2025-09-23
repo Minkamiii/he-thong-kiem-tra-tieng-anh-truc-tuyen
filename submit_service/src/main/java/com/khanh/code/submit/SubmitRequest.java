@@ -13,6 +13,7 @@ public class SubmitRequest {
     private List<AnswerRequest> answers;
     private List<Integer> tasks;
     private String kind;
+    private int time_to_complete;
     
     public String getUser_id() {
         return user_id;
@@ -58,4 +59,11 @@ public class SubmitRequest {
     public void setKind(String kind) {
         this.kind = kind;
     }
+    public int getTime_to_complete() {
+        return time_to_complete;
+    }
+    public void setTime_to_complete(int time_to_complete) {
+        this.time_to_complete = time_to_complete;
+    }
+    
 }

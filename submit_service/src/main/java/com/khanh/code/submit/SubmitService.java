@@ -390,8 +390,9 @@ public class SubmitService {
         }
 
         submit.setKind(testKind);
+        submit.setTestName(testResponse.getTestName());
+        submit.setTime_to_complete(request.getTime_to_complete());
 
-        //submit.setTasks(tasks);
         // submitRepository.save(submit);
         // String submitId = submit.getId();
         

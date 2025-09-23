@@ -59,6 +59,12 @@ public class Submit {
     @NotNull
     private Date submit_day;
 
+    @NotNull
+    private String testName;
+
+    @NotNull
+    private int time_to_complete; //in seconds
+
     //To get tasks that have been chosen when in front end 
     @ElementCollection
     @Column(name="chosen_task")
@@ -66,8 +72,10 @@ public class Submit {
     @NotEmpty
     private List<Integer> tasks = new ArrayList<>();
 
+    @NotNull
     private int num_of_question_to_answer;
 
+    @NotNull
     private int total_Requirement_to_answer;
 
     @OneToMany(mappedBy = "submit", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -206,6 +214,22 @@ public class Submit {
             total+=answer.getNumber_of_requiremient_to_answer();
         }
         return total;
+    }
+
+    public String getTestName() {
+        return testName;
+    }
+
+    public void setTestName(String testName) {
+        this.testName = testName;
+    }
+
+    public int getTime_to_complete() {
+        return time_to_complete;
+    }
+
+    public void setTime_to_complete(int time_to_complete) {
+        this.time_to_complete = time_to_complete;
     }
 
 }

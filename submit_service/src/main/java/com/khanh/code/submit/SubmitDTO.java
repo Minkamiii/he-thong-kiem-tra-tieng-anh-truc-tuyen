@@ -13,6 +13,7 @@ public class SubmitDTO {
     private String id_test;
     private String submit_day;
     private String kind;
+    private String testName;
 
     private List<Integer> tasks;
     // int float always default 0 => class for writing with no correct answer and question answered
@@ -20,6 +21,7 @@ public class SubmitDTO {
     private Integer numCorrectAnswers;
     private Integer num_Of_Answered_Questions;
     private int total_Requirement_to_answer;
+    private String time_to_complete;
     
     //private Float score;
 
@@ -34,6 +36,8 @@ public class SubmitDTO {
         this.tasks=submit.getTasks();
         this.kind=submit.getKind().toString();
         this.total_Requirement_to_answer=submit.getTotal_Requirement_to_answer();
+        this.testName=submit.getTestName();
+        this.time_to_complete=formatTime(submit.getTime_to_complete());
                
         if (submit.getType() == Submit.Type.LISTENING) {
             Submit_Listening listeningSubmit = (Submit_Listening) submit;
@@ -121,6 +125,28 @@ public class SubmitDTO {
         this.total_Requirement_to_answer = total_Requirement_to_answer;
     }
 
+    public String getTestName() {
+        return testName;
+    }
+
+    public void setTestName(String testName) {
+        this.testName = testName;
+    }
+
+    public String getTime_to_complete() {
+        return time_to_complete;
+    }
+
+    public void setTime_to_complete(String time_to_complete) {
+        this.time_to_complete = time_to_complete;
+    }
+    
+    private String formatTime(int totalSeconds) {
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
     // public float getScore() {
     //     return score;
     // }

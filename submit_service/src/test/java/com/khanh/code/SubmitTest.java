@@ -84,11 +84,13 @@ public class SubmitTest {
         //add 2 answers to submit
         test_Reading.getAnswers().add(test_Choice);
         test_Listening.getAnswers().add(test_Fill);
-
+        test_Listening.setTestName("Listening Test 1");
+        test_Reading.setTestName("Reading Test 1");
+        
         //update then save 2 sbumits
         test_Listening.setNum_of_question_to_answer();
         test_Reading.setNum_of_question_to_answer();  
-
+    
         submitRepository.save(test_Listening);
         submitRepository.save(test_Reading);
 
@@ -111,6 +113,7 @@ public class SubmitTest {
         answer1.setAnswer("bag");
         submitAnswers.add(answer1);
 
+        submitRequest.setTime_to_complete(3600);
         submitRequest.setAnswers(submitAnswers);
         
     }
@@ -794,7 +797,7 @@ public class SubmitTest {
     }
 
     @Test
-    void SUBMIT_041_Add_Submit_WrongType(){
+    void SUBMIT_041_Add_Submit_WrongKind(){
 
         int size_Submit1=submitRepository.findAll().size();
         int size_Answer1=answerRepository.findAll().size();
