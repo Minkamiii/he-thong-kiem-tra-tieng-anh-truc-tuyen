@@ -391,7 +391,7 @@ public class SubmitService {
 
         submit.setKind(testKind);
 
-        submit.setTasks(tasks);
+        //submit.setTasks(tasks);
         // submitRepository.save(submit);
         // String submitId = submit.getId();
         

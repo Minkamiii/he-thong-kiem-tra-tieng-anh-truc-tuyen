@@ -9,12 +9,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubmitRepository extends JpaRepository<Submit, String> {
-    @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.id_test = ?2")
-    List<Submit> findByUserIdAndTestId(String userId, String testId);
-
+    
     @Query("SELECT s FROM Submit s WHERE s.id_user = ?1")
     List<Submit> findByUserId(String userId);
 
+    //Page
     @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day DESC")
     Page<Submit> findByUserIdOrderBySubmitDayDESC(String userId, Pageable pageable);
 
@@ -44,7 +43,6 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
 
     // @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day DESC")
     // List<Submit> findByUserIdOrderBySubmitDayDESC(String userId);
-
 
     // @Query("SELECT s FROM Submit_Writing s WHERE s.id_user = ?1")
     // List<Submit_Writing> findWritingSubmissionsByUserId(String userId);
