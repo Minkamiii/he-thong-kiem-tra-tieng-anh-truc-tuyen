@@ -1,0 +1,227 @@
+// import React from "react";
+// import "./css/TopicCard.css";
+// import { useNavigate } from "react-router-dom";
+
+// interface TestCardProps {
+//   title: string;
+//   duration: string;
+//   users: number;
+//   comments: number;
+//   info: string;
+//   tag: string;
+//   detailPath: string;
+// }
+
+// const TestCard: React.FC<TestCardProps> = ({ title, duration, users, comments, info, tag, detailPath }) => {
+//   const navigate = useNavigate();
+//   return (
+//     <div className="test-card">
+//       {/* Tiêu đề */}
+//       <h2 className="test-card__title">{title}</h2>
+
+//       {/* Thông tin */}
+//       <div className="test-card__details">
+//         <span>⏰ {duration}</span> | <span>👤 {users}</span> | <span>💬 {comments}</span>
+//       </div>
+
+//       <p className="test-card__info">{info}</p>
+
+//       {/* Tag */}
+//       <div className="test-card__tag">{tag}</div>
+
+//       {/* Nút */}
+//       <button className="test-card__button" onClick={() => navigate(detailPath), {state:{test}}}>Chi tiết</button>
+//     </div>
+//   );
+// };
+
+// export default TestCard;
+
+----
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import type { Test } from "../api/QuestionApi";
+
+interface Props {
+  test: Test;
+}
+
+const TopicCard: React.FC<Props> = ({ test }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="p-4 border rounded shadow bg-white">
+      <h2 className="font-bold text-lg">{test.testName}</h2>
+      <p className="text-gray-600">Type: {test.type}</p>
+      <button
+        className="mt-2 px-3 py-1 bg-blue-500 text-white rounded"
+        onClick={() => navigate("/reading/detail", { state: { test } })}
+      >
+        Chi tiết
+      </button>
+    </div>
+  );
+};
+
+export default TopicCard;
+
+-----------
+// import Searching from "../components/Searching";
+// import TestCard from "../components/TopicCard";
+// import UploadFile from "../components/UploadFile";
+
+// const tests = [
+//   {
+//     title: "New Economy TOEIC Test 1",
+//     duration: "120 phút",
+//     users: 2275167,
+//     comments: 3077,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 2",
+//     duration: "120 phút",
+//     users: 1987654,
+//     comments: 2100,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+//   {
+//     title: "New Economy TOEIC Test 3",
+//     duration: "120 phút",
+//     users: 1567432,
+//     comments: 1500,
+//     info: "7 phần thi | 200 câu hỏi",
+//     tag: "#TOEIC",
+//   },
+// ];
+
+// export default function Reading() {
+//   return (
+//     <>
+//       <h2 style={{ marginBottom: "16px", color: "#004080" }}>Danh sách Test</h2>
+
+//       <div
+//         style={{
+//           display: "flex",
+//           justifyContent: "space-between",
+//           alignItems: "center",
+//           marginBottom: "20px",
+//         }}
+//       >
+//         <Searching />
+//         <UploadFile onFileSelect={(file) => console.log("Chọn file:", file)} />
+//       </div>
+
+//       <div
+//         style={{
+//           display: "grid",
+//           gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+//           gap: "16px",
+//         }}
+//       >
+//         {tests.map((test, index) => (
+//           <TestCard key={index} {...test} detailPath={"/reading/detail/"} />
+//         ))}
+//       </div>
+//     </>
+//   );
+// }
+
+import React from "react";
+import TestCard from "../components/TopicCard";
+import { fakeTests } from "../api/DataFake";
+
+const Reading: React.FC = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
+      {fakeTests.map((test, idx) => (
+        <TestCard key={idx} test={test} detailPath={"/reading/detail"}/>
+      ))}
+    </div>
+  );
+};
+
+export default Reading;
+

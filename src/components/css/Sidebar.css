@@ -1,0 +1,85 @@
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background-color: #0071c5; /* xanh nước biển */
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px 16px;
+  border-bottom: 1px solid #3399ff;
+  margin: 0;
+}
+
+.sidebar-link,
+.dropdown-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;   /* giảm padding để không bị xa nhau */
+  color: #eee;
+  text-decoration: none;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-size: 15px;
+}
+
+.sidebar-link:hover,
+.dropdown-btn:hover {
+  background-color: #0059b3;
+  color: #fff;
+}
+
+.active {
+  background-color: #0059b3;
+  border-left: 4px solid orange;
+  font-weight: bold;
+  color: #fff;
+}
+
+.submenu {
+  margin-left: 12px;
+  border-left: 2px solid #3399ff;
+}
+
+.submenu-link {
+  display: block;
+  padding: 6px 16px; /* giảm padding submenu */
+  font-size: 14px;
+  color: #ccc;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.submenu-link:hover {
+  color: orange;
+}
+
+.logout-section {
+  margin-top: auto;   /* đẩy xuống cuối sidebar */
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.login-btn {
+  background: #ff4500;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-btn:hover {
+  background: #e63e00;
+}
