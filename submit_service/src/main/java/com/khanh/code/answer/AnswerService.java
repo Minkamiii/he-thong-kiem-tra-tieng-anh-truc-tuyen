@@ -1,6 +1,8 @@
 package com.khanh.code.answer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -599,26 +601,35 @@ public class AnswerService {
     //generate all possible keys from a key string
     public List<String> generateAllCombinations(String key) {
         key = key.toLowerCase().trim();
-        List<List<String>> optional = new LinkedList<>();
-        String[] words = key.split(" ");
+        List<String> finalResults = new LinkedList<>();
 
-        for (String word : words) {
-            List<String> group = new LinkedList<>();
-            String[] parts = word.split("/");
+        String[] orParts = key.split("\\[or\\]");
 
-            for (String part : parts) {
-                if(part.contains("(") && part.contains(")")) {
-                    String with = part.replaceAll("[()]", "");      
-                    String without = part.replaceAll("\\(.*?\\)", "");
-                    group.add(with);
-                    group.add(without);
-                } else {
-                    group.add(part);
+        for (String orPart : orParts) {
+            List<List<String>> optional = new LinkedList<>();
+            String[] words = orPart.trim().split("\\s+");
+
+            for (String word : words) {
+                List<String> group = new LinkedList<>();
+                String[] slashParts = word.split("/");
+
+                for (String part : slashParts) {
+                    if (part.contains("(") && part.contains(")")) {
+                        String with = part.replaceAll("[()]", "");
+                        String without = part.replaceAll("\\(.*?\\)", "");
+                        group.add(with);
+                        group.add(without);
+                    } else {
+                        group.add(part);
+                    }
                 }
+                optional.add(group);
             }
-            optional.add(group);
+
+            finalResults.addAll(allPossibleKey(optional));
         }
-        return allPossibleKey(optional);
+        
+        return new ArrayList<>(new LinkedHashSet<>(finalResults));
     }
 
     //check answer for fill question

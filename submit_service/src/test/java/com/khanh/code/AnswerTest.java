@@ -100,13 +100,17 @@ public class AnswerTest {
         //add 2 answers to submit
         test_Reading.getAnswers().add(test_Choice);
         test_Reading.getAnswers().add(test_Fill);
+        test_Reading.setTestName("Reading Test 1");
+        test_Writing.setTestName("Writing Test 1");
+        
+        //update then save 2 sbumits
+        test_Reading.setNum_of_question_to_answer();  
 
         submitRepository.save(test_Reading);
         submitRepository.save(test_Writing);
 
         answerService.updateNumberOfCorrectAndTotalAnswers(test_Reading);
         answerService.updateNumberOfCorrectAndTotalAnswers(test_Writing);
-
 
         id_Submit=test_Reading.getId();
         id_answer=test_Fill.getId();
@@ -709,6 +713,11 @@ public class AnswerTest {
     assertTrue(answerService.checkAnswer("5 people per meters", "5/five (people) per meter(s)"));
     assertTrue(answerService.checkAnswer("five people per meter", "5/five (people) per meter(s)"));
     assertTrue(answerService.checkAnswer("five people per meters", "5/five (people) per meter(s)"));
+
+    assertTrue(answerService.checkAnswer("22ND OF AUGUST", "22ND (OF) AUGUST [OR] AUGUST 22(ND) [OR] 22 AUGUST [OR] 22-(0)8"));
+    assertTrue(answerService.checkAnswer("AUGUST 22", "22ND (OF) AUGUST [OR] AUGUST 22(ND) [OR] 22 AUGUST [OR] 22-(0)8"));
+    assertTrue(answerService.checkAnswer("22 AUGUST", "22ND (OF) AUGUST [OR] AUGUST 22(ND) [OR] 22 AUGUST [OR] 22-(0)8"));
+    assertTrue(answerService.checkAnswer("22-8", "22ND (OF) AUGUST [OR] AUGUST 22(ND) [OR] 22 AUGUST [OR] 22-(0)8"));
 
     assertFalse(answerService.checkAnswer("5  per meters", "5/five (people) per meter(s)")); 
     
