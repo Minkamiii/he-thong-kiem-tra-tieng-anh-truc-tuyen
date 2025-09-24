@@ -1,0 +1,36 @@
+Submit api:
+
+- nộp bài: http://localhost:8080/api/submit/newSubmit
+- lấy tất cả submit của user: http://localhost:8080/api/submit/user/id/{userID}?type=&page= 
+    (mặc định là type="" và page=1)
+- lấy tất cả test đã từng làm: http://localhost:8080/api/submit/allTest/user/id/{userID}
+- lấy tất cả submit của user theo test: 
+    http://localhost:8080/api/submit/user/test?userID=123&testID=123
+- xóa submit theo id: http://localhost:8080/api/submit/delete/{submitID}
+- xóa tất cả submit theo user: http://localhost:8080/api/submit/delete/user/{userID}
+- xóa tất cả submit theo test: http://localhost:8080/api/submit/delete/test/{testID}
+
+
+Answer api:
+
+- lấy câu trả lời theo id: http://localhost:8080/api/answer/{answerID}
+- lấy tất cả câu trả lời trong submit: http://localhost:8080/api/answers/submit/{submitId}
+- lấy câu trả lời trong submit theo câu hỏi: 
+    http://localhost:8080/api/answer/submit/question?submitId=123&questionId=123
+- xóa câu trả lời theo id: http://localhost:8080/api/answer/{answerID}
+- xóa tất cả câu trả lời theo câu hỏi: http://localhost:8080/api/answer/question/{questionId}
+- update câu hỏi: http://localhost:8080/api/answers/update
+
+Json structure:
+    {
+      "user_id": "",
+      "test_id": "",
+      "tasks": [0,1,2],
+      "time_to_complete": 3600,
+      "kind": "exam",
+      "answers": 
+    [
+        {"id_question": "", "answer": "bag"},
+        {"id_question": "", "answer": [2]}
+    ]
+    }

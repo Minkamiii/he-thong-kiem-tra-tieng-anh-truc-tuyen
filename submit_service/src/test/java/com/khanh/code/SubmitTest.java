@@ -358,9 +358,9 @@ public class SubmitTest {
 
         Submit submit=submitRepository.findAllOrderDayDESC().get(0);
 
-        assertEquals(submit.getId_test(), "68b1ad6fda6d33637440c21c");
+        assertEquals(submit.getId_test(), "68d13a9cc35d63eb8543f27d");
         assertEquals(submit.getId_user(), "a68feeb1-14f5-435d-bb44-09700b3560fe");
-        assertEquals(submit.getType().toString(), "READING");
+        assertEquals(submit.getType().toString(), "LISTENING");
         assertEquals(submit.getKind().toString(), "EXAM");
 
         Answer answer= submit.getAnswers().get(0);
