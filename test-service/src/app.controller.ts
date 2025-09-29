@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { CreateTestDTO } from "./dto/test/create/create-test.dto";
 import { TestService } from "./service/test.service";
 import { TestType } from "./model/test/test.schema";
@@ -20,83 +20,53 @@ export class TestController{
     ){}
 
     @Post()
-    @HttpCode(201)
+    @HttpCode(HttpStatus.CREATED)
+    createTest(@Body() createTestDTO: CreateTestDTO){
+        createTestDTO.tasks.map((task, index) => ({
+            ...task,
+        }))
+        return this.testService.createTest(createTestDTO);
+    }
+
+    @Post('/audio')
     @UseInterceptors(FilesInterceptor('audio', undefined, {
         storage: diskStorage({
-            destination: './uploads/listening',
+            destination: './uploads/audio',
             filename: (req, file, cb) => {
                 const randomName = crypto.createHash('sha256').update(Date.now().toString()).digest('hex').slice(0, 12) + 
                 Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
                 return cb(null, `${randomName}${extname(file.originalname)}`)
             }
-
         })
     }))
+    @HttpCode(200)
     @ApiConsumes('multipart/form-data')
     @ApiBody({
         schema: {
             type: 'object',
             properties: {
-                type: {
-                    type: 'string',
-                    enum: Object.values(TestType),
-                    description: 'Loại bài test',
-                },
-                tasks: {
-                    type: 'array',
-                    description: 'Danh sách tasks trong bài test',
-                    items: {
-                        type: 'object',
-                        properties: {
-                            passage: { type: 'string', description: 'Đoạn văn (nếu có)' },
-                            audio: { type: 'string', format: 'binary', description: 'File audio cho task (nếu là Listening)' },
-                            sections: {
-                                type: 'array',
-                                items: {
-                                    type: 'object',
-                                    properties: {
-                                        title: { type: 'string', description: 'Tiêu đề section' },
-                                        questions: {
-                                            type: 'array',
-                                            items: {
-                                                type: 'object',
-                                                properties: {
-                                                    index: { type: 'number', description: 'Vị trí câu hỏi trong đề' },
-                                                    question: { type: 'string', description: 'ObjectId của câu hỏi' }
-                                                },
-                                                required: ['index', 'question']
-                                            }
-                                        }
-                                    },
-                                    required: ['title', 'questions']
-                                }
-                            }
-                        },
-                        required: ['sections'] // nếu passage hoặc audio không bắt buộc thì bỏ khỏi đây
-                    }
-                },
                 audio: {
                     type: 'array',
                     items: {
-                    type: 'string',
-                    format: 'binary'
-                    },
-                    description: 'Danh sách file audio, index khớp với tasks'
+                        type: 'string',
+                        format: 'binary'
+                    }
                 }
-            },
-            required: ['type', 'tasks'] // chỉ thêm field bắt buộc ở đây
+            }
         }
     })
-    createTest(@Body() createTestDTO: CreateTestDTO, @UploadedFiles() files: Express.Multer.File[]){
-        createTestDTO.tasks.map((task, index) => ({
-            ...task,
-            ...(createTestDTO.type === TestType.LISTENING && {audio: files[index].filename}) //Chỉ thêm file khi type của test là Listening
-        }))
-        return this.testService.createTest(createTestDTO);
+    uploadAudio(@UploadedFiles() files: Express.Multer.File[]){
+        const fileURLs = files.map(file => {
+            return `${this.configService.get<string>('BASE_URL')}/uploads/audio/${file.filename}`
+        })
+
+        return {
+            urls: fileURLs
+        }
     }
 
     @Post('/image')
-    @HttpCode(201)
+    @HttpCode(200)
     @UseInterceptors(FileInterceptor('image', {
         storage: diskStorage({
             destination: './uploads/images',
@@ -125,7 +95,7 @@ export class TestController{
     }
 
     @Post('/excel')
-    @HttpCode(201)
+    @HttpCode(200)
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
             destination: './uploads/excel',
@@ -173,7 +143,7 @@ export class TestController{
     }
 
     @Delete(':id')
-    @HttpCode(204)
+    @HttpCode(HttpStatus.NO_CONTENT)
     @ApiParam({name: 'id', type: String})
     async findByIdAndDelete(@Param('id') id: string){
         await this.testService.findByIdAndDelete(id);
@@ -188,6 +158,9 @@ export class TestController{
     }
 
     @Get(':testId/questions')
+    @HttpCode(200)
+    @ApiParam({name: 'testId', type: String})
+    @ApiQuery({name: 'tasks', type: String})
     findQuestionsByTest(@Param('testId') testId: string, @Query('tasks') tasks: string){
         return this.testService.findQuestionsByTestId(testId, tasks);
     }

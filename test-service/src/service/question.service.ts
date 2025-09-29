@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateQuestionDTO } from 'src/dto/question/create/create-question.dto';
+import { ChoiceItem, CreateQuestionDTO } from 'src/dto/question/create/create-question.dto';
 import { UpdateQuestionDTO } from 'src/dto/question/update/update-question.dto';
 import { Question, QuestionDocument, QuestionType } from 'src/model/question/question.schema';
 
@@ -82,38 +82,27 @@ export class QuestionService {
 
             switch(question.type){
                 case QuestionType.CHOICE:
-                    const choiceItems = question.choices?.map((choice, index) => {
-                        return {
-                            ...choice,
-                            initialChoiceIndex: index
-                        }
-                    })
-
-                    const keys = question.keys ?? [];
-
-                    payload.choices = choiceItems;
-                    payload.keys = keys;
+                    payload.choices = question.choices;
+                    payload.keys = question.keys;
 
                     break;
                 case QuestionType.FILL:
-                    const key = question.key ?? "";
-                    payload.key = key;
+                    payload.key = question.key;
                     break;
             }
 
             return {
                 updateOne: {
-                    filter: {_id: this.objectId(question._id)},
+                    filter: {
+                        _id: this.objectId(question._id),
+                        type: question.type
+                    },
                     update: {
-                        $set: {
-                            ...payload,
-                        }
+                        $set: payload
                     }
                 }
             }
         })
-
-        updatePayload.map(item => console.log(item.updateOne.update.$set))
 
         return this.questionModel.bulkWrite(updatePayload);
     }

@@ -28,3 +28,6 @@
 - **Lấy danh sách đề thi theo loại có phân trang** (GET) http://[::1]:8000/api/test/type/:type?page=x (MẶC ĐỊNH x = 1)
 - **Cập nhật đề thi theo id** (PUT) http://[::1]:8000/api/test/:id
 - **Xóa đề thi theo id** (DELETE) http://[::1]:8000/api/test/:id
+- **Upload file audio** (POST) http://[::1]:8000/api/test/audio
+- **Upload file ảnh** (POST) http://[::1]:8000/api/test/image
+- **Upload file excel** (POST) http://[::1]:8000/api/test/excel

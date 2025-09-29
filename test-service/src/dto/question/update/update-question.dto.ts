@@ -13,7 +13,7 @@ class ChoiceItem{
         description: "Phần text của đáp án, được lưu bằng Markdown",
         example: "_**TRUE**_"
     })
-    text?: string;
+    text: string;
 
     @IsNumber()
     @Min(0)
@@ -24,7 +24,7 @@ class ChoiceItem{
         description: "là Index ban đầu của đáp án, được dùng để làm phần so sánh đáp án đúng và có thể dùng được kể cả khi đáp án đã bị trộn (ví dụ ban đầu là đáp án A được trộn sang C thì initialChoiceIndex sẽ là 0)",
         example: 0
     })
-    initialChoiceIndex?: number;
+    initialChoiceIndex: number;
 
 }
 

@@ -12,7 +12,7 @@ export enum QuestionType{
 @Schema({discriminatorKey: 'type', collection: 'question'})
 export class Question{
 
-    @Prop({required: true})
+    @Prop({required: false})
     question: string; //Phần đề bài của câu hỏi
 
     // @Prop({

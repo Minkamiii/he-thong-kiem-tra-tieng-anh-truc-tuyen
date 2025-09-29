@@ -30,7 +30,6 @@ export class ChoiceItem{
 export class CreateQuestionDTO{
 
     @IsString()
-    @IsNotEmpty()
     @ApiProperty({
         type: String,
         description: "Đề bài của câu hỏi lưu bằng Markdown (Trường hợp là dạng Fill thì có thể để trống)",

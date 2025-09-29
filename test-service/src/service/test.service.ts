@@ -24,6 +24,13 @@ export class TestService {
     ) {}
 
     private readonly PAGINATION_LIMIT_NUMBER_OF_ITEM = 12; //Tối đa 1 trang có 12 item
+    private readonly EXCEL_TASK_MAX_COLUMN = 3;
+    private readonly EXCEL_TASK_MAX_ROW = 7;
+    private readonly EXCEL_SECTION_MAX_COLUMN = 4;
+    private readonly EXCEL_SECTION_MAX_ROW = 27;
+    private readonly EXCEL_QUESTION_MAX_COLUMN = 17;
+    private readonly EXCEL_QUESTION_MAX_ROW = 52;
+
 
     objectId(id: string){
         return new Types.ObjectId(id);
@@ -79,8 +86,8 @@ export class TestService {
         //Thêm vào collection
         const createdTest = await this.testModel.create(testData);
 
-        await this.cacheService.del(`test:type:${testData.type}`); //Xóa cache cũ
-        await this.cacheService.del('test:all') //Xoá cache cũ
+        // await this.cacheService.del(`test:type:${testData.type}`); //Xóa cache cũ
+        // await this.cacheService.del('test:all') //Xoá cache cũ
 
         return createdTest;
     }
@@ -95,19 +102,19 @@ export class TestService {
         currentPage: number, 
         limit: number
     }> {
-        const cacheData = await this.cacheService.get<{
-            data: TestDocument[], 
-            totalItems: number, 
-            totalPages: number, 
-            currentPage: number, 
-            limit: number
-        }>('test:all'); //Lấy data từ cache nếu có
+        // const cacheData = await this.cacheService.get<{
+        //     data: TestDocument[], 
+        //     totalItems: number, 
+        //     totalPages: number, 
+        //     currentPage: number, 
+        //     limit: number
+        // }>('test:all'); //Lấy data từ cache nếu có
 
-        if(cacheData) return cacheData; //Nếu có data từ cache trả về luôn
+        // if(cacheData) return cacheData; //Nếu có data từ cache trả về luôn
 
         const skip = (page - 1) * limit;
         const totalItems = await this.testModel.countDocuments();
-        const data = await this.testModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).exec();
+        const data = await this.testModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).select('-tasks').exec();
 
         const returnData = {
             data,
@@ -122,22 +129,44 @@ export class TestService {
         return returnData;
     }
 
-    async findById(id: string): Promise<TestDocument | null> {
-        const cacheData = await this.cacheService.get<TestDocument>(`test:${id}`); //Lấy data từ cache nếu có
+    async findById(id: string) {
+        // const cacheData = await this.cacheService.get<TestDocument>(`test:${id}`); //Lấy data từ cache nếu có
 
-        if(cacheData){
-            return cacheData; //Nếu có data từ cache trả về luôn
-        }
+        // if(cacheData){
+        //     return cacheData; //Nếu có data từ cache trả về luôn
+        // }
 
-        const data = await this.testModel.findById(id).populate({ path: 'tasks.sections.questions.question' }).exec();
+        const data = await this.testModel.findById(id).populate({ path: 'tasks.sections.questions.question' }).exec() as any;
 
         if(!data){
             throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND);
         }
-        
-        this.cacheService.set(`test:${id}`, data); //Lưu vào cache service
 
-        return data;
+        let testQuestionCount = 0;
+        const taskPayload = data.tasks.map(task => {
+          let taskQuestionCount = 0;
+
+          for(let section of task.sections){
+            taskQuestionCount += section.questions.length;
+          }
+
+          testQuestionCount += taskQuestionCount;
+
+          return{
+            ...task.toObject?.() ?? task,
+            taskQuestionCount: taskQuestionCount,
+          }
+        })
+
+        const dataPayload = {
+          ...data.toObject?.() ?? data,
+          tasks: taskPayload,
+          testQuestionCount: testQuestionCount
+        }
+        
+        // this.cacheService.set(`test:${id}`, data); //Lưu vào cache service
+
+        return dataPayload;
     }
 
     async findByType(
@@ -151,19 +180,19 @@ export class TestService {
         currentPage: number,
         limit: number
     }> {
-        const cacheData = await this.cacheService.get<{
-            data: TestDocument[],
-            totalItems: number,
-            totalPages: number,
-            currentPage: number,
-            limit: number
-        }>(`test:type:${type}`)
+        // const cacheData = await this.cacheService.get<{
+        //     data: TestDocument[],
+        //     totalItems: number,
+        //     totalPages: number,
+        //     currentPage: number,
+        //     limit: number
+        // }>(`test:type:${type}`)
 
-        if(cacheData) return cacheData; //Nếu có data từ cache trả về luôn
+        // if(cacheData) return cacheData; //Nếu có data từ cache trả về luôn
 
         const skip = (page - 1) * limit;
         const totalItems = await this.testModel.find({ type }).countDocuments();
-        const data = await this.testModel.find({ type }).sort({ createdAt: -1 }).skip(skip).limit(limit).exec();
+                const data = await this.testModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).select('-tasks').exec();
 
         const returnData = {
             data,
@@ -173,7 +202,7 @@ export class TestService {
             limit
         };
 
-        this.cacheService.set(`test:type:${type}`, returnData); //Lưu vào cache manager
+        // this.cacheService.set(`test:type:${type}`, returnData); //Lưu vào cache manager
 
         return returnData;
     }
@@ -186,22 +215,32 @@ export class TestService {
         }
 
         const deleteQuestionIds: any[] = [];
+        const deleteAudioFile: any[] = [];
 
         for(const task of foundTest.tasks){
             for(const section of task.sections){
+              if(foundTest.type === TestType.LISTENING){
+                deleteAudioFile.push(section.audio);
+              }
                 for(const question of section.questions){
                     deleteQuestionIds.push(question.question._id);
                 }
             }
         }
-
+        
+        // deleteAudioFile.forEach(path => {
+        //   fs.unlink(path, (err) => {
+        //     if(err) console.log(err);
+        //   });
+        // })
+        
         await this.questionService.bulkDeleteQuestions(deleteQuestionIds); //Xoá trong collection 'question'
 
         await this.testModel.findByIdAndDelete(id).exec(); //Xóa trong collection 'test'
 
-        await this.cacheService.del(`test:${id}`); //Xóa cache cũ
-        await this.cacheService.del(`test:type:${foundTest.type}`); //Xóa cache cũ
-        await this.cacheService.del('test:all') //Xoá cache cũ
+        // await this.cacheService.del(`test:${id}`); //Xóa cache cũ
+        // await this.cacheService.del(`test:type:${foundTest.type}`); //Xóa cache cũ
+        // await this.cacheService.del('test:all') //Xoá cache cũ
     }
 
     async findByIdAndUpdate(id: string, updateTestDTO: UpdateTestDTO): Promise<TestDocument | null> {
@@ -229,6 +268,7 @@ export class TestService {
         }
 
         const updatedQuestion = await this.questionService.bulkUpdateQuestions(questionUpdates);
+        console.log(updatedQuestion);
 
         const updatedTasks: any[] = updateTestDTO.tasks.map((task) => {
             const updatedSections = task.sections.map((section) => {
@@ -251,9 +291,9 @@ export class TestService {
             testName: updateTestDTO.testName
         })
 
-        await this.cacheService.del(`test:${id}`); //Xóa cache cũ
-        await this.cacheService.del(`test:type:${updateTestDTO.type}`); //Xóa cache cũ
-        await this.cacheService.del('test:all') //Xoá cache cũ
+        // await this.cacheService.del(`test:${id}`); //Xóa cache cũ
+        // await this.cacheService.del(`test:type:${updateTestDTO.type}`); //Xóa cache cũ
+        // await this.cacheService.del('test:all') //Xoá cache cũ
 
         return await foundTest.save();
         
@@ -261,11 +301,11 @@ export class TestService {
 
     async findQuestionsByTestId(testId: string, tasks: string){
 
-        const cacheData = await this.cacheService.get<any>(`test:${testId}:questions?tasks=${tasks}`); //Lấy data từ cache nếu có
+        // const cacheData = await this.cacheService.get<any>(`test:${testId}:questions?tasks=${tasks}`); //Lấy data từ cache nếu có
 
-        if(cacheData){
-            return cacheData; //Nếu có data từ cache trả về luôn
-        }
+        // if(cacheData){
+        //     return cacheData; //Nếu có data từ cache trả về luôn
+        // }
 
         const data = await this.testModel.findById(testId).populate({ path: 'tasks.sections.questions.question' }).exec() as any;
         if(!data){
@@ -281,11 +321,12 @@ export class TestService {
         })
 
         const returnData = {
+            testName: data.testName,
             testType: data.type,
             tasks: returnDataList
         }
 
-        this.cacheService.set(`test:${testId}:questions?tasks=${tasks}`, returnData)
+        // this.cacheService.set(`test:${testId}:questions?tasks=${tasks}`, returnData)
 
         return returnData;
     }
@@ -293,6 +334,7 @@ export class TestService {
     convertToCreateTestDTO(
         data: xlsx.WorkBook | GoogleSpreadsheet, 
         testName: string,
+        testType: string,
         taskSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
         sectionSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
         questionSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
@@ -313,7 +355,7 @@ export class TestService {
           const returnData = new CreateTestDTO;
           returnData.testName = testName;
           returnData.tasks = [];
-          returnData.type = TestType.READING;
+          returnData.type = testType as TestType;
     
            //Dữ liệu cần để xử lý
           const taskSectionIndexes: {
@@ -332,13 +374,19 @@ export class TestService {
                 haveTask = false;
                 break;
               }
-              if(!cellValue) continue;
     
               switch(col){
                 case 1:
                   const taskData = new TestTaskDTO;
                   taskData.sections = [];
-                  taskData.passage = cellValue;
+                  switch(testType){
+                    case TestType.LISTENING:
+                      taskData.audio = "test";
+                      break;
+                    case TestType.READING:
+                      taskData.passage = cellValue as string;
+                      break;
+                  }
     
                   if(!taskData.audio) delete taskData.audio;
                   if(!taskData.passage) delete taskData.passage;
@@ -392,7 +440,6 @@ export class TestService {
             let sectionPosition: number = -1;
             let taskPosition: number = -1;
             const question = new CreateQuestionDTO;
-            let stt: number = 1;
             let questionType: any;
             let numberOfChoices: number = 0;
             for(let col = questionSheetStartColumn; col < maxQuestionColumnCount; col++){
@@ -411,13 +458,13 @@ export class TestService {
                 //   stt = cellValue as number;
                 case 1:
                   if(!cellValue)
-                    throw new HttpException(`Question ${row-1} field "STT Section" is must have`, HttpStatus.BAD_REQUEST);
+                    throw new HttpException(`Question ${row} field "STT Section" is must have`, HttpStatus.BAD_REQUEST);
                   sectionPosition = taskSectionIndexes[cellValue as number-1].sectionIndex-1;
                   taskPosition = taskSectionIndexes[cellValue as number-1].taskIndex-1;
                   break;
                 case 2:
                   if(!cellValue)
-                    throw new HttpException(`Question ${row-1} field "Question type" is must have`, HttpStatus.BAD_REQUEST);
+                    throw new HttpException(`Question ${row} field "Question type" is must have`, HttpStatus.BAD_REQUEST);
                   questionType = cellValue;
                   question.type = questionType;
                   switch(questionType){
@@ -431,19 +478,16 @@ export class TestService {
                   }
                   break;
                 case 3:
-                  if(!cellValue) continue;
-                  const questionTitle = cellValue;
-                  question.question = questionTitle as any;
+                  question.question = !cellValue ? "" : cellValue.toString();
                   break;
                 case 4: //TO-DO
-                  console.log(cellValue);
                   break;
                 case maxQuestionColumnCount-1:
                   const choiceTypeQuestionRegex = /^(?:[0-9]|10)(?:,(?:[0-9]|10)){0,10}$/;
                   switch(questionType){
                     case QuestionType.FILL:
-                      if(!cellValue) 
-                        throw new HttpException(`Fill question ${stt} must have key`, HttpStatus.BAD_REQUEST);
+                      if(!cellValue)
+                        throw new HttpException(`Fill question ${row} must have key`, HttpStatus.BAD_REQUEST);
                       const key = cellValue as string;
                       if(choiceTypeQuestionRegex.test(key))
                         throw new HttpException(``, HttpStatus.BAD_REQUEST);
@@ -451,11 +495,11 @@ export class TestService {
                       break;
                     case QuestionType.CHOICE:
                       if(!cellValue) 
-                        throw new HttpException(`Choice question ${stt} must have keys`, HttpStatus.BAD_REQUEST);
+                        throw new HttpException(`Choice question ${row} must have keys`, HttpStatus.BAD_REQUEST);
                       const value = cellValue;
                       if(!choiceTypeQuestionRegex.test(value))
                         throw new HttpException(
-                          `Choice question ${stt} must have at most 11 keys, separated by comma, each keys must in range 0 to 10`, 
+                          `Choice question ${row} must have at most 11 keys, separated by comma, each keys must in range 0 to 10`, 
                           HttpStatus.BAD_REQUEST);
                       const choiceKeys = value.toString().split(',');
                       const keys: number[] = [];
@@ -464,7 +508,7 @@ export class TestService {
                       break;
                     case QuestionType.ESSAY:
                       if(cellValue)
-                        throw new HttpException(`Essay question ${stt} must not have key`, HttpStatus.BAD_REQUEST);
+                        throw new HttpException(`Essay question ${row} must not have key`, HttpStatus.BAD_REQUEST);
                       break;
                   }
     
@@ -507,52 +551,72 @@ export class TestService {
           })
     
           return returnData;
-      }
+    }
     
-      readExcel(file: Express.Multer.File){
-          //Đọc file
-          const fileData = xlsx.readFile(file.path);
-    
-          //Lấy tên sheet
-          const taskSheet = fileData.SheetNames[0];
-          const sectionSheet = fileData.SheetNames[1];
-          const questionSheet = fileData.SheetNames[2];
-    
-          //Xử lý ở sheet task
-          const taskSheetData = fileData.Sheets[taskSheet];
-          const taskSheetRange = xlsx.utils.decode_range(taskSheetData['!ref'] as string);
-    
-          const sectionSheetData = fileData.Sheets[sectionSheet];
-          const sectionSheetRange = xlsx.utils.decode_range(sectionSheetData['!ref'] as string);
-    
-          const questionSheetData = fileData.Sheets[questionSheet];
-          const questionSheetRange = xlsx.utils.decode_range(questionSheetData['!ref'] as string);
-    
-          const returnData = this.convertToCreateTestDTO(
-            fileData,
-            file.filename,
-            taskSheetData,
-            sectionSheetData,
-            questionSheetData,
-            taskSheetRange.e.r+1,
-            taskSheetRange.e.c+1,
-            sectionSheetRange.e.r+1,
-            sectionSheetRange.e.c+1,
-            questionSheetRange.e.r+1,
-            questionSheetRange.e.c+1,
-            taskSheetRange.s.r+1,
-            taskSheetRange.s.c,
-            sectionSheetRange.s.r+1,
-            sectionSheetRange.s.c,
-            questionSheetRange.s.r+1,
-            questionSheetRange.s.c
-          );
-    
-          //Xoá file vừa thêm vào
-          fs.unlink(file.path, (err) => {
-            if(err) console.log(err);
-          });
-    
-          return returnData;
-      }
+    readExcel(file: Express.Multer.File){
+        //Đọc file
+        const fileData = xlsx.readFile(file.path);
+  
+        //Lấy tên sheet
+        const informationSheet = fileData.SheetNames[0];
+        const taskSheet = fileData.SheetNames[1];
+        const sectionSheet = fileData.SheetNames[2];
+        const questionSheet = fileData.SheetNames[3];
+
+        const informationSheetData = fileData.Sheets[informationSheet];
+        const informationSheetRange = xlsx.utils.decode_range(informationSheetData['!ref'] as string);
+        let testName: string = "";
+        let testType: string = "";
+        for(let row = informationSheetRange.s.r+1; row <= informationSheetRange.e.r; row++){
+          for(let col = informationSheetRange.s.c; col <= informationSheetRange.e.c; col++){
+            const cellValue = informationSheetData[xlsx.utils.encode_cell({r: row, c: col})]?.w;
+            switch(col){
+              case 0:
+                testName = cellValue as string;
+                break;
+              case 1:
+                testType = cellValue as TestType;
+                break;
+            }
+          }
+        }
+
+        //Xử lý ở sheet task
+        const taskSheetData = fileData.Sheets[taskSheet];
+        const taskSheetRange = xlsx.utils.decode_range(taskSheetData['!ref'] as string);
+  
+        const sectionSheetData = fileData.Sheets[sectionSheet];
+        const sectionSheetRange = xlsx.utils.decode_range(sectionSheetData['!ref'] as string);
+  
+        const questionSheetData = fileData.Sheets[questionSheet];
+        const questionSheetRange = xlsx.utils.decode_range(questionSheetData['!ref'] as string);
+  
+        const returnData = this.convertToCreateTestDTO(
+          fileData,
+          testName,
+          testType,
+          taskSheetData,
+          sectionSheetData,
+          questionSheetData,
+          this.EXCEL_TASK_MAX_ROW,
+          this.EXCEL_TASK_MAX_COLUMN,
+          this.EXCEL_SECTION_MAX_ROW,
+          this.EXCEL_SECTION_MAX_COLUMN,
+          this.EXCEL_QUESTION_MAX_ROW,
+          this.EXCEL_QUESTION_MAX_COLUMN,
+          taskSheetRange.s.r+1,
+          taskSheetRange.s.c,
+          sectionSheetRange.s.r+1,
+          sectionSheetRange.s.c,
+          questionSheetRange.s.r+1,
+          questionSheetRange.s.c
+        );
+  
+        //Xoá file vừa thêm vào
+        fs.unlink(file.path, (err) => {
+          if(err) console.log(err);
+        });
+  
+        return returnData;
+    }
 }
