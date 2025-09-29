@@ -401,7 +401,7 @@ public class SubmitService {
 
         if (answerRequests == null || answerRequests.isEmpty()) {
             //submit but no answer list
-            submitRepository.delete(submit);
+            //submitRepository.delete(submit);
             response.setMessage("Answer list can not be null or empty");
             response.setStatus(400);
             return response;
@@ -439,7 +439,7 @@ public class SubmitService {
                 if(answerService.isNullOrBlank(questionId))
 
                 {
-                    submitRepository.delete(submit);
+                    //submitRepository.delete(submit);
                     response.setMessage("Question ID can not be null or empty");
                     response.setStatus(400);
                     return response;
@@ -449,7 +449,7 @@ public class SubmitService {
                                         .anyMatch(a -> a.getId_question().equals(questionId));
                 if (answered) 
                 {
-                    submitRepository.delete(submit);
+                    //submitRepository.delete(submit);
                     response.setMessage("Answer for question with ID " + questionId + " already exists.");
                     response.setStatus(400);
                     return response;
@@ -459,7 +459,7 @@ public class SubmitService {
 
                 if(question==null)
                 {
-                    submitRepository.delete(submit);
+                    //submitRepository.delete(submit);
                     response.setMessage("Send answer to non-exited question with ID "+ questionId);
                     response.setStatus(400);
                     return response;
@@ -470,7 +470,7 @@ public class SubmitService {
                 Object answer = answerService.CreateAnswer(userAnswer, submit,question);
 
                 if (answer instanceof ApiResponse) {
-                    submitRepository.delete(submit);
+                    //submitRepository.delete(submit);
                     return (ApiResponse) answer;
                 }
                 
