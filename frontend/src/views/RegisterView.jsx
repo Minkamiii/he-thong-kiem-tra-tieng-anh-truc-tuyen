@@ -1,8 +1,15 @@
-import './css/RegisterView.css';
+// import './css/RegisterView.css';
 import { useNavigate } from 'react-router-dom';
+import { Box, Grid, Typography, Paper, TextField, Button, Link } from '@mui/material';
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useState } from 'react';
+
 
 const RegisterView = () => {
     const navigate = useNavigate();
+    const [dateOfBirth, setDateOfBirth] = useState(null);
 
     const handleRegister = (event) => {
         event.preventDefault();
@@ -19,88 +26,101 @@ const RegisterView = () => {
     };
 
     return (
-        <div className="register-container">
-            {/* Left side */}
-            <div className="register-left">
-                <div className="register-logo"><a href="/home" className="register-logo-link">🅱️</a></div>
-                <div className="register-title">Bruh Web</div>
-                <div className="register-desc">
-                    Hệ thống kiểm tra Tiếng Anh trực tuyến
-                </div>
-            </div>
-            {/* Right side */}
-            <div className="register-right">
-                <div className="register-card">
-                    <div className="register-card-title">Register</div>
-                    <form onSubmit={handleRegister}>
-                        <div className="register-form-group">
-                            <label className="register-form-label">Username: </label>
-                            <input
-                                type="text"
-                                name="username"
-                                placeholder="Username"
-                                className="register-form-input"
-                                required
-                            />
-                        </div>
-                        <div className="register-form-group">
-                            <label className="register-form-label">Password: </label>
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Password"
-                                className="register-form-input"
-                                required
-                            />
-                        </div>
-                        <div className="register-form-group">
-                            <label className="register-form-label">Email: </label>
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Email"
-                                className="register-form-input"
-                                required
-                            />
-                        </div>
-                        {/* <div className="register-form-line">
-                            
-                        </div> */}
-                        <div className="register-form-group">
-                            <label className="register-form-label">Phone Number: </label>
-                            <input
-                                type="text"
-                                name="phoneNumber"
-                                placeholder="Phone Number"
-                                className="register-form-input"
-                                required
-                            />
-                        </div>
-                        <div className="register-form-group">
-                            <label className="register-form-label">Date of Birth: </label>
-                            <input
-                                type="date"
-                                name="dateOfBirth"
-                                placeholder="Date of Birth"
-                                className="register-form-input"
-                                required
-                            />
-                        </div>
-                        <div className="register-btn-container">
-                            <button
-                                type="submit"
-                                className="register-btn"
-                            >Register</button>
-                            <button
-                                type="button"
-                                className="register-back-btn"
-                                onClick={() => navigate('/login')}
-                            >Back</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <Grid container component="main" sx={{height: '100vh'}}>
+            <Grid
+                item
+                xs={false}
+                sm={6}
+                md={7}
+                sx={{
+                    display:'flex',
+                    flexDirection:'column',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    bgColor:'f5faff',
+                }}
+            >
+                <Box sx={{textAlign:'center'}}>
+                    <PersonAddAltIcon sx={{fontSize:64, color:'#1976d2', mb:2}} />
+                    <Typography component="h1" variant="h3" fontWeight={700}>Bruh Web</Typography>
+                    <Typography variant="h6" sx={{mt:2}}>Hệ thống kiểm tra Tiếng Anh trực tuyến</Typography>
+                </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={5} component={Paper} elevation={6} square>
+                <Box
+                    sx={{
+                        my:8, mx:4,
+                        display:'flex',
+                        flexDirection:'column',
+                        alignItems:'center',
+                    }}
+                >
+                    <Typography component="h1" variant="h5" fontWeight={700}>Đăng ký</Typography>
+                    <Box component="form" noValidate onSubmit={handleRegister} sx={{mt:1}}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="username"
+                            label="Username"
+                            name="username"
+                            autoFocus
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            id="password"
+                            type="password"
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="email"
+                            label="Email"
+                            name="email"
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="phoneNumber"
+                            label="Phone Number"
+                            name="phoneNumber"
+                        />
+                        <Box sx={{ mt: 2, mb:2 }}>
+                            <Typography variant="body1" sx={{ mb: 1 }}>Date of Birth</Typography>
+                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                <DatePicker
+                                    label="Date of Birth"
+                                    value={dateOfBirth}
+                                    onChange={setDateOfBirth}
+                                    format="dd/MM/yyyy"
+                                    slotProps={{
+                                        textField: { fullWidth: true, required: true, name: 'dateOfBirth' }
+                                    }}
+                                />
+                            </LocalizationProvider>
+                        </Box>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{mt:3, mb:2, py:1.5, fontWeight:600}}
+                        >Đăng ký</Button>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            sx={{mb:2, py:1.5}}
+                            onClick={() => navigate('/login')}
+                        >Back</Button>
+                    </Box>
+                </Box>
+            </Grid>
+        </Grid>
     );
 }
 

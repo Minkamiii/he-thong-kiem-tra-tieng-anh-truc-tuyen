@@ -1,52 +1,87 @@
-import './css/ForgotPasswordView.css';
+// import './css/ForgotPasswordView.css';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box, Button, TextField, Typography, Paper, Grid, Link } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const ForgotPasswordView = () => {
     const navigate = useNavigate();
 
     const handleForgotPassword = (event) => {
         event.preventDefault();
-        // Perform forgot password logic here
-        const info = event.target['retrieve-info'].value;
-        console.log('Retrieving password for', { info });
-        // On successful forgot password, navigate to the desired route
+        // Handle forgot password logic here
         navigate('/login');
     };
 
     return (
-        <div className="forgot-password-container">
-            {/* Left side */}
-            <div className="forgot-password-left">
-                <div className="forgot-password-logo"><a href="/home" className="forgot-password-logo-link">🅱️</a></div>
-                <div className="forgot-password-title">Bruh Web</div>
-                <div className="forgot-password-desc">
-                    Hệ thống kiểm tra Tiếng Anh trực tuyến
-                </div>
-            </div>
-            {/* Right side */}
-            <div className="forgot-password-right">
-                <div className="forgot-password-card">
-                    <div className="forgot-password-card-title">Forgot Password</div>
-                    <form onSubmit={handleForgotPassword}>
-                        <div className="forgot-password-form-group">
-                            <label className="forgot-password-form-label">Username/Email/Phone number: </label>
-                            <input
-                                type="text"
-                                name="retrieve-info"
-                                placeholder="Username/Email/Phone number"
-                                className="forgot-password-form-input"
-                                required
-                            />
-                        </div>
-                        <button
+        <Grid container component="main" sx={{ height: '100vh' }}>
+            <Grid
+                item
+                xs={false}
+                sm={6}
+                md={7}
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: '#f5faff',
+                }}
+            >
+                <Box sx={{ textAlign: 'center' }}>
+                    <HelpOutlineIcon sx={{ fontSize: 64, color: '#1976d2', mb: 2 }} />
+                    <Typography component="h1" variant="h3" fontWeight={700}>
+                        Bruh Web
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 2 }}>
+                        Hệ thống kiểm tra Tiếng Anh trực tuyến
+                    </Typography>
+                </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={5} component={Paper} elevation={6} square>
+                <Box
+                    sx={{
+                        my: 8,
+                        mx: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography component="h1" variant="h4" fontWeight={700}>
+                        Forgot Password
+                    </Typography>
+                    <Box component="form" onSubmit={handleForgotPassword} sx={{ mt: 2, width: '100%' }}>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="retrieve-info"
+                            label="Username/Email/Phone number"
+                            name="retrieve-info"
+                            autoFocus
+                        />
+                        <Button
                             type="submit"
-                            className="forgot-password-btn"
-                        >Reset Password</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 600 }}
+                        >
+                            Reset Password
+                        </Button>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            sx={{ mb: 2, py: 1.5 }}
+                            onClick={() => navigate('/login')}
+                        >
+                            Back to Login
+                        </Button>
+                    </Box>
+                </Box>
+            </Grid>
+        </Grid>
     );
-}
+};
 
 export default ForgotPasswordView;

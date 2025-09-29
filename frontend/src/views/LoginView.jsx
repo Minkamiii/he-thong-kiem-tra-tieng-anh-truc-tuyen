@@ -1,8 +1,11 @@
-import './css/LoginView.css';
-//import { useNavigate } from 'react-router-dom';
+// import './css/LoginView.css';
+import { useNavigate } from 'react-router-dom';
+import { Box, Grid, Typography, Paper, TextField, Button, Link } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const LoginView = () => {
-    //const navigate = useNavigate();
+
+    const navigate = useNavigate();
 
     const handleLogin = (event) => {
         event.preventDefault();
@@ -10,58 +13,142 @@ const LoginView = () => {
         // Hardcoded for demonstration purposes
         const username = event.target.username.value;
         const password = event.target.password.value;
-        console.log('Logging in with', { username, password });
+        // Hardcoded users for demonstration purposes
+        if (username === 'admin' && password === 'admin') {
+            alert('Admin login successful!');
+            navigate('/admin');
+            return;
+        }
+        else if (username === 'teacher' && password === 'teacher') {
+            alert('Teacher login successful!');
+            navigate('/home', {isLoggedIn: true, user: { id: '1', avatar: 'https://i.pravatar.cc/300' }});
+            return;
+        }
+        else if (username === 'student' && password === 'student') {
+            alert('Student login successful!');
+            navigate('/home', {isLoggedIn: true, user: { id: '2', avatar: 'https://i.pravatar.cc/300' }});
+            return;
+        }
+        alert('Login failed! Incorrect username or password.');
         // On successful login, navigate to the desired route
         //navigate('/dashboard');
     };
 
     return (
-        <div className="login-container">
-            {/* Left side */}
-            <div className="login-left">
-                <div className="login-logo"><a href="/home" className="login-logo-link">🅱️</a></div>
-                <div className="login-title">Bruh Web</div>
-                <div className="login-desc">
-                    Hệ thống kiểm tra Tiếng Anh trực tuyến
-                </div>
-            </div>
-            {/* Right side */}
-            <div className="login-right">
-                <div className="login-card">
-                    <div className="login-card-title">Login</div>
-                    <form onSubmit={handleLogin}>
-                        <div className="login-form-group">
-                            <label className="login-form-label">Username: </label>
-                            <input
-                                type="text"
-                                name="username"
-                                placeholder="Username"
-                                className="login-form-input"
-                                required
-                            />
-                        </div>
-                        <div className="login-form-group">
-                            <label className="login-form-label">Password: </label>
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Password"
-                                className="login-form-input"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="login-btn"
-                        >Login</button>
-                        <div className="login-links">
-                            <a href="/forgot-password" className="login-link">Forgot password?</a>
-                            <a href="/register" className="login-link">Register</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        <div>
+            <Grid container component="main" sx={{ 
+                height: '100vh'
+            }}>
+                {/* Left branding area */}
+                <Grid
+                    item
+                    size={{xs:12, md:6}}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        py: { xs: 4, md: 4 },
+                    }}
+                >
+                    <LockOutlinedIcon sx={{ fontSize: 100, mb: 2 }} />
+                    <Typography component="h1" variant="h3" fontSize={80} fontWeight={600} sx={{ mb: 2 }}>
+                        Bruh web
+                    </Typography>
+                    <Typography variant="body1" maxWidth="100%" fontSize={24}>
+                        Hệ thống ôn luyện Tiếng Anh trực tuyến
+                    </Typography>
+                </Grid>
+                {/* Right login form */}
+                <Grid
+                    item
+                    size={{xs:12, md:6}}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        py: { xs: 4, md: 4 },
+                    }}
+                >
+                    <Paper 
+                        elevation={3} 
+                        sx={{
+                            p: 4,
+                            width: '100%',
+                            maxWidth: '500px',
+                            borderRadius: 2,
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display:'flex',
+                                flexDirection:'column',
+                                alignItems:'center',
+                            }}
+                        >
+                            <Typography component="h1" variant="h5" fontSize={36} fontWeight={700} sx={{mb:1}}>
+                                Sign In
+                            </Typography>
+                            <Box component="form" onSubmit={handleLogin} sx={{width:'100%'}}>
+                                <TextField
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    id="username"
+                                    label="Username"
+                                    name="username"
+                                    autoComplete="username"
+                                    autoFocus
+                                    sx={{mb:1}}
+                                />
+                                <TextField
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    name="password"
+                                    label="Password"
+                                    type="password"
+                                    id="password"
+                                    autoComplete="current-password"
+                                    sx={{mb:3}}
+                                />
+                                <Button
+                                    type="submit"
+                                    fullWidth
+                                    variant="contained"
+                                    sx={{ py: 1.25, fontWeight: 600, fontSize: '20px', mb: 3.5 }}
+                                >
+                                    Sign In
+                                </Button>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Link 
+                                        component="button"
+                                        variant="body2"
+                                        onClick={() => navigate('/forgot-password')}
+                                        // xs={4} md={1}
+                                        sx={{ fontSize: '20px', fontWeight: 'bold' }}
+                                        underline='none'
+                                    >
+                                        Forgot password?
+                                    </Link>
+                                    <Link 
+                                        component="button"
+                                        variant="body2"
+                                        onClick={() => navigate('/register')}
+                                        //xs={4} md={2}
+                                        sx={{ fontSize: '20px', fontWeight: 'bold' }}
+                                        underline='none'
+                                    >
+                                        New User?
+                                    </Link>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Grid>
+            </Grid>
         </div>
+        
     );
 }
 
