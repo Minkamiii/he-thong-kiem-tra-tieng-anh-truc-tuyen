@@ -2,12 +2,17 @@ package com.khanh.code.answer;
 
 import com.khanh.code.submit.Submit;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 
 @Entity
 public class Answer_Essay extends Answer {
 
     public Answer_Essay() {}
+
+    @Lob
+    @Column(columnDefinition = "TEXT") 
     private String answer;
 
     public Answer_Essay(String id_question, Submit submit,Type type, String answer) {

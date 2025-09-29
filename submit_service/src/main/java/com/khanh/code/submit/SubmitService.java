@@ -411,7 +411,7 @@ public class SubmitService {
         {
             //get all question inside 
             List<Question> questions=new LinkedList<>();
-            System.out.println(testResponse.getTasks());
+            //System.out.println(testResponse.getTasks());
 
             List<TaskResponse> taskResponses=testResponse.getTasks();
 
@@ -425,8 +425,7 @@ public class SubmitService {
 
                     for( QuestionResponse questionResponse: questionResponses){
                         Question question =questionResponse.getQuestion();
-                        System.out.println(question.get_id());
-                        System.out.println(question.getType());
+                        
                         questions.add(question);
                     }
                 }
