@@ -1,7 +1,4 @@
 package com.example.userservice.Configuration;
-
-import javax.crypto.spec.SecretKeySpec;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +11,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity // cho phép tùy chỉnh cấu hình bảo mật
@@ -21,11 +21,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final String [] PUBLIC_ENDPOINTS ={
-            "api/user/register",
-            "api/auth/login",
-            "api/auth/introspect",
-            "api/auth/logout",
-            "api/auth/refreshToken"
+            "/api/user/register",
+            "/api/auth/login",
+            "/api/auth/introspect",
+            "/api/auth/logout",
+            "/api/auth/refreshToken",
+            "api/user/**"
     };
 
     @Value("${jwt.signerKey}")
@@ -33,10 +34,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(request ->
-            request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                    // .requestMatchers(HttpMethod.GET, "/users").hasAuthority("SCOPE_ADMIN")
-                    .anyRequest().authenticated()
+        httpSecurity
+            .cors(cors -> {}) // bật cors, lấy config từ bean CorsFilter/CorsConfigurationSource
+            .authorizeHttpRequests(request ->
+                request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/**").permitAll()
+                        .anyRequest().authenticated()
         );
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
@@ -48,6 +51,22 @@ public class SecurityConfig {
         // crsf là loại tấn công khi hacker lợi dụng sessiom/cookie nhưng service  dùng jwt+restapi nên ko dùng session/cookie -> tắt 
 
         return httpSecurity.build();
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.addAllowedOrigin("http://localhost:5173");
+        corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedOriginPattern("*");
+
+        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+
+        return new CorsFilter(urlBasedCorsConfigurationSource);
     }
 
     @Autowired 

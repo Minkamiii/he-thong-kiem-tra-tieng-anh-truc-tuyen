@@ -1,6 +1,8 @@
 package com.example.userservice.dto.request;
 
 import java.time.LocalDate;
+import java.util.Set;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -19,6 +21,9 @@ public class UserCreationRequest {
 
     @NotNull(message = "INFORMATION_NOT_NULL")
     private LocalDate dob;
+
+    @NotNull(message = "INFORMATION_NOT_NULL")
+    private Set<String> roles;
     
     public String getUsername() {
         return username;
@@ -51,5 +56,10 @@ public class UserCreationRequest {
         this.dob = dob;
     }
 
-    
+    public Set<String> getRoles() {
+        return roles;
+    }
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
+    }
 }

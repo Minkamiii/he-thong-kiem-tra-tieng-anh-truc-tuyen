@@ -46,6 +46,10 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.USER_UNEXISTED));
     }
 
+    public User getUser(String userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
     public User updateUser(String id, UserCreationRequest request) {
         User user = getUserByIdUser(id);
         if(user==null){

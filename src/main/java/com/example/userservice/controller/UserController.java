@@ -2,6 +2,7 @@ package com.example.userservice.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,10 +32,18 @@ public class UserController {
         return apiResponse;
     }
 
+    // @GetMapping("/getAll")
+    // @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    // List<User> getAllUsers() {
+    //     return userService.getAllUsers();
+    // }
+
     @GetMapping("/getAll")
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-    List<User> getAllUsers() {
-        return userService.getAllUsers();
+    ApiResponse getAllUsers() {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setResult(userService.getAllUsers());
+        return apiResponse;
     }
 
     @GetMapping("/info/{userId}")
@@ -43,6 +52,18 @@ public class UserController {
         apiResponse.setResult(userService.getUserByIdUser(userId));
         return apiResponse;
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<User> getUser(@PathVariable String userId) {
+        User foundUser = userService.getUser(userId);
+        System.out.println("find user with id" + userId + " : " + foundUser);
+        if (foundUser != null) {
+            return ResponseEntity.status(200).body(foundUser);
+        } else {
+            return ResponseEntity.status(404).body(null);
+        }
+    }
+
 
     @PutMapping("/update/{userId}")
     ApiResponse updateUser(@PathVariable String userId, @RequestBody UserCreationRequest request){
