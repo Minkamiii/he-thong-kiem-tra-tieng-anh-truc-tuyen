@@ -499,7 +499,7 @@ public class SubmitService {
 
     //call user service to check user exist
     public boolean checkUser(String userID){
-        String url ="http://localhost:8081/userservice/"+userID;
+        String url ="http://localhost:8081/userservice/api/user/"+userID;
         try{
             ResponseEntity<Void> response= restTemplate.getForEntity(url,Void.class);
             //System.out.println(response.getStatusCode());
