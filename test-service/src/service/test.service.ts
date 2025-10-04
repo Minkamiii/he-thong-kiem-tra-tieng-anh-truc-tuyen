@@ -192,7 +192,7 @@ export class TestService {
 
         const skip = (page - 1) * limit;
         const totalItems = await this.testModel.find({ type }).countDocuments();
-                const data = await this.testModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).select('-tasks').exec();
+        const data = await this.testModel.find({ type }).sort({ createdAt: -1 }).skip(skip).limit(limit).select('-tasks').exec();
 
         const returnData = {
             data,
@@ -575,7 +575,7 @@ export class TestService {
                 testName = cellValue as string;
                 break;
               case 1:
-                testType = cellValue as TestType;
+                testType = cellValue.toString().trim().toLowerCase() as TestType;
                 break;
             }
           }
