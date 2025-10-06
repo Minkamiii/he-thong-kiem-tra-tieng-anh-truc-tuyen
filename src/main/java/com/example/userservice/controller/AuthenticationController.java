@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.userservice.dto.reponse.ApiResponse;
 import com.example.userservice.dto.reponse.AuthenticationResponse;
 import com.example.userservice.dto.reponse.IntrospectResponse;
-import com.example.userservice.dto.request.ApiResponse;
 import com.example.userservice.dto.request.AuthenticationRequest;
 import com.example.userservice.dto.request.IntrospectRequest;
 import com.example.userservice.dto.request.LogoutRequest;
@@ -25,7 +25,16 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     ApiResponse authenticate(@RequestBody AuthenticationRequest request){
-        AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
+        AuthenticationResponse authenticationResponse = authenticationService.authenticate(request,false);
+        ApiResponse apiResponse = new ApiResponse();
+        System.out.println(authenticationResponse.getToken());
+        apiResponse.setResult(authenticationResponse);
+        return apiResponse;
+    }
+
+    @PostMapping("/admin")
+    ApiResponse authenticateAdmin(@RequestBody AuthenticationRequest request){
+        AuthenticationResponse authenticationResponse = authenticationService.authenticate(request,true);
         ApiResponse apiResponse = new ApiResponse();
         System.out.println(authenticationResponse.getToken());
         apiResponse.setResult(authenticationResponse);

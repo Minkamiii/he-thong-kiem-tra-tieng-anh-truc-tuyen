@@ -68,19 +68,19 @@ public class AuthenticationService {
         return new IntrospectResponse(isValid);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticate(AuthenticationRequest request,boolean adminLogin) {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_UNEXISTED));
         
         PasswordEncoder passwordEncoder= new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
-        if(!authenticated){
+        if(!authenticated || (adminLogin && !(user.getRoles().contains("SUPER_ADMIN") || user.getRoles().contains("ADMIN")))){
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
         String token = generateToken(user);
 
-        return new AuthenticationResponse(token, authenticated);
+        return new AuthenticationResponse(token, authenticated, user);
     }
 
     public void logout (LogoutRequest request) throws ParseException, JOSEException {

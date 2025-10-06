@@ -5,7 +5,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.example.userservice.dto.request.ApiResponse;
+import com.example.userservice.dto.reponse.ApiResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandle {
@@ -14,8 +14,8 @@ public class GlobalExceptionHandle {
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception){
         ApiResponse apiResponse =new ApiResponse();
 
-        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
-        apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
+        apiResponse.setCode(ErrorCode.UNAUTHENTICATED.getCode());
+        apiResponse.setMessage(ErrorCode.UNAUTHENTICATED.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
     }

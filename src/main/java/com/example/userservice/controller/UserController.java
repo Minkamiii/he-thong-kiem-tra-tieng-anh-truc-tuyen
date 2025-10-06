@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.userservice.dto.request.ApiResponse;
+
+import com.example.userservice.dto.reponse.ApiResponse;
 import com.example.userservice.dto.request.UserCreationRequest;
+import com.example.userservice.dto.request.UserUpdateRequest;
 import com.example.userservice.entity.User;
 import com.example.userservice.service.UserService;
 
@@ -28,18 +30,20 @@ public class UserController {
     @PostMapping("/register")
     ApiResponse registerUser(@RequestBody @Valid UserCreationRequest request) {
         ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setResult(userService.registerUser(request));
+        apiResponse.setResult(userService.registerUser(request,false));
         return apiResponse;
     }
 
-    // @GetMapping("/getAll")
-    // @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-    // List<User> getAllUsers() {
-    //     return userService.getAllUsers();
-    // }
+    @PostMapping("/adduser")
+    @PreAuthorize("hasAuthority('SCOPE_SUPER_ADMIN')")
+    ApiResponse adduser(@RequestBody @Valid UserCreationRequest request) {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setResult(userService.registerUser(request, true));
+        return apiResponse;
+    }
 
     @GetMapping("/getAll")
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_SUPER_ADMIN')||hasAuthority('SCOPE_ADMIN')")
     ApiResponse getAllUsers() {
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setResult(userService.getAllUsers());
@@ -66,14 +70,15 @@ public class UserController {
 
 
     @PutMapping("/update/{userId}")
-    ApiResponse updateUser(@PathVariable String userId, @RequestBody UserCreationRequest request){
+    @PreAuthorize("hasAuthority('SCOPE_SUPER_ADMIN')")
+    ApiResponse updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
         ApiResponse apiResponse=new ApiResponse();
         apiResponse.setResult(userService.updateUser(userId,request));
         return apiResponse;
     }
 
     @DeleteMapping("/delete/{userId}")
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN') or #userId == authentication.principal.id")
+    @PreAuthorize("hasAuthority('SCOPE_SUPER_ADMIN') or #userId == authentication.principal.id")
     void deleteUser(@PathVariable String userId){
         userService.deleteUser(userId);
     }

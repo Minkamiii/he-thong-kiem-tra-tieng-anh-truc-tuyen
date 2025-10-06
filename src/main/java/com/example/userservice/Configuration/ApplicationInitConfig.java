@@ -21,13 +21,13 @@ public class ApplicationInitConfig {
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {
-            if(userRepository.findByUsername("admin").isEmpty()){
+            if(userRepository.findByUsername("super_admin").isEmpty()){
                 Set<String> roles =new HashSet<>();
-                roles.add(Role.ADMIN.name());
+                roles.add(Role.SUPER_ADMIN.name());
 
                 User user = new User();
-                user.setUsername("admin");
-                user.setPassword(passwordEncoder.encode("admin123"));
+                user.setUsername("super_admin");
+                user.setPassword(passwordEncoder.encode("superadmin123"));
                 user.setRoles(roles);
                 userRepository.save(user);
             }
