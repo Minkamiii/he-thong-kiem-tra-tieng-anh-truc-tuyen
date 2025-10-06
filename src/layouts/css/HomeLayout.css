@@ -23,6 +23,7 @@ html, body {
 
 /* Sidebar chiếm cố định bên trái */
 .home-layout .sidebar {
+  position: fixed;
   width: 240px;
   background: #0a75c6; /* nền tối hơn */
   padding: 1rem;
@@ -33,6 +34,7 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-left: 240px; /* tránh bị che khuất bởi sidebar */
 }
 
 

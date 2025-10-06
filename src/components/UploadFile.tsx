@@ -1,42 +1,26 @@
-import { useState } from "react";
+import React from "react";
 
-interface UploadFileProps {
-  onFileSelect?: (file: File) => void; // callback khi chọn file
-}
+type Props = {
+  onFileSelect: (file: File) => void;
+};
 
-export default function UploadFile({ onFileSelect }: UploadFileProps) {
-  const [fileName, setFileName] = useState<string>("");
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
-      if (onFileSelect) onFileSelect(file);
+export default function UploadFile({ onFileSelect }: Props) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      onFileSelect(e.target.files[0]);
     }
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      <label
-        htmlFor="file-upload"
-        style={{
-          background: "#ff6600",
-          color: "white",
-          padding: "8px 16px",
-          borderRadius: "20px",
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        📂 Upload
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
-      {fileName && <span>{fileName}</span>}
-    </div>
+    <input
+      type="file"
+      accept=".xlsx,.xls"
+      onChange={handleChange}
+      style={{
+        padding: "8px",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+      }}
+    />
   );
 }

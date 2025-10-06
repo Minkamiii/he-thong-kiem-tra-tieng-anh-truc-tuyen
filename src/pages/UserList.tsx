@@ -91,6 +91,7 @@ export default function UserList() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Changing", e.target.name, "to", e.target.value);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -123,6 +124,7 @@ export default function UserList() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    console.log("Submitting form with data:", formData);
     const newUserData: AddUserRequest = {
       username: formData.username,
       email: formData.email,
@@ -135,6 +137,7 @@ export default function UserList() {
     try {
       const newUser = await addUser(newUserData);
       setUsers((prev) => [...prev, newUser]);
+      alert("Thêm user thành công.");
       handleClose();
       await fetchUsers(); // Tải lại danh sách user sau khi thêm
     } catch (err: any) {
@@ -148,7 +151,7 @@ export default function UserList() {
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <h2>Danh sách User</h2>
+        <h2>List User</h2>
         <Button variant="contained" startIcon={<Add />} onClick={handleOpen}>
           Add User
         </Button>
@@ -167,7 +170,7 @@ export default function UserList() {
               <TableCell>#</TableCell>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Chi tiết</TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -190,7 +193,7 @@ export default function UserList() {
                       variant="outlined"
                       size="small"
                     >
-                      Xem chi tiết
+                      See detail
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -208,7 +211,7 @@ export default function UserList() {
 
       {/* Form Add User */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Thêm User</DialogTitle>
+        <DialogTitle>Add User</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
@@ -264,6 +267,7 @@ export default function UserList() {
             error={!!errors.roles}
             helperText={errors.roles}
           >
+            <MenuItem value="SuperAdmin">SuperAdmin</MenuItem>
             <MenuItem value="Admin">Admin</MenuItem>
             <MenuItem value="User">User</MenuItem>
           </TextField>
@@ -297,9 +301,9 @@ export default function UserList() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Hủy</Button>
+          <Button onClick={handleClose}>Close</Button>
           <Button variant="contained" onClick={handleSubmit}>
-            Lưu
+            Save
           </Button>
         </DialogActions>
       </Dialog>

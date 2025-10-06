@@ -52,14 +52,24 @@ export type AddUserRequest = {
 
 // Add user chỉ nhận AddUserRequest, không cần id
   export const addUser = async (user: AddUserRequest): Promise<User> => {
-    const res = await axiosClient.post<User>("/api/user/register", user);
+    console.log("Adding user:", user);
+    const res = await axiosClient.post<User>("/api/user/adduser", user);
+    console.log("Added user response:", res);
     return res.data;
   };
 
   export const updateUser = async ( id: string, user: AddUserRequest): Promise<User> => {
-    const res = await axiosClient.put<User>(`/api/user/update/${id}`, user);
-    console.log(res.data)
-    return res.data;
+    const { password, ...payload } = user;
+    try {
+      const res = await axiosClient.put<User>(`/api/user/update/${id}`, payload);
+      return res.data;
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      throw error;
+    }
+    // const res = await axiosClient.put<User>(`/api/user/update/${id}`, user);
+    // console.log("sajd",res.data)
+    // return res.data;
   }
 
   export const deleteUser = async (id: string): Promise<void> => {

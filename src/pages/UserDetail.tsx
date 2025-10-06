@@ -11,6 +11,7 @@ import {
   MenuItem,    // This was also missing
   InputLabel,  // This was also missing
   FormControl,
+  Box,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { getUsers, deleteUser, updateUser } from "../api/UsersApi";
@@ -26,6 +27,8 @@ export default function UserDetail() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<User | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -78,6 +81,7 @@ export default function UserDetail() {
     try {
       await deleteUser(id);
       navigate("/users");
+      alert("Xóa người dùng thành công.");
     } catch (error) {
       console.error("Failed to delete user:", error);
       // Hiển thị thông báo lỗi cho người dùng
@@ -106,13 +110,12 @@ export default function UserDetail() {
       setUser(result);
       setFormData(result);
       setIsEditing(false); // Thoát khỏi chế độ chỉnh sửa
+      alert("Cập nhật người dùng thành công.");
+      navigate("/users");
+    } catch (error:any) {
+      setSubmitError(error.response?.data?.message || "Cập nhật người dùng thất bại.");
       
-    } catch (error) {
-      console.error("Failed to update user:", error);
-      // Hiển thị thông báo lỗi cho người dùng
-      setError("Cập nhật người dùng thất bại.");
     }
-    navigate("/users");
   };
 
   return (
@@ -127,7 +130,7 @@ export default function UserDetail() {
     >
       <CardContent>
         <Typography variant="h5" gutterBottom>
-          Chi tiết User
+          User details
         </Typography>
 
         {!isEditing ? (
@@ -189,7 +192,7 @@ export default function UserDetail() {
             />
             <FormControl fullWidth>
               <InputLabel id="roles-label">Roles</InputLabel>
-              <Select
+              {/* <Select
                 labelId="roles-label"
                 id="roles-select"
                 multiple // Cho phép chọn nhiều vai trò
@@ -200,14 +203,30 @@ export default function UserDetail() {
                 }}
                 label="Roles"
                 renderValue={(selected) => selected.join(', ')} // Hiển thị các giá trị đã chọn
+              > */}
+              <Select
+                labelId="roles-label"
+                id="roles-select"
+                value={formData?.roles?.[0] || ""} // chỉ lấy 1 role
+                onChange={(e) => {
+                  const value = e.target.value as string;
+                  setFormData((prev) => prev && { ...prev, roles: [value] }); // ép thành mảng 1 phần tử
+                }}
+                label="Roles"
               >
-                <MenuItem value="ROLE_ADMIN">Admin</MenuItem>
-                <MenuItem value="ROLE_USER">User</MenuItem>
+                <MenuItem value="SuperAdmin">Super Admin</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="User">User</MenuItem>
               </Select>
             </FormControl>
+            {submitError && (
+              <Box mt={1} color="red">
+                  {submitError}
+                </Box>
+            )}
             <Stack direction="row" spacing={2} justifyContent="center">
               <Button variant="contained" color="primary" onClick={handleUpdate}>
-                Xác nhận
+                Save
               </Button>
               <Button
                 variant="outlined"
@@ -218,10 +237,11 @@ export default function UserDetail() {
                     if(user) setFormData(user);
                 }}
               >
-                Thoát
+                Back
               </Button>
             </Stack>
           </Stack>
+          
         )}
 
         {!isEditing && (
