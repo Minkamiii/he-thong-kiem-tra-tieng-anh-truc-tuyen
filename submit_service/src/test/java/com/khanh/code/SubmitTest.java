@@ -151,7 +151,7 @@ public class SubmitTest {
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());
-        assertEquals(response.getMessage(), "This user did not submit any test");
+        assertEquals(response.getMessage(), "Can not find submit of user");
     }
 
     @Test

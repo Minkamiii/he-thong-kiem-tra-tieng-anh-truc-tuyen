@@ -83,7 +83,7 @@ public class SubmitService {
         }
 
         if (submitPage.isEmpty()) {
-            response.setMessage("This user did not submit any test");
+            response.setMessage("Can not find submit of user");
             response.setStatus(404);
             return response;
         }
