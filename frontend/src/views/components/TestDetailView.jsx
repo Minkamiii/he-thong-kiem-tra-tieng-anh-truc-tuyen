@@ -54,7 +54,7 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
     }
 
     // Calculate numOfTasks and numOfQuestions from test data if needed
-    // MinhTran counts
+    // Backend will give this, these codes shall be removed
     const numOfTasks = Array.isArray(test.testTasks) ? test.testTasks.length : 0;
     const numOfQuestions = Array.isArray(test.testTasks) 
         ? test.testTasks.reduce((taskTotal, task) => {

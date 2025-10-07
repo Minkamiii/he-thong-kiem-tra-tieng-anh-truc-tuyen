@@ -51,11 +51,11 @@ const LoginView = () => {
                         py: { xs: 4, md: 4 },
                     }}
                 >
-                    <LockOutlinedIcon sx={{ fontSize: 100, mb: 2 }} />
-                    <Typography component="h1" variant="h3" fontSize={80} fontWeight={600} sx={{ mb: 2 }}>
-                        Bruh web
+                    <LockOutlinedIcon sx={{ fontSize: 100, color:'#1976d2', mb: 2 }} />
+                    <Typography component="h1" variant="h3" fontSize={70} fontWeight={600} sx={{ mb: 2 }}>
+                        Bruh Web
                     </Typography>
-                    <Typography variant="body1" maxWidth="100%" fontSize={24}>
+                    <Typography variant="h6" fontSize={24}>
                         Hệ thống ôn luyện Tiếng Anh trực tuyến
                     </Typography>
                 </Grid>
@@ -86,7 +86,7 @@ const LoginView = () => {
                                 alignItems:'center',
                             }}
                         >
-                            <Typography component="h1" variant="h5" fontSize={36} fontWeight={700} sx={{mb:1}}>
+                            <Typography component="h1" variant="h5" fontSize={32} fontWeight={700} sx={{mb:1}}>
                                 Sign In
                             </Typography>
                             <Box component="form" onSubmit={handleLogin} sx={{width:'100%'}}>
@@ -116,10 +116,16 @@ const LoginView = () => {
                                     type="submit"
                                     fullWidth
                                     variant="contained"
-                                    sx={{ py: 1.25, fontWeight: 600, fontSize: '20px', mb: 3.5 }}
+                                    sx={{ py: 1.25, fontWeight: 600, fontSize: '20px', mb: 2 }}
                                 >
                                     Sign In
                                 </Button>
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    sx={{mb:2, py:1.5, fontWeight: 600, fontSize: '20px'}}
+                                    onClick={() => navigate('/home')}
+                                >Back</Button>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <Link 
                                         component="button"
