@@ -1,5 +1,6 @@
-import { Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Grid, Box, Divider, Button } from '@mui/material';
+import { Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Grid, Box, Divider, Button, Select, MenuItem } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BaseUI from './BaseUI';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,11 +8,14 @@ import { setTest } from '../states/TestSlice.jsx';
 
 
 const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const [checked, setChecked] = useState([0]);
-    const test = useSelector((state) => state.test);
     const [loading, setLoading] = useState(false);
-    const dispatch = useDispatch();
+    const [timeLimit, setTimeLimit] = useState(0);
+
+    const test = useSelector((state) => state.test);
 
     useEffect(() => {
         // Fetch test details from API using testId
@@ -69,18 +73,29 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
         if (currentIndex == -1) newChecked.push(value);
         else newChecked.splice(currentIndex, 1);
 
+        newChecked.sort((a, b) => a - b); // Sort ascending
         setChecked(newChecked);
+    }
+
+    const getTimeOptions = () => {
+        const maxTime = test?.testType?.toLowerCase() === 'listening' ? 55 : 75;
+        const options = [];
+        for (let i = 0; i <= maxTime; i += 5) {
+            options.push(i);
+        }
+        return options;
     }
 
     const handleStartTest = () => {
         // Logic to start the test
-        console.log("Starting test...");
-
+        const taskParams = checked.map(idx => `task=${idx}`).join('&');
+        const timeParam = timeLimit > 0 ? `&time=${timeLimit}` : '';
+        navigate(`/test/${test._id}/take?${taskParams}${timeParam}`);
     }
 
     return (
         <BaseUI isLoggedIn={isLoggedIn} user={user}>
-            <Grid container spacing={1}>
+            <Grid container spacing={1} sx={{alignItems: 'center', justifyContent: 'center', my:2}}>
                 {/* Test Detail */}
                 <Grid item xs={12} md={12}>
                     <Box sx={{
@@ -94,7 +109,6 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                         
                     }}>
                         <Typography variant='h3' fontWeight={700} sx={{mb:2}}>{test.testName}</Typography>
-                        <Typography variant='h6'>{`ID: ${test._id}`}</Typography>
                         <Typography variant='h6'>{`Type: ${test.testType} | ${numOfTasks} phần thi | ${numOfQuestions} câu hỏi`}</Typography>
                         <Divider sx={{width: '100%', mt: 2}}/>
                         
@@ -127,6 +141,17 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
 
                         {/* Time limit  */}
                         <Typography sx={{mb: 2}}>{`Giới hạn thời gian (Để trống để làm bài không giới hạn):`}</Typography>
+                        <Select
+                            value={timeLimit}
+                            onChange={(e) => setTimeLimit(e.target.value)}
+                            sx={{ mb:3, minWidth: 120 }}
+                        >
+                            {getTimeOptions().map((minutes) => (
+                                <MenuItem key={minutes} value={minutes}>
+                                    {minutes === 0 ? "Không giới hạn" : `${minutes} phút`}
+                                </MenuItem>
+                            ))}
+                        </Select>
                         
                         {/* Start Test Button */}
                         <Button variant='contained' color='primary' onClick={handleStartTest}>Bắt đầu làm bài</Button>

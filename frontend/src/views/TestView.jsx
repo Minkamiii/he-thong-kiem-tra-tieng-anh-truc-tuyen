@@ -1,7 +1,8 @@
 // import './css/HomeView.css';
 import React, { useEffect, useState } from 'react';
-import { Typography, Grid, Pagination } from '@mui/material';
+import { Typography, Grid, Pagination, TextField, InputAdornment, Button } from '@mui/material';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import SearchIcon from "@mui/icons-material/Search";
 
 import axios from 'axios';
 import TestChooseBoxView from './components/TestChooseBoxView';
@@ -16,7 +17,8 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
     const [testInPageArray, setTestInPageArray] = useState(Array(0));
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
-
+    const [filterType, setFilterType] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const page = Number(new URLSearchParams(location.search).get('page')) || 1;
 
@@ -35,8 +37,16 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
         setLoading(true);
         setTestInPageArray([]);
         const requestedPage = page;
+
+        // Construct URL based on whether there's a filter type
+        const baseUrl = filterType 
+            ? `http://[::1]:8000/api/test/type/${filterType}` 
+            : 'http://[::1]:8000/api/test';
+
+        const testViewUrl = `${baseUrl}?page=${page}${searchQuery ? `&search=${searchQuery}` : ''}`;
+
         axios
-            .get(`http://[::1]:8000/api/test?page=${page}`, { signal: controller.signal })
+            .get(testViewUrl, { signal: controller.signal })
             .then((response) => {
                 console.log(response.data);
                 if (requestedPage !== page) return; // ignore stale response
@@ -54,22 +64,94 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
         return () => {
             controller.abort();
         };
-    }, [page]);
+    }, [filterType, page, searchQuery]);
 
     const handlePageChange = (event, value) => {
         const params = new URLSearchParams(location.search);
-        const pageInUrl = Number(params.get('page')) || 1;
-        if (pageInUrl !== value) setSearchParams({ page: String(value) }, { replace: false });
+        // const pageInUrl = Number(params.get('page')) || 1;
+        // if (pageInUrl !== value) setSearchParams({ page: String(value) }, { replace: false });
+        params.set('page', String(value));
+        setSearchParams(params);
+    }
+
+    const handleFilterType = (type) => {
+        const params = new URLSearchParams(location.search);
+        if (type === filterType) params.delete('type');
+        else params.set('type', type);
+
+        params.set('page', '1'); // Reset to first page
+        setFilterType(prev => prev === type ? '' : type);
+        setSearchParams(params);
+    }
+
+    const handleSearch = (event) => {
+        const params = new URLSearchParams(location.search);
+        const query = event.target.value;
+        if (query) params.set('search', query);
+        else params.delete('search');
+
+        params.set('page', '1');
+        setSearchQuery(query);
+        setSearchParams({ page: '1' });
     }
 
     return (
         <BaseUI isLoggedIn={isLoggedIn} user={user}>
             <Typography mb={2} variant="h4" fontWeight={700}>Thư viện đề thi</Typography>
+            
+            {/* Search Bar */}
+            <TextField
+                fullwidth
+                variant="outlined"
+                placeholder="Nhập từ khóa bạn muốn tìm kiếm: tên đề thi, loại đề,..."
+                value={searchQuery}
+                onChange={handleSearch}
+                sx={{mb:3}}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
+            />
+            
             {/* Change this to search by category */}
-            <Grid container spacing={2} mb={5}>
-                <Grid item sx={{xs:12, md:1}}>Reading</Grid>
-                <Grid item sx={{xs:12, md:1}}>Listening</Grid>
-                <Grid item sx={{xs:12, md:1}}>Writing</Grid>   
+            <Grid container  mb={5}>
+                <Grid item>
+                    <Button
+                        sx={{width:'14vh'}}
+                        onClick={() => handleFilterType('')}
+                        variant={filterType === '' ? 'contained' : 'text'}
+                        color="primary"
+                    >All</Button>
+                </Grid>
+                <Grid item>
+                    <Button
+                        sx={{width:'14vh'}}
+                        onClick={() => handleFilterType('reading')}
+                        variant={filterType === 'reading' ? 'contained' : 'text'}
+                        color="primary"
+                    >Reading</Button>
+                </Grid>
+                <Grid item>
+                    <Button
+                        sx={{width:'14vh'}}
+                        onClick={() => handleFilterType('listening')}
+                        variant={filterType === 'listening' ? 'contained' : 'text'}
+                        color="primary"
+                    >Listening</Button>
+                </Grid>
+                <Grid item>
+                    <Button
+                        sx={{width:'14vh'}}
+                        onClick={() => handleFilterType('writing')}
+                        variant={filterType === 'writing' ? 'contained' : 'text'}
+                        color="primary"
+                    >Writing</Button>
+                </Grid>   
             </Grid>
             {/* Display tests in a page */}
             <Grid container spacing={4} mb={5}>
@@ -88,16 +170,12 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
                     // console.log('Rendering testId:', test?._id);
 
                     return (
-                        <Grid item xs={12} md={3} key={test?._id ?? idx}>
+                        <Grid item size={{xs:12, md:3}} key={test?._id ?? idx}>
                             {() => console.log('Rendering testId:', test?._id)}
                             <TestChooseBoxView 
-                                testId={test?._id ?? idx}
-                                testName={test?.testName ?? 'Lorem ipsum'}
-                                testType={test?.type ?? 'Lorem ipsum'}
-                                testTime={test?.time ?? 60}
+                                test={test}
                                 numOfTasks={numOfTasks}
                                 numOfQuestions={numOfQuestions}
-                                doneStatus={false}
                             />
                         </Grid>
                     );

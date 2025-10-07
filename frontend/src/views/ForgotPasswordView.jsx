@@ -17,68 +17,79 @@ const ForgotPasswordView = () => {
         <Grid container component="main" sx={{ height: '100vh' }}>
             <Grid
                 item
-                xs={false}
-                sm={6}
-                md={7}
+                size={{xs:12, md:6}}
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: '#f5faff',
+                    bgcolor: '#fff',
                 }}
             >
                 <Box sx={{ textAlign: 'center' }}>
-                    <HelpOutlineIcon sx={{ fontSize: 64, color: '#1976d2', mb: 2 }} />
-                    <Typography component="h1" variant="h3" fontWeight={700}>
-                        Bruh Web
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 2 }}>
-                        Hệ thống kiểm tra Tiếng Anh trực tuyến
-                    </Typography>
+                    <HelpOutlineIcon sx={{ fontSize: 100, color: '#1976d2', mb: 2 }} />
+                    <Typography component="h1" variant="h3" fontSize={70} fontWeight={700}>Bruh Web</Typography>
+                    <Typography variant="h6" sx={{mt:2}} fontSize={24}>Hệ thống ôn luyện Tiếng Anh trực tuyến</Typography>
                 </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={5} component={Paper} elevation={6} square>
-                <Box
+            <Grid item 
+                size={{xs:12, md:6}}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: { xs: 4, md: 4 },
+                }}
+            >
+                <Paper
+                    elevation={3} 
                     sx={{
-                        my: 8,
-                        mx: 4,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
+                        p: 4,
+                        width: '100%',
+                        maxWidth: '500px',
+                        borderRadius: 2,
                     }}
                 >
-                    <Typography component="h1" variant="h4" fontWeight={700}>
-                        Forgot Password
-                    </Typography>
-                    <Box component="form" onSubmit={handleForgotPassword} sx={{ mt: 2, width: '100%' }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="retrieve-info"
-                            label="Username/Email/Phone number"
-                            name="retrieve-info"
-                            autoFocus
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 600 }}
-                        >
-                            Reset Password
-                        </Button>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            sx={{ mb: 2, py: 1.5 }}
-                            onClick={() => navigate('/login')}
-                        >
-                            Back to Login
-                        </Button>
+                    <Box
+                        sx={{
+                            display:'flex',
+                            flexDirection:'column',
+                            alignItems:'center',
+                        }}
+                    >
+                        <Typography component="h1" variant="h5" fontWeight={700}>
+                            Quên mật khẩu
+                        </Typography>
+                        <Box component="form" onSubmit={handleForgotPassword} sx={{ mt: 2, width: '100%' }}>
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                id="retrieve-info"
+                                label="Username/Email/Số điện thoại"
+                                name="retrieve-info"
+                                autoFocus
+                            />
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 600 }}
+                            >
+                                Reset
+                            </Button>
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                sx={{ mb: 2, py: 1.5 }}
+                                onClick={() => navigate('/login')}
+                            >
+                                Back
+                            </Button>
+                        </Box>
                     </Box>
-                </Box>
+                </Paper>
+                
             </Grid>
         </Grid>
     );

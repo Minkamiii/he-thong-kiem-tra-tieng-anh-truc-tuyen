@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Button, Typography, Paper } from '@mui/material';
 
 
-const TestChooseBoxView = ({testId, testName = 'Test 1', testType = 'Listening', testTime = 40, 
-                        numOfTasks = 4, numOfQuestions = 40, doneStatus = false}) => {
+const TestChooseBoxView = ({ test, numOfTasks, numOfQuestions }) => {
     const navigate = useNavigate();
     //console.log('testId in TestChooseBoxView:', testId);
     return (
@@ -27,13 +26,13 @@ const TestChooseBoxView = ({testId, testName = 'Test 1', testType = 'Listening',
                     justifyContent: 'space-between',
                     gap: 1,
                 }}
-                onClick={() => navigate(`/test/${testId}`)}
+                onClick={() => navigate(`/test/${test?._id}`)}
             >
                 <Typography variant="h5" fontWeight={700} sx={{
                     
-                }}>{testName}</Typography>
-                <Typography>{testTime + ' phút | ' + testType}</Typography>
-                <Typography>{numOfTasks + ' phần thi | ' + numOfQuestions + ' câu hỏi'}</Typography>
+                }}>{(test?.testName ?? 'Lorem ipsum')}</Typography>
+                <Typography>{(test?.time ?? 60) + ' phút | ' + (test?.type ?? 'Lorem ipsum')}</Typography>
+                <Typography>{(numOfTasks ?? 4) + ' phần thi | ' + (numOfQuestions ?? 40) + ' câu hỏi'}</Typography>
                 <Button
                     variant="contained"
                     color="primary"
@@ -43,7 +42,7 @@ const TestChooseBoxView = ({testId, testName = 'Test 1', testType = 'Listening',
                         mt: 2,
                         width: '100%'
                     }}
-                >{doneStatus ? 'Xem kết quả' : 'Chi tiết'}</Button>
+                >{'Chi tiết'}</Button>
             </Paper>
         </Box>
     );

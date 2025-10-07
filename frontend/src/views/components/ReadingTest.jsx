@@ -1,9 +1,63 @@
-const ReadingTest = () => {
-    return (
-        <Box>
-            <Typography variant='h5' fontWeight={700} sx={{mb:2}}>Reading Test</Typography>
+import React from 'react';
+import { Grid, Box, Typography } from '@mui/material';
+import Section from './Section';
 
-        </Box>
+const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
+    console.log('ReadingTest tasks:', tasks);
+    
+    const currentTask = tasks && tasks[activeTask] ? tasks[activeTask] : null;
+
+    if (!currentTask) {
+        return <Typography>No task data available.</Typography>;
+    } 
+    
+    return (
+        <Grid container  sx={{
+            mt:0,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'left',
+            //height: '100vh',
+        }}>
+            {/* Passage */}
+            <Grid item size={{xs: 12, md: 6}}>
+                <Box sx={{
+                    overflowY: 'scroll',
+                    height: '100vh',
+                    p: 2,
+                    width: '100%',
+                    border: '1px solid #ccc',
+                    backgroundColor: '#f5f5f5',
+                }}>
+                    <Typography variant="body1" sx={{mb:2, whiteSpace: 'pre-line'}}>{
+                        currentTask?.passage || "No passage available."
+                    }</Typography>
+                </Box>
+            </Grid>
+            {/* Answer */}
+            <Grid item size={{xs: 12, md: 6}}>
+                <Box 
+                    ref={questionsContainerRef}
+                    sx={{
+                        overflowY: 'scroll',
+                        height: '100vh',
+                        p: 2,
+                        width: '100%',
+                        border: '1px solid #ccc',
+                        backgroundColor: '#fff',
+                    }}
+                >
+                    {currentTask?.sections && currentTask?.sections.length > 0
+                        ? currentTask.sections.map((section, index) => (
+                            <Section key={index} section={section} />
+                        )): (
+                        <Typography>No sections available for this task.</Typography>
+                    )}
+                </Box>
+            </Grid>
+        </Grid>
+        
     );
 }
 
