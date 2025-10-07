@@ -1,5 +1,4 @@
 package com.khanh.code.submit;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -11,6 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.khanh.code.api_response.ApiResponse;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -52,12 +55,14 @@ public class SubmitController {
         }
     }
 
-    @GetMapping(path="/allTest/user/id/{userID}")
-    public ResponseEntity<ApiResponse> getAllTestDoneOfUser(@PathVariable String userID) {
-        
+    @GetMapping(path="/CheckDone")
+    public ResponseEntity<ApiResponse> getAllTestDoneOfUser
+    (   @RequestParam @NotBlank @NotNull String userID, 
+        @RequestParam @NotBlank @NotNull String test_ids)
+    {
         ApiResponse response = new ApiResponse();
         try {
-           response = submitService.getAllTestDone(userID);
+           response = submitService.getTestDoneInformation(userID, test_ids);
            return ResponseEntity.status(response.getStatus()).body(response);
         } catch (Exception e) {
             response.setStatus(500);

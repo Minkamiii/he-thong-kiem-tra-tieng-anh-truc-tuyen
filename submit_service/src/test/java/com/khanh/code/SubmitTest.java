@@ -21,6 +21,7 @@ import com.khanh.code.answer.AnswerRequest;
 import com.khanh.code.answer.Answer_Choice;
 import com.khanh.code.answer.Answer_Fill;
 import com.khanh.code.api_response.ApiResponse;
+import com.khanh.code.api_response.TestDoneRespone;
 import com.khanh.code.submit.Submit;
 import com.khanh.code.submit.SubmitDTO;
 import com.khanh.code.submit.SubmitRepository;
@@ -711,44 +712,59 @@ public class SubmitTest {
     }
     
     @Test
-    void SUBMIT_035_get_All_Test_BeenDone_Of_User_UserID_Existed(){
+    void SUBMIT_035_get_Test_Been_one_Information_Of_User_UserID_Existed(){
         
-        ApiResponse response=submitService.getAllTestDone("123");
+        ApiResponse response=submitService.getTestDoneInformation("123","456");
         Object data= response.getData();
 
         assertInstanceOf(List.class,data);
         assertEquals(200, response.getStatus());
-        assertEquals("Find all test done of user with id 123", response.getMessage());
+        assertEquals("Get all information of tests done by users successfully", response.getMessage());
 
         List<?>data1=(List<?>) data;
         assertEquals(1, data1.size());
 
         Object inside=data1.get(0);
-        assertInstanceOf(String.class, inside);
-        assertEquals("456", inside);
+        assertInstanceOf(TestDoneRespone.class, inside);
+
+        TestDoneRespone testDone=(TestDoneRespone) inside;
+        assertEquals("456", testDone.getId_test());
+        assertEquals(1, testDone.getNumber_of_user_done());
+        assertEquals(true, testDone.isThis_user_done_before());
 
     }
 
     @Test
-    void SUBMIT_036_get_All_Test_BeenDone_Of_User_UserID_Non_Existed(){
+    void SUBMIT_036_get_Test_Been_Done_Information_Of_User_UserID_Never_Submit_The_Test(){
         
-        ApiResponse response=submitService.getAllTestDone("hello");
+        ApiResponse response=submitService.getTestDoneInformation("hello","456");
         Object data= response.getData();
 
-        assertNull(data);
-        assertEquals(404, response.getStatus());
-        assertEquals("User with id hello has not done any test", response.getMessage());
+        assertInstanceOf(List.class,data);
+        assertEquals(200, response.getStatus());
+        assertEquals("Get all information of tests done by users successfully", response.getMessage());
+
+        List<?>data1=(List<?>) data;
+        assertEquals(1, data1.size());
+
+        Object inside=data1.get(0);
+        assertInstanceOf(TestDoneRespone.class, inside);
+
+        TestDoneRespone testDone=(TestDoneRespone) inside;
+        assertEquals("456", testDone.getId_test());
+        assertEquals(1, testDone.getNumber_of_user_done());
+        assertEquals(false, testDone.isThis_user_done_before());
     }
 
     @Test
-    void SUBMIT_037_get_All_Test_BeenDone_Of_User_UserID_NullOrEmpty(){
+    void SUBMIT_037_get_All_Test_Been_Done_Information_Of_User_Null_Blank_test_id(){
         
-        ApiResponse response=submitService.getAllTestDone(null);
+        ApiResponse response=submitService.getTestDoneInformation("123","hello,,hi");
         Object data= response.getData();
 
         assertNull(data);
         assertEquals(400, response.getStatus());
-        assertEquals("User ID can not be null or empty", response.getMessage());
+        assertEquals("Test ID in list can not be null or empty", response.getMessage());
     }
 
     @Test

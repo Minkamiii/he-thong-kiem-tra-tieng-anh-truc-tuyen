@@ -37,9 +37,12 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
 
     @Query("SELECT s FROM Submit s ORDER BY s.submit_day DESC")
     List<Submit> findAllOrderDayDESC();
+
+    @Query("SELECT COUNT(DISTINCT s.id_user) FROM Submit s WHERE s.id_test = ?1")
+    int countDistinctUsersByTestId(String testId);
      
-    @Query("SELECT DISTINCT s.id_test FROM Submit s WHERE s.id_user = ?1")
-    List<String> findDistinctIdTestByUserId(String userId);
+    // @Query("SELECT DISTINCT s.id_test FROM Submit s WHERE s.id_user = ?1")
+    // List<String> findDistinctIdTestByUserId(String userId);
 
     // @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 ORDER BY s.submit_day DESC")
     // List<Submit> findByUserIdOrderBySubmitDayDESC(String userId);

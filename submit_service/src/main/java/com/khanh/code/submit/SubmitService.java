@@ -23,6 +23,7 @@ import com.khanh.code.api_response.Question;
 import com.khanh.code.api_response.QuestionResponse;
 import com.khanh.code.api_response.SectionsResponse;
 import com.khanh.code.api_response.TaskResponse;
+import com.khanh.code.api_response.TestDoneRespone;
 import com.khanh.code.api_response.TestResponse;
 
 
@@ -151,32 +152,40 @@ public class SubmitService {
     }
 
     //get all tests that have been done
-     public ApiResponse getAllTestDone(String userID) {
+     public ApiResponse getTestDoneInformation(String userID, String test_ids) {
 
         ApiResponse response = new ApiResponse();
 
-        if(answerService.isNullOrBlank(userID)){
-            response.setMessage("User ID can not be null or empty");
-            response.setStatus(400);
-            return response;
-        }
+        List<TestDoneRespone> testDoneResponeList=new LinkedList<>();
+        String[] id_tests = test_ids.split(",");
 
-        List<String> allTest=submitRepository.findDistinctIdTestByUserId(userID);
+        for(String id_test: id_tests){
 
-        if(allTest==null||allTest.isEmpty()){
+            boolean done=true;
+
+            if(answerService.isNullOrBlank(id_test)){
+                response.setMessage("Test ID in list can not be null or empty");
+                response.setStatus(400);
+                return response;
+            }
+            int count = submitRepository.countDistinctUsersByTestId(id_test);
+
+            List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayDESC(userID, id_test);
             
-            response.setMessage("User with id "+ userID +" has not done any test");
-            response.setStatus(404);
-            return response;
+            if(submits==null||submits.isEmpty()){
+                done=false;
+            }
+
+            TestDoneRespone testDoneRespone=new TestDoneRespone(id_test, count, done);
+            testDoneResponeList.add(testDoneRespone);
         }
 
-        else{
-            response.setMessage("Find all test done of user with id "+ userID);
-            response.setStatus(200);
-            response.setData(allTest);
-            return response;
-        }
         
+        response.setMessage("Get all information of tests done by users successfully");
+        response.setStatus(200);
+        response.setData(testDoneResponeList);
+        return response;
+
     }
 
     //delete Submits by test id

@@ -3,7 +3,8 @@ Submit api:
 - nộp bài: http://localhost:8080/api/submit/newSubmit
 - lấy tất cả submit của user: http://localhost:8080/api/submit/user/id/{userID}?type=&page= 
     (mặc định là type="" và page=1)
-- lấy tất cả test đã từng làm: http://localhost:8080/api/submit/allTest/user/id/{userID}
+- lấy thông tin xem test đã từng làm chưa và có bao người đã làm test này: 
+    http://localhost:8080/api/submit/CheckDone?userID=&test_ids=hello,hi
 - lấy tất cả submit của user theo test: 
     http://localhost:8080/api/submit/user/test?userID=123&testID=123
 - xóa submit theo id: http://localhost:8080/api/submit/delete/{submitID}
