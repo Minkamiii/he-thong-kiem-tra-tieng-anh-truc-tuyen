@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsObject, IsString, Min, ValidateIf, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsBoolean, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsObject, IsString, Min, ValidateIf, ValidateNested } from "class-validator";
 import { TestType } from "src/model/test/test.schema";
 import { UpdateQuestionDTO } from "src/dto/question/update/update-question.dto";
 import { ApiProperty } from "@nestjs/swagger";
@@ -107,6 +107,12 @@ export class UpdateTestDTO{
         type: String,
     })
     testName?: String;
+
+    @IsBoolean()
+    @ApiProperty({
+        type: Boolean,
+    })
+    active?: boolean;
 
     @IsArray()
     @ArrayNotEmpty()

@@ -13,6 +13,12 @@ import * as fs from "fs";
 import { ChoiceItem } from 'src/model/question/choiceQuestion.schema';
 import { CreateQuestionDTO } from 'src/dto/question/create/create-question.dto';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
 @Injectable()
 export class TestService {
@@ -38,6 +44,7 @@ export class TestService {
 
     async createTest(createTestDTO: CreateTestDTO): Promise<TestDocument> {
         const testData = JSON.parse(JSON.stringify(createTestDTO));
+        testData.active = true; //Thêm trường active cho test mới
 
         const allQuestions: any[] = [];
         const questionPositions: {taskIndex: number, sectionIndex: number, questionIndex: number}[] = []
@@ -94,7 +101,10 @@ export class TestService {
 
     async findAll(
         page: number = 1, 
-        limit: number = this.PAGINATION_LIMIT_NUMBER_OF_ITEM
+        testName?: string,
+        type? : TestType,
+        createdAtQuery? : string,
+        isActive?: boolean
     ): Promise<{
         data: TestDocument[], 
         totalItems: number, 
@@ -102,39 +112,51 @@ export class TestService {
         currentPage: number, 
         limit: number
     }> {
-        // const cacheData = await this.cacheService.get<{
-        //     data: TestDocument[], 
-        //     totalItems: number, 
-        //     totalPages: number, 
-        //     currentPage: number, 
-        //     limit: number
-        // }>('test:all'); //Lấy data từ cache nếu có
 
-        // if(cacheData) return cacheData; //Nếu có data từ cache trả về luôn
+        const filter: any = {};
 
-        const skip = (page - 1) * limit;
-        const totalItems = await this.testModel.countDocuments();
-        const data = await this.testModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).select('-tasks').exec();
+        const parseDate = (dateString: string, first: boolean = true) => {
+          const day = parseInt(dateString.slice(0, 2), 10);
+          const month = parseInt(dateString.slice(2, 4), 10) -1;
+          const year = parseInt(dateString.slice(4, 8), 10);
+          return new Date(year, month, day, first ? 0 : 23, first ? 0 : 59, first ? 0 : 59);
+        }
+
+        if(testName) filter.testName = { $regex: testName, $options: 'i' }
+        if(type) filter.type = type
+        if(createdAtQuery) filter.createdAt = {
+          $gte: parseDate(createdAtQuery.split('-')[0]),
+          $lte: parseDate(createdAtQuery.split('-')[1], false)
+        }
+        if(isActive) filter.active = isActive;
+
+        const skip = (page - 1) * this.PAGINATION_LIMIT_NUMBER_OF_ITEM;
+        const totalItems = await this.testModel.find(filter).countDocuments();
+        const data = await this.testModel.find(filter)
+                                        .sort({ createdAt: -1 })
+                                        .skip(skip)
+                                        .limit(this.PAGINATION_LIMIT_NUMBER_OF_ITEM)
+                                        .select('-tasks')
+                                        .lean();
+
+        const converted = data.map((item: any) => ({
+          ...item,
+          createdAt: dayjs(item.createdAt).tz('Asia/Ho_Chi_Minh').format(),
+          updatedAt: dayjs(item.updatedAt).tz('Asia/Ho_Chi_Minh').format()
+        })) as TestDocument[];
 
         const returnData = {
-            data,
+            data: converted,
             totalItems,
-            totalPages: Math.ceil(totalItems / limit),
+            totalPages: Math.ceil(totalItems / this.PAGINATION_LIMIT_NUMBER_OF_ITEM),
             currentPage: page,
-            limit
+            limit: this.PAGINATION_LIMIT_NUMBER_OF_ITEM
         };
-
-        this.cacheService.set('test:all', returnData); //Lưu vào cache manager
 
         return returnData;
     }
 
     async findById(id: string) {
-        // const cacheData = await this.cacheService.get<TestDocument>(`test:${id}`); //Lấy data từ cache nếu có
-
-        // if(cacheData){
-        //     return cacheData; //Nếu có data từ cache trả về luôn
-        // }
 
         const data = await this.testModel.findById(id).populate({ path: 'tasks.sections.questions.question' }).exec() as any;
 
@@ -161,50 +183,12 @@ export class TestService {
         const dataPayload = {
           ...data.toObject?.() ?? data,
           tasks: taskPayload,
-          testQuestionCount: testQuestionCount
+          testQuestionCount: testQuestionCount,
+          createdAt: dayjs(data.createdAt).tz('Asia/Ho_Chi_Minh').format(),
+          updatedAt: dayjs(data.updatedAt).tz('Asia/Ho_Chi_Minh').format()
         }
-        
-        // this.cacheService.set(`test:${id}`, data); //Lưu vào cache service
 
         return dataPayload;
-    }
-
-    async findByType(
-        type: TestType, 
-        page: number = 1, 
-        limit: number = this.PAGINATION_LIMIT_NUMBER_OF_ITEM
-    ): Promise<{
-        data: TestDocument[],
-        totalItems: number,
-        totalPages: number,
-        currentPage: number,
-        limit: number
-    }> {
-        // const cacheData = await this.cacheService.get<{
-        //     data: TestDocument[],
-        //     totalItems: number,
-        //     totalPages: number,
-        //     currentPage: number,
-        //     limit: number
-        // }>(`test:type:${type}`)
-
-        // if(cacheData) return cacheData; //Nếu có data từ cache trả về luôn
-
-        const skip = (page - 1) * limit;
-        const totalItems = await this.testModel.find({ type }).countDocuments();
-        const data = await this.testModel.find({ type }).sort({ createdAt: -1 }).skip(skip).limit(limit).select('-tasks').exec();
-
-        const returnData = {
-            data,
-            totalItems,
-            totalPages: Math.ceil(totalItems / limit),
-            currentPage: page,
-            limit
-        };
-
-        // this.cacheService.set(`test:type:${type}`, returnData); //Lưu vào cache manager
-
-        return returnData;
     }
 
     async findByIdAndDelete(id: string): Promise<void> {
@@ -288,7 +272,8 @@ export class TestService {
         foundTest.set({
             type: updateTestDTO.type,
             tasks: updatedTasks,
-            testName: updateTestDTO.testName
+            testName: updateTestDTO.testName,
+            active: updateTestDTO.active
         })
 
         // await this.cacheService.del(`test:${id}`); //Xóa cache cũ
@@ -619,4 +604,15 @@ export class TestService {
   
         return returnData;
     }
+
+    getTestUploadTemplateFileStream(){
+      const filePath = './uploads/excel/Test Upload Template.xlsx'
+
+      if(!fs.existsSync(filePath)){
+        console.error("Cannot find file with path " + filePath)
+      }
+
+      return fs.createReadStream(filePath);
+    }
+
 }

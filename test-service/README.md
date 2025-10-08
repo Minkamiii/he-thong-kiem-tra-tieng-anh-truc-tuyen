@@ -23,9 +23,8 @@
 - **API mặc định** http://[::1]:8000/api/test
 - **Upload đề thi mới** (POST) http://[::1]:8000/api/test
 - **Upload ảnh** (POST) http://[::1]:8000/api/test/image
-- **Lấy danh sách đề thi theo trang** (GET) http://[::1]:8000/api/test?page=x (MẶC ĐỊNH x = 1)
+- **Lấy danh sách đề thi theo trang có filter** (GET) http://[::1]:8000/api/test (Query: page (number default = 1), testName, type (reading, listening, writing), fromto (ddMMyyyy-ddMMyyyy), active (true/false))
 - **Lấy đề thi theo id** (GET) http://[::1]:8000/api/test/:id
-- **Lấy danh sách đề thi theo loại có phân trang** (GET) http://[::1]:8000/api/test/type/:type?page=x (MẶC ĐỊNH x = 1)
 - **Cập nhật đề thi theo id** (PUT) http://[::1]:8000/api/test/:id
 - **Xóa đề thi theo id** (DELETE) http://[::1]:8000/api/test/:id
 - **Upload file audio** (POST) http://[::1]:8000/api/test/audio

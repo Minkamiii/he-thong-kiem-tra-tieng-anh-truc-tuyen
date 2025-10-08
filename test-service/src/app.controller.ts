@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Res, StreamableFile, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { CreateTestDTO } from "./dto/test/create/create-test.dto";
 import { TestService } from "./service/test.service";
 import { TestType } from "./model/test/test.schema";
@@ -9,6 +9,7 @@ import { extname } from "path";
 import * as crypto from "crypto";
 import { ConfigService } from "@nestjs/config";
 import { ApiBody, ApiConsumes, ApiParam, ApiQuery } from "@nestjs/swagger";
+import express from "express";
 
 
 @Controller('/api/test')
@@ -100,7 +101,9 @@ export class TestController{
         storage: diskStorage({
             destination: './uploads/excel',
             filename: (req, file, cb) => {
-                return cb(null, `${file.originalname}`);
+                const randomName = crypto.createHash('sha256').update(Date.now().toString()).digest('hex').slice(0, 12) + 
+                Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
+                return cb(null, `${randomName}${extname(file.originalname)}`)
             }
         })
     }))
@@ -123,8 +126,17 @@ export class TestController{
     @Get()
     @HttpCode(200)
     @ApiQuery({name: 'page', type: Number, required: false})
-    findAll(@Query('page') page: number){
-        return this.testService.findAll(page);
+    @ApiQuery({name: 'testName', type: String, required: false, example: "test"})
+    @ApiQuery({name: 'type', type: String, required: false, example: TestType.LISTENING})
+    @ApiQuery({name: 'fromto', type: String, required: false, example: "01012025-07102025"})
+    @ApiQuery({name: 'active', type: Boolean, required: false})
+    findAll(@Query('page') page?: number, 
+            @Query('testName') testName?: string,
+            @Query('type') type?: TestType,
+            @Query('fromto') createdAtQuery?: string, // from(ddMMyyyy)-to(ddMMyyyy) Ex: 01012025-07102025
+            @Query('active') isActive? : boolean,
+        ){
+        return this.testService.findAll(page, testName, type, createdAtQuery, isActive);
     }
 
     @Get(':id')
@@ -132,14 +144,6 @@ export class TestController{
     @ApiParam({name: 'id', type: String})
     findById(@Param('id') id: string){
         return this.testService.findById(id);
-    }
-
-    @Get('/type/:type')
-    @HttpCode(200)
-    @ApiParam({name: 'type', type: String})
-    @ApiQuery({name: 'page', type: Number, required: false})
-    findByType(@Param('type') type: TestType, @Query('page') page: number){
-        return this.testService.findByType(type, page);
     }
 
     @Delete(':id')
@@ -163,6 +167,25 @@ export class TestController{
     @ApiQuery({name: 'tasks', type: String})
     findQuestionsByTest(@Param('testId') testId: string, @Query('tasks') tasks: string){
         return this.testService.findQuestionsByTestId(testId, tasks);
+    }
+
+    @Get('/download/template')
+    @HttpCode(200)
+    downloadTemplateFile(@Res({passthrough: true}) res: express.Response){
+        let fileStream: any;
+        try{
+            fileStream = this.testService.getTestUploadTemplateFileStream();
+        }
+        catch(error){
+            console.log(error);
+        }
+
+        res.set({
+            'Content-Type': 'application/octet-stream',
+            'Content-Disposition': `attachment; filename="Test Upload Template.xlsx"`
+        })
+
+        return new StreamableFile(fileStream);
     }
 
 }

@@ -29,6 +29,13 @@ export class Test{
     })
     testName: string;
 
+    @Prop({
+        type: Boolean,
+        required: false,
+        default: true,
+    })
+    active: boolean;
+
 }
 
 export const TestSchema = SchemaFactory.createForClass(Test);
