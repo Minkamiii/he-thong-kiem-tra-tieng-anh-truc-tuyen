@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, FormControlLabel, FormHelperText, Checkbox, FormControl, FormGroup } from '@mui/material';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
@@ -7,6 +7,13 @@ const ChoiceView = ({ question, onAnswerChange }) => {
     const [selectedAnswers, setSelectedAnswers] = useState([]);
     const requiredSelections = question.keys?.length || 1; // Default to 1 if keys is undefined
     
+    // Persist selection across re-renders
+    useEffect(() => {
+        if (question?.index !== undefined) {
+            onAnswerChange(question.index, selectedAnswers);
+        }
+    }, [question.index, onAnswerChange, selectedAnswers]);
+
     const handleChange = (choice) => {
         setSelectedAnswers((prev) => {
             const newAnswers = prev.includes(choice)
@@ -16,7 +23,9 @@ const ChoiceView = ({ question, onAnswerChange }) => {
                     : [...prev, choice];
 
             // Check correctness
-            const isCorrect = question.keys?.every(key => newAnswers.includes(key)) && newAnswers.length === question.keys.length;
+            const isCorrect = question.keys?.every(key => 
+                newAnswers.includes(key)) 
+                && newAnswers.length === question.keys.length;
             console.log('Selected answers:', newAnswers, 'Is correct:', isCorrect);
             // Notify parent component of answer change
                     
@@ -58,7 +67,7 @@ const ChoiceView = ({ question, onAnswerChange }) => {
                         />
                     ))}
                 </FormGroup>
-                <FormHelperText>{`Select up to ${requiredSelections} answers`}</FormHelperText>
+                <FormHelperText>{`Select ${requiredSelections > 1 ? 's' : ''} answers`}</FormHelperText>
             </FormControl>
         </Box>
     );
