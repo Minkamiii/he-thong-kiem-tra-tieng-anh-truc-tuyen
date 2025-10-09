@@ -13,10 +13,13 @@ const FillView = ({ question, onAnswerChange }) => {
     const handleChange = (event) => {
         const newAnswer = event.target.value;
         setAnswer(newAnswer);
+    }
 
-        // Check correctness
-        const isCorrect = question.keys?.includes(newAnswer.toLowerCase().trim());
-        console.log('Current answer:', newAnswer, 'Is correct:', isCorrect);
+    const handleBlur = () => {
+        if (question?.index !== undefined) {
+            onAnswerChange(question.index, answer);
+            console.log('Answer saved on blur:', answer);
+        }
     }
 
     return (
@@ -29,6 +32,7 @@ const FillView = ({ question, onAnswerChange }) => {
                 size="small"
                 value={answer}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 variant="outlined"
                 sx={{
                     maxWidth: '300px',
