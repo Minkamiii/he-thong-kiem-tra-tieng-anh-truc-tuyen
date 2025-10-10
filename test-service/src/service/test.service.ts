@@ -81,7 +81,7 @@ export class TestService {
         //Bulk insert vào collection 'question'
         const insertedQuestions = await this.questionService.bulkCreateQuestions(allQuestions);
 
-        //Thay đổi trường question trong section.questions thành objectID thay vì là CreateTestDTO và đếm số lượng câu hỏi
+        //Thay đổi trường question trong section.questions thành objectID thay vì là CreateTestDTO
         let numberOfQuestion: number = 0;
         questionPositions.forEach((pos, index) => {
             const insertedId = insertedQuestions[index]._id;
@@ -89,11 +89,7 @@ export class TestService {
                     .sections[pos.sectionIndex]
                     .questions[pos.questionIndex]
                     .question = insertedId;
-            numberOfQuestion++;
         })
-
-        testData.taskCount = testData.tasks.length;
-        testData.questionCount = numberOfQuestion;
 
         //Thêm vào collection
         const createdTest = await this.testModel.create(testData);
@@ -202,7 +198,7 @@ export class TestService {
         const dataPayload = {
           ...data.toObject?.() ?? data,
           tasks: taskPayload,
-          testQuestionCount: testQuestionCount,
+          questionCount: testQuestionCount,
           createdAt: dayjs(data.createdAt).tz('Asia/Ho_Chi_Minh').format(),
           updatedAt: dayjs(data.updatedAt).tz('Asia/Ho_Chi_Minh').format()
         }

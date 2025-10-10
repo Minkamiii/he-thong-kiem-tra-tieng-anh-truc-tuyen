@@ -15,6 +15,22 @@ services:
       retries: 5
     network:
       - app_network
+
+  comment_db:
+    image: mongo
+    container_name: comment_db
+    port:
+      - "27019:27017"
+    volumes:
+      - mongo-data:/data/comment_db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app_network
   
   test_service:
     build: ./test-service
@@ -27,7 +43,18 @@ services:
       - ./test-service:/app
     network:
       - app_network
-
+  
+  comment_service:
+    build: ./comment-service
+    container_name: comment_service
+    port: "8001:8000"
+    depends_on:
+      comment_db:
+        condition: service_healthy
+    volumes:
+      - ./comment-service:/app
+    network:
+      - app_network
 
 volumes:
   mongo_data:
