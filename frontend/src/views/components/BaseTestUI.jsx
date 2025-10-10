@@ -22,6 +22,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
     const [timeLeft, setTimeLeft] = useState(null);
     const [timeElapsed, setTimeElapsed] = useState(0);
     const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
+    const [answers, setAnswers] = useState({}); // Store user answers here
 
     const questionsContainerRef = useRef(null);
     const isCountUp = useRef(false);
@@ -50,6 +51,15 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
         // Handle test reset logic here
         alert("Test reset!");
     }
+
+    // Add answer handler
+    const handleAnswerChange = (questionIndex, answer) => {
+        setAnswers(prev => ({
+            ...prev,
+            [questionIndex]: answer
+        }));
+        console.log('Answer updated:', { questionIndex, answer });
+    };
 
     // Scroll handler function
     const handleQuestionClick = (questionIndex) => {
@@ -88,19 +98,25 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                     tasks={filteredTasks} 
                     activeTask={activeTask} 
                     questionsContainerRef={questionsContainerRef}
-                />;
+                    answers={answers}
+                    onAnswerChange={handleAnswerChange}
+                />
             case 'listening':
                 return <ListeningTest 
                     tasks={filteredTasks} 
                     activeTask={activeTask} 
                     questionsContainerRef={questionsContainerRef}
-                />;
+                    answers={answers}
+                    onAnswerChange={handleAnswerChange}
+                />
             case 'writing':
                 return <WritingTest
                     tasks={filteredTasks} 
                     activeTask={activeTask} 
                     questionsContainerRef={questionsContainerRef}
-                />;
+                    answers={answers}
+                    onAnswerChange={handleAnswerChange}
+                />
             default:
                 return (
                     <>

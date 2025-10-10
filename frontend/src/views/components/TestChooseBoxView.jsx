@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Typography, Paper } from '@mui/material';
-
+import dayjs from 'dayjs';
 
 const TestChooseBoxView = ({ test, numOfTasks, numOfQuestions }) => {
     const navigate = useNavigate();
@@ -31,6 +31,9 @@ const TestChooseBoxView = ({ test, numOfTasks, numOfQuestions }) => {
                 <Typography variant="h5" fontWeight={700} sx={{
                     
                 }}>{(test?.testName ?? 'Lorem ipsum')}</Typography>
+                <Typography>
+                    {`${dayjs(test.createdAt).format('DD/MM/YYYY')}`}
+                </Typography>
                 <Typography>{(test?.time ?? 60) + ' mins | ' + (test?.type ?? 'Lorem ipsum')}</Typography>
                 <Typography>{(numOfTasks ?? 4) + ' tasks | ' + (numOfQuestions ?? 40) + ' questions'}</Typography>
                 <Button

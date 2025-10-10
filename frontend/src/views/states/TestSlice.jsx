@@ -12,11 +12,12 @@ const TestSlice = createSlice({
   initialState,
   reducers: {
     setTest: (state, action) => {
-      const { _id, testName, testType, testTasks } = action.payload;
+      const { _id, testName, testType, testTasks, createdAt } = action.payload;
       state._id = _id;
       state.testName = testName;
       state.testType = testType;
       state.testTasks = testTasks;
+      state.createdAt = createdAt;
     },
   },
 });
