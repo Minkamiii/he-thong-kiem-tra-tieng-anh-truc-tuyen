@@ -41,7 +41,7 @@ const RegisterView = () => {
                 <Box sx={{textAlign:'center'}}>
                     <PersonAddAltIcon sx={{fontSize:100, color:'#1976d2', mb:2}} />
                     <Typography component="h1" variant="h3" fontSize={70} fontWeight={700}>Bruh Web</Typography>
-                    <Typography variant="h6" sx={{mt:2}} fontSize={24}>Hệ thống ôn luyện Tiếng Anh trực tuyến</Typography>
+                    <Typography variant="h6" sx={{mt:2}} fontSize={24}>Online English practicing website</Typography>
                 </Box>
             </Grid>
             <Grid item size={{xs:12, md:6}}

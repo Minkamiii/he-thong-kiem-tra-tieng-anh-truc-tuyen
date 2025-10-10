@@ -56,7 +56,7 @@ const LoginView = () => {
                         Bruh Web
                     </Typography>
                     <Typography variant="h6" fontSize={24}>
-                        Hệ thống ôn luyện Tiếng Anh trực tuyến
+                        Online English practicing website
                     </Typography>
                 </Grid>
                 {/* Right login form */}

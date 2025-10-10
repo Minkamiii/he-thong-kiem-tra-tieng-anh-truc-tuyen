@@ -198,7 +198,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                     justifyContent="center"
                 >
                     <Typography fontWeight='bold' sx={{mr:1}}>{test?.testName}</Typography>
-                    <Button onClick={() => navigate(`/test/${test?._id}`)}>Thoát</Button>
+                    <Button onClick={() => navigate(`/test/${test?._id}`)}>Back</Button>
                 </Grid>
 
                 {/* Main test area and sidebar*/}
@@ -235,7 +235,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                     <Grid item size={{xs:12, md:2}} sx={{order: {xs:1, md:2}}}>
                         <Paper elevation={3} sx={{ p: 2, borderRadius: 2, width: '100%' }}>
                             
-                            <Typography fontWeight='bold'>Thời gian làm bài:</Typography>
+                            <Typography fontWeight='bold'>Time remaining:</Typography>
                             <Typography
                                 variant="body1"
                                 fontWeight="bold"
@@ -247,10 +247,10 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                                 {isCountUp.current ? formatTime(timeElapsed) : formatTime(timeLeft)}
                             </Typography>
                             
-                            <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleOpenSubmitDialog}>Nộp bài</Button>
+                            <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleOpenSubmitDialog}>Submit</Button>
 
-                            <Link onClick={handleReset} sx={{ display: 'block', mt: 2, cursor: 'pointer'}}>Khôi phục/Lưu bài làm</Link>
-                            
+                            <Link onClick={handleReset} sx={{ display: 'block', mt: 2, cursor: 'pointer'}}>Restore/Save answers</Link>
+
                             {/* Tasks and Questions Navigation */}
                             {filteredTasks.map((task, taskIndex) => (
                                 <Box key={taskIndex} sx={{mt:2}}>
@@ -303,7 +303,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                 <DialogTitle id="submit-dialog-title">{"Xác nhận nộp bài"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="submit-dialog-description">
-                        Bạn có chắc chắn muốn nộp bài không?
+                        Are you sure you want to submit your answers?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

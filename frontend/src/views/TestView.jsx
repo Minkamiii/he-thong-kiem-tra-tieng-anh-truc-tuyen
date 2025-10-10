@@ -1,13 +1,20 @@
 // import './css/HomeView.css';
 import React, { useEffect, useState } from 'react';
-import { Typography, Grid, Pagination, TextField, InputAdornment, Button } from '@mui/material';
+import { Typography, Grid, Pagination, TextField, InputAdornment, Button, FormControlLabel, Switch, Box } from '@mui/material';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import SearchIcon from "@mui/icons-material/Search";
+
+import { DateRangePicker } from '@mui/x-date-pickers-pro';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 import axios from 'axios';
 import TestChooseBoxView from './components/TestChooseBoxView';
 import BaseUI from './components/BaseUI';
 
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
 
 const TestView = ({ isLoggedIn = false, user = null } = {}) => {
     // const params = useParams();
@@ -17,10 +24,13 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
     const [testInPageArray, setTestInPageArray] = useState(Array(0));
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
+
     const [filterType, setFilterType] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [dateRange, setDateRange] = useState([null, null]);
 
-    const page = Number(new URLSearchParams(location.search).get('page')) || 1;
+    const params = new URLSearchParams(location.search);
+    const page = Number(params.get('page')) || 1;
 
     // Ensure URL always includes ?page=1 at minimum
     useEffect(() => {
@@ -38,33 +48,40 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
         setTestInPageArray([]);
         const requestedPage = page;
 
-        // Construct URL based on whether there's a filter type
-        const baseUrl = filterType 
-            ? `http://[::1]:8000/api/test/type/${filterType}` 
-            : 'http://[::1]:8000/api/test';
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+            page: String(page),
+            active: 'true'
+        });
 
-        const testViewUrl = `${baseUrl}?page=${page}${searchQuery ? `&search=${searchQuery}` : ''}`;
+        if (searchQuery) queryParams.set('testName', searchQuery);
+        if (filterType) queryParams.set('type', filterType);
+        
+        // Add date range if both dates are selected
+        if (dateRange[0] && dateRange[1]) {
+            const fromDate = dayjs(dateRange[0]).format('DDMMYYYY');
+            const toDate = dayjs(dateRange[1]).format('DDMMYYYY');
+            queryParams.set('fromto', `${fromDate}-${toDate}`);
+        }
+
+        const testViewUrl = `http://[::1]:8000/api/test?${queryParams}`;
 
         axios
             .get(testViewUrl, { signal: controller.signal })
             .then((response) => {
-                console.log(response.data);
-                if (requestedPage !== page) return; // ignore stale response
-                const items = response.data.data;
-                const total = response.data.totalPages;
-                setTestInPageArray(items);
-                setTotalPages(total);
+                if (requestedPage !== page) return;
+                setTestInPageArray(response.data.data);
+                setTotalPages(response.data.totalPages);
             })
             .catch((error) => {
-                if (axios.isCancel(error)) return;
-                console.error("Failed to fetch tests:", error);
+                if (!axios.isCancel(error)) {
+                    console.error("Failed to fetch tests:", error);
+                }
             })
             .finally(() => setLoading(false));
 
-        return () => {
-            controller.abort();
-        };
-    }, [filterType, page, searchQuery]);
+        return () => controller.abort();
+    }, [page, filterType, searchQuery, dateRange]);
 
     const handlePageChange = (event, value) => {
         const params = new URLSearchParams(location.search);
@@ -76,34 +93,39 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
 
     const handleFilterType = (type) => {
         const params = new URLSearchParams(location.search);
-        if (type === filterType) params.delete('type');
-        else params.set('type', type);
-
-        params.set('page', '1'); // Reset to first page
         setFilterType(prev => prev === type ? '' : type);
+        params.set('page', '1');
+        if (type && type !== filterType) {
+            params.set('type', type);
+        } else {
+            params.delete('type');
+        }
         setSearchParams(params);
     }
 
     const handleSearch = (event) => {
-        const params = new URLSearchParams(location.search);
         const query = event.target.value;
-        if (query) params.set('search', query);
-        else params.delete('search');
-
-        params.set('page', '1');
         setSearchQuery(query);
-        setSearchParams({ page: '1' });
+        
+        const params = new URLSearchParams(location.search);
+        params.set('page', '1');
+        if (query) {
+            params.set('testName', query);
+        } else {
+            params.delete('testName');
+        }
+        setSearchParams(params);
     }
 
     return (
         <BaseUI isLoggedIn={isLoggedIn} user={user}>
-            <Typography mb={2} variant="h4" fontWeight={700}>Thư viện đề thi</Typography>
+            <Typography mb={2} variant="h4" fontWeight={700}>Test Library</Typography>
             
             {/* Search Bar */}
             <TextField
                 fullwidth
                 variant="outlined"
-                placeholder="Nhập từ khóa bạn muốn tìm kiếm: tên đề thi, loại đề,..."
+                placeholder="Enter keywords: name, type,..."
                 value={searchQuery}
                 onChange={handleSearch}
                 sx={{mb:3}}
@@ -117,6 +139,31 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
                     },
                 }}
             />
+
+            {/* Filter date and active test */}
+            <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateRangePicker
+                        value={dateRange}
+                        onChange={(newValue) => {
+                            setDateRange(newValue);
+                            const params = new URLSearchParams(location.search);
+                            params.set('page', '1');
+                            setSearchParams(params);
+                        }}
+                        localeText={{ start: 'From', end: 'To' }}
+                        format="DD/MM/YYYY"
+                        slotProps={{
+                            textField: {
+                                inputProps: {
+                                    placeholder: 'DD/MM/YYYY'
+                                }
+                            }
+                        }}
+                    />
+                </LocalizationProvider>
+
+            </Box>
             
             {/* Change this to search by category */}
             <Grid container  mb={5}>

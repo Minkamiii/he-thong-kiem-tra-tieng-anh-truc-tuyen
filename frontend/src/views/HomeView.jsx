@@ -23,19 +23,19 @@ const HomeView = ({ isLoggedIn = false, user = null }) => {
                 >
                     <Typography variant="h3" fontWeight={700} gutterBottom
                         sx={{color: '#024fc2'}}
-                    > LUYỆN ĐỀ IELTS ONLINE <br /> KHÔNG GIỚI HẠN </Typography>
+                    > UNLIMITED <br /> IELTS PRACTICING </Typography>
                     <List sx={{ listStyleType: 'disc', pl: 4, mt: 2 }}>
                         <ListItem sx={{ display: 'list-item', fontSize: '1.5rem' }}>
-                            <ListItemText primary="Hỗ trợ luyện thi IELTS Listening, Reading, Writing"/>
+                            <ListItemText primary="Support for IELTS Listening, Reading, Writing practice"/>
                         </ListItem>
                         <ListItem sx={{ display: 'list-item', fontSize: '1.5rem' }}>
-                            <ListItemText primary="Giao diện giống thi thật, thân thiện với người dùng"/>
+                            <ListItemText primary="Realistic test interface, user-friendly design"/>
                         </ListItem>
                         <ListItem sx={{ display: 'list-item', fontSize: '1.5rem' }}>
-                            <ListItemText primary="Tự chọn task và thời gian làm theo nhu cầu"/>
+                            <ListItemText primary="Customizable tasks and timing based on needs"/>
                         </ListItem>
                         <ListItem sx={{ display: 'list-item', fontSize: '1.5rem' }}>
-                            <ListItemText primary="Report điểm tự động + đánh giá chi tiết bài làm"/>
+                            <ListItemText primary="Automated scoring + detailed feedback"/>
                         </ListItem>
                     </List>
                 </Box>

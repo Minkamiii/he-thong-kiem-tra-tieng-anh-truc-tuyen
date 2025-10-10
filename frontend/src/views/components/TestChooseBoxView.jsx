@@ -31,8 +31,8 @@ const TestChooseBoxView = ({ test, numOfTasks, numOfQuestions }) => {
                 <Typography variant="h5" fontWeight={700} sx={{
                     
                 }}>{(test?.testName ?? 'Lorem ipsum')}</Typography>
-                <Typography>{(test?.time ?? 60) + ' phút | ' + (test?.type ?? 'Lorem ipsum')}</Typography>
-                <Typography>{(numOfTasks ?? 4) + ' phần thi | ' + (numOfQuestions ?? 40) + ' câu hỏi'}</Typography>
+                <Typography>{(test?.time ?? 60) + ' mins | ' + (test?.type ?? 'Lorem ipsum')}</Typography>
+                <Typography>{(numOfTasks ?? 4) + ' tasks | ' + (numOfQuestions ?? 40) + ' questions'}</Typography>
                 <Button
                     variant="contained"
                     color="primary"
@@ -42,7 +42,7 @@ const TestChooseBoxView = ({ test, numOfTasks, numOfQuestions }) => {
                         mt: 2,
                         width: '100%'
                     }}
-                >{'Chi tiết'}</Button>
+                >{'Details'}</Button>
             </Paper>
         </Box>
     );

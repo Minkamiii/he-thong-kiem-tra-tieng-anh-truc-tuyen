@@ -68,7 +68,7 @@ const WritingTest = ({ tasks, activeTask, questionsContainerRef}) => {
                     {showOutline && (
                         <TextField
                             multiline
-                            placeholder="Thêm ghi chú tại đây..."
+                            placeholder="Write your outline here..."
                             value={outline}
                             onChange={(e) => setOutline(e.target.value)}
                             sx={{
@@ -84,7 +84,7 @@ const WritingTest = ({ tasks, activeTask, questionsContainerRef}) => {
                     {/* Essay Textfield */}
                     <TextField
                         multiline
-                        placeholder='Viết essay tại đây...'
+                        placeholder='Write your essay here...'
                         value={essay}
                         onChange={(e) => setEssay(e.target.value)}
                         sx={{
