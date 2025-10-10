@@ -81,14 +81,19 @@ export class TestService {
         //Bulk insert vào collection 'question'
         const insertedQuestions = await this.questionService.bulkCreateQuestions(allQuestions);
 
-        //Thay đổi trường question trong section.questions thành objectID thay vì là CreateTestDTO
+        //Thay đổi trường question trong section.questions thành objectID thay vì là CreateTestDTO và đếm số lượng câu hỏi
+        let numberOfQuestion: number = 0;
         questionPositions.forEach((pos, index) => {
             const insertedId = insertedQuestions[index]._id;
             testData.tasks[pos.taskIndex]
                     .sections[pos.sectionIndex]
                     .questions[pos.questionIndex]
                     .question = insertedId;
+            numberOfQuestion++;
         })
+
+        testData.taskCount = testData.tasks.length;
+        testData.questionCount = numberOfQuestion;
 
         //Thêm vào collection
         const createdTest = await this.testModel.create(testData);
@@ -136,14 +141,28 @@ export class TestService {
                                         .sort({ createdAt: -1 })
                                         .skip(skip)
                                         .limit(this.PAGINATION_LIMIT_NUMBER_OF_ITEM)
-                                        .select('-tasks')
                                         .lean();
 
-        const converted = data.map((item: any) => ({
-          ...item,
-          createdAt: dayjs(item.createdAt).tz('Asia/Ho_Chi_Minh').format(),
-          updatedAt: dayjs(item.updatedAt).tz('Asia/Ho_Chi_Minh').format()
-        })) as TestDocument[];
+        const converted = data.map((item: any) => {
+
+          let questionCount: number = 0;
+          let taskCount: number = item.tasks.length;
+          item.tasks.forEach((task, index) => {
+            task.sections.forEach((section, index) => {
+              questionCount += section.questions.length;
+            })
+          })
+
+          delete item.tasks;
+
+          return {
+            ...item,
+            createdAt: dayjs(item.createdAt).tz('Asia/Ho_Chi_Minh').format(),
+            updatedAt: dayjs(item.updatedAt).tz('Asia/Ho_Chi_Minh').format(),
+            questionCount: questionCount,
+            taskCount: taskCount
+          }
+        }) as TestDocument[];
 
         const returnData = {
             data: converted,
