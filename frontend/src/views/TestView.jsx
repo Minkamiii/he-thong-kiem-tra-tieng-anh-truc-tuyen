@@ -31,6 +31,7 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
 
     const params = new URLSearchParams(location.search);
     const page = Number(params.get('page')) || 1;
+    const userId = user?.id || user?._id || "a68feeb1-14f5-435d-bb44-09700b3560fe";
 
     // Ensure URL always includes ?page=1 at minimum
     useEffect(() => {
@@ -64,14 +65,33 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
             queryParams.set('fromto', `${fromDate}-${toDate}`);
         }
 
-        const testViewUrl = `http://[::1]:8000/api/test?${queryParams}`;
+        const testViewUrl = `${import.meta.env.VITE_BASE_TEST_SERVICE_LINK}?${queryParams}`;
 
         axios
             .get(testViewUrl, { signal: controller.signal })
-            .then((response) => {
+            .then(getTestResponse => {
                 if (requestedPage !== page) return;
-                setTestInPageArray(response.data.data);
-                setTotalPages(response.data.totalPages);
+                const gotTestId = getTestResponse.data.data.map(test => test._id).join(",");
+
+                return axios.get(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/CheckDone?userID=${userId}&test_ids=${gotTestId}`)
+                    .then(checkDoneResponse => {
+                        let mergedData = getTestResponse.data.data.map((test, index) => ({
+                            ...test,
+                            number_of_user_done: checkDoneResponse.data.data[index].number_of_user_done,
+                            this_user_done_before: checkDoneResponse.data.data[index].this_user_done_before,
+                        }))
+
+                        return{
+                            data: mergedData,
+                            totalPages: getTestResponse.data.totalPages
+                        }
+                    })
+            })
+                
+            .then(result => {
+                if (!result) return;
+                setTestInPageArray(result.data);
+                setTotalPages(result.totalPages);
             })
             .catch((error) => {
                 if (!axios.isCancel(error)) {
@@ -125,14 +145,14 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
             <TextField
                 fullwidth
                 variant="outlined"
-                placeholder="Enter keywords: name, type,..."
+                placeholder="Enter keywords"
                 value={searchQuery}
                 onChange={handleSearch}
-                sx={{mb:3}}
+                sx={{mb:3, width: "100%"}}
                 slotProps={{
                     input: {
-                        startAdornment: (
-                            <InputAdornment position="start">
+                        endAdornment: (
+                            <InputAdornment position="end">
                                 <SearchIcon />
                             </InputAdornment>
                         ),
@@ -160,13 +180,14 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
                                 }
                             }
                         }}
+                        sx={{width: "25%"}}
                     />
                 </LocalizationProvider>
 
             </Box>
             
             {/* Change this to search by category */}
-            <Grid container  mb={5}>
+            <Grid container  mb={5} display="flex" justifyContent="left" spacing={1}>
                 <Grid item>
                     <Button
                         sx={{width:'14vh'}}
@@ -203,26 +224,20 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
             {/* Display tests in a page */}
             <Grid container spacing={4} mb={5}>
                 {testInPageArray.map((test, idx) => {
-                    const numOfTasks = Array.isArray(test?.tasks) ? test.tasks.length : 0;
-                    const numOfQuestions = Array.isArray(test?.tasks)
-                        ? test.tasks.reduce((taskTotal, task) => {
-                            const sections = Array.isArray(task?.sections) ? task.sections : [];
-                            return taskTotal + sections.reduce((sectionTotal, section) => {
-                                const questions = Array.isArray(section?.questions) ? section.questions : [];
-                                return sectionTotal + questions.length;
-                            }, 0);
-                        }, 0)
-                        : 0;
-
-                    // console.log('Rendering testId:', test?._id);
+                    const numOfTasks = test.taskCount ?? 0;
+                    const numOfQuestions = test.questionCount ?? 0;
+                    const numOfUserDone = test.number_of_user_done;
+                    const thisUserDoneBefore = test.this_user_done_before;
 
                     return (
                         <Grid item size={{xs:12, md:3}} key={test?._id ?? idx}>
                             {() => console.log('Rendering testId:', test?._id)}
-                            <TestChooseBoxView 
+                            <TestChooseBoxView
                                 test={test}
                                 numOfTasks={numOfTasks}
                                 numOfQuestions={numOfQuestions}
+                                numOfUserDone={numOfUserDone}
+                                thisUserDoneBefore={thisUserDoneBefore}
                             />
                         </Grid>
                     );

@@ -5,14 +5,16 @@ import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useState } from 'react';
+import axios from 'axios';
 
 
 const RegisterView = () => {
     const navigate = useNavigate();
     const [dateOfBirth, setDateOfBirth] = useState(null);
 
-    const handleRegister = (event) => {
+    const handleRegister = async (event) => {
         event.preventDefault();
+        const controller = new AbortController();
         // Perform registration logic here
         // Hardcoded for demonstration purposes
         const username = event.target.username.value;
@@ -20,9 +22,24 @@ const RegisterView = () => {
         const email = event.target.email.value;
         const phoneNumber = event.target.phoneNumber.value;
         const dateOfBirth = event.target.dateOfBirth.value;
-        console.log('Registering with', { username, password, email, phoneNumber, dateOfBirth });
-        // On successful registration, navigate to the desired route
-        navigate('/login');
+
+        const data = {
+            username: username,
+            password: password,
+            email: email,
+            phoneNum: phoneNumber,
+            dob: dateOfBirth,
+            roles: []
+        }
+        
+        axios
+            .post('http://localhost:8081/userservice/register', data, {signal: controller.signal})
+            .then((response) => {
+                console.log(response)
+            })
+            .catch((error) => {
+                console.error(error);
+            })
     };
 
     return (
@@ -68,7 +85,7 @@ const RegisterView = () => {
                             alignItems:'center',
                         }}
                     >
-                        <Typography component="h1" variant="h5" fontWeight={700}>Đăng ký</Typography>
+                        <Typography component="h1" variant="h5" fontWeight={700}>Register User</Typography>
                         <Box component="form" noValidate onSubmit={handleRegister} sx={{mt:1}}>
                             <TextField
                                 margin="normal"
@@ -122,7 +139,7 @@ const RegisterView = () => {
                                 fullWidth
                                 variant="contained"
                                 sx={{mt:1, mb:2, py:1.5, fontWeight:600}}
-                            >Đăng ký</Button>
+                            >Register</Button>
                             <Button
                                 fullWidth
                                 variant="outlined"

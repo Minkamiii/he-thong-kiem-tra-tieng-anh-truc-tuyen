@@ -2,36 +2,31 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Grid, Typography, Paper, TextField, Button, Link } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import axios from 'axios';
 
 const LoginView = () => {
 
     const navigate = useNavigate();
 
-    const handleLogin = (event) => {
+    const handleLogin = async (event) => {
         event.preventDefault();
         // Perform login logic here
         // Hardcoded for demonstration purposes
         const username = event.target.username.value;
         const password = event.target.password.value;
-        // Hardcoded users for demonstration purposes
-        if (username === 'admin' && password === 'admin') {
-            alert('Admin login successful!');
-            navigate('/admin');
-            return;
+
+        const returnData = await axios.post('http://localhost:8081/userservice/login', {
+            username: username,
+            password: password
+        })
+
+        if(!returnData){
+            console.error("login failed");
         }
-        else if (username === 'teacher' && password === 'teacher') {
-            alert('Teacher login successful!');
-            navigate('/home', {isLoggedIn: true, user: { id: '1', avatar: 'https://i.pravatar.cc/300' }});
-            return;
+        else{
+            console.log("login success");
+            console.log(returnData);
         }
-        else if (username === 'student' && password === 'student') {
-            alert('Student login successful!');
-            navigate('/home', {isLoggedIn: true, user: { id: '2', avatar: 'https://i.pravatar.cc/300' }});
-            return;
-        }
-        alert('Login failed! Incorrect username or password.');
-        // On successful login, navigate to the desired route
-        //navigate('/dashboard');
     };
 
     return (
