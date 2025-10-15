@@ -3,7 +3,6 @@ import { Grid, Box, Typography } from '@mui/material';
 import Section from './Section';
 
 const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
-    console.log('ReadingTest tasks:', tasks);
     
     const currentTask = tasks && tasks[activeTask] ? tasks[activeTask] : null;
 
@@ -23,7 +22,7 @@ const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
             {/* Passage */}
             <Grid item size={{xs: 12, md: 6}}>
                 <Box sx={{
-                    overflowY: 'scroll',
+                    overflowY: 'auto',
                     height: '100vh',
                     p: 2,
                     width: '100%',

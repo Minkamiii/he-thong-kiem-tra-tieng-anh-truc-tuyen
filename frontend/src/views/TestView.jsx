@@ -231,7 +231,6 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
 
                     return (
                         <Grid item size={{xs:12, md:3}} key={test?._id ?? idx}>
-                            {() => console.log('Rendering testId:', test?._id)}
                             <TestChooseBoxView
                                 test={test}
                                 numOfTasks={numOfTasks}

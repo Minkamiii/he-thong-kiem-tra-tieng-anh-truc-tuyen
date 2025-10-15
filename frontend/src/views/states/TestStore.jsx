@@ -7,5 +7,4 @@ const TestStore = configureStore({
     },
 });
 
-
 export { TestStore };

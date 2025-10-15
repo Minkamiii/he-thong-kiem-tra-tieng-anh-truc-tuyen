@@ -64,8 +64,6 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
             const answersArray = Object.entries(test.answers).map(
                 ([id_question, answer]) => ({ id_question, answer })
             );
-
-            console.log(answersArray);
     
             // Build submit payload
             const data = {
@@ -76,8 +74,6 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                 kind: mode, // keep kind from state
                 answers: answersArray,
             };
-
-            console.log(data);
     
             // Send to backend
             const response = await axios.post(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/newSubmit`, data);

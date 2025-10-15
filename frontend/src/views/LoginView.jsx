@@ -1,12 +1,23 @@
 // import './css/LoginView.css';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Typography, Paper, TextField, Button, Link } from '@mui/material';
+import { Box, Grid, Typography, Paper, TextField, Button, Link, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoggedIn } from '../views/states/UserSlice.jsx';
 
 const LoginView = () => {
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const user = useSelector(state => state.user);
+    const [usernameValid, setUsernameValid] = useState({
+        ok: true,
+        message: "",
+    });
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -15,18 +26,30 @@ const LoginView = () => {
         const username = event.target.username.value;
         const password = event.target.password.value;
 
-        const returnData = await axios.post('http://localhost:8081/userservice/login', {
+        const data = {
             username: username,
             password: password
-        })
+        }
 
-        if(!returnData){
-            console.error("login failed");
-        }
-        else{
-            console.log("login success");
-            console.log(returnData);
-        }
+        axios.post(`${import.meta.env.VITE_BASE_AUTH_SERVICE_LINK}/login`, data)
+            .then(response => {
+                const result = response.data.result;
+                
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN, result.accessToken);
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN, result.refreshToken);
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID, result.data.id);
+                dispatch(setLoggedIn({isLoggedIn: true}))
+                alert('Login successfully!');
+                navigate('/home');
+            })
+            .catch(error => {
+                const data = error.response.data;
+                setUsernameValid({
+                    ok: false,
+                    message: data.message
+                })
+            })
+
     };
 
     return (
@@ -95,6 +118,8 @@ const LoginView = () => {
                                     autoComplete="username"
                                     autoFocus
                                     sx={{mb:1}}
+                                    error={!usernameValid.ok}
+                                    helperText={!usernameValid.ok && usernameValid.message}
                                 />
                                 <TextField
                                     margin="normal"
@@ -106,6 +131,18 @@ const LoginView = () => {
                                     id="password"
                                     autoComplete="current-password"
                                     sx={{mb:3}}
+                                    slotProps={{
+                                        input:{
+                                            endAdornment: <InputAdornment>
+                                                <IconButton>
+                                                    {passwordVisible ? 
+                                                        <VisibilityOff onClick={() => setPasswordVisible(false)} /> : 
+                                                        <Visibility onClick={() => setPasswordVisible(true)} />
+                                                    }
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                    }}
                                 />
                                 <Button
                                     type="submit"

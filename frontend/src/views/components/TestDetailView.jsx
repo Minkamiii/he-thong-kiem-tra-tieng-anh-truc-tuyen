@@ -7,17 +7,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 
 import { setTest, setTaskAndAnswers } from '../states/TestSlice.jsx';
+import Comment from './Comments.jsx';
 
-const TestMode = {
+const TabOptions = {
     custom: "practice",
-    standard: "exam"
+    standard: "exam",
+    comment: "comment"
 }
 
 const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [tab, setTab] = useState(TestMode.standard);
+    const [tab, setTab] = useState(TabOptions.standard);
     const [checked, setChecked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [timeLimit, setTimeLimit] = useState(0);
@@ -56,11 +58,6 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
             })
             .finally(() => setLoading(false));
     }, [dispatch, testId]);
-
-    // Add a separate useEffect to log Redux state changes
-    useEffect(() => {
-        console.log('Redux state updated:', test);
-    }, [test]);
 
     if (loading) {
         return (
@@ -134,8 +131,6 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
             });
         });
 
-        console.log(payload)
-
         dispatch(setTaskAndAnswers(payload));
 
         navigate(`/test/${test._id}/take?${taskParams}${timeParam}${modeParam}`);
@@ -145,7 +140,7 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
         <BaseUI isLoggedIn={isLoggedIn} user={user}>
             <Grid container spacing={1} sx={{alignItems: 'center', justifyContent: 'center', my:2}}>
                 {/* Test Detail */}
-                <Grid item xs={12} md={12}>
+                <Grid item xs={12} md={12} sx={{width: "80%"}}>
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -167,12 +162,13 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
 
                         <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
                             <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} centered>
-                                <Tab label="Standard" value={TestMode.standard} />
-                                <Tab label="Customization" value={TestMode.custom} />
+                                <Tab label="Standard" value= {TabOptions.standard} />
+                                <Tab label="Customization" value= {TabOptions.custom} />
+                                <Tab label="Discussion" value = {TabOptions.comment} />
                             </Tabs>
                         </Box>
 
-                        {tab === TestMode.standard && (
+                        {tab === TabOptions.standard && (
                             <Box sx={{ p: 2, width: '100%', textAlign: 'center' }}>
                                 <Typography variant="h6">Standard IELTS Practice</Typography>
                                 <Typography sx={{ my: 2 }}>
@@ -181,7 +177,7 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                             </Box>
                         )}
 
-                        {tab === TestMode.custom && (
+                        {tab === TabOptions.custom && (
                             <Box sx={{ p: 2, width: '100%' }}>
                                 {/* Show câu hỏi */}
                                 <Typography sx={{mb: 1, fontWeight: 'bold'}}>Select tasks to practice:</Typography>
@@ -226,21 +222,23 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                                 </Select>
                             </Box>
                         )}
+
+                        {tab == TabOptions.comment && (
+                            <Comment testId={test._id} />
+                        )}
                         
                         {/* Start Test Button */}
-                        <Button 
-                            variant='contained' 
-                            color='primary' 
-                            onClick={handleStartTest}
-                            disabled={checked.length === 0}
-                        >Start Test</Button>
+                        {tab !== TabOptions.comment && (
+                            <Button 
+                                variant='contained' 
+                                color='primary' 
+                                onClick={handleStartTest}
+                                disabled={checked.length === 0}
+                            >Start Test</Button>
+                        )}
 
 
                     </Box>
-                </Grid>
-                {/* Comment */}
-                <Grid item xs={12} md={12}>
-
                 </Grid>
             </Grid>
         </BaseUI>

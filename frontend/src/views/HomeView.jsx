@@ -1,15 +1,39 @@
 // import './css/HomeView.css';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Avatar, Container, Grid, Paper, Link, List, ListItem, ListItemText } from '@mui/material';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 
-const HomeView = ({ isLoggedIn = false, user = null }) => {
+const HomeView = () => {
+
+    const userState = useSelector(state => state.user);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        if(userState.isLoggedIn) {
+            const headers = {
+                Authorization: `Bearer ${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)}`,
+                "Content-Type": 'application/json'
+            }
+
+            axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`, 
+                // {headers: headers}
+            )
+                .then(response => {
+                    setUser(response.data.result);
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        }
+    }, [])
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f7f7ff', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
-            <Header isLoggedIn={isLoggedIn} user={user}/>
+            <Header isLoggedIn={userState.isLoggedIn} user={user}/>
 
             {/* Main Content */}
             <Container maxWidth="xl" sx={{ flex: 1, py: 6 }}>

@@ -24,7 +24,6 @@ const EssayView = ({ question, onAnswerChange }) => {
     const handleBlur = () => {
         if (question?.index !== undefined) {
             onAnswerChange(question.index, essay);
-            console.log('Answer saved on blur:', essay);
         }
     }
 
