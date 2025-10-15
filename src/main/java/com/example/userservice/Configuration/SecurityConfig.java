@@ -26,12 +26,11 @@ public class SecurityConfig {
             "/api/auth/admin",
             "/api/auth/introspect",
             "/api/auth/logout",
-            "/api/auth/refreshToken",
-            "/api/user/**"
+            "/api/auth/refreshToken"
     };
 
     @Value("${jwt.signerKey}")
-    private String signKey;;
+    private String signKey;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {

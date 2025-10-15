@@ -1,20 +1,18 @@
 package com.example.userservice.service;
 
 import java.util.HashSet;
-import java.util.List;
-
-import org.apache.catalina.connector.Response;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import com.example.userservice.dto.reponse.ApiResponse;
 import com.example.userservice.dto.request.UserCreationRequest;
 import com.example.userservice.dto.request.UserUpdateRequest;
 import com.example.userservice.entity.User;
-import com.example.userservice.entity.enums.Role;
 import com.example.userservice.exception.AppException;
 import com.example.userservice.exception.ErrorCode;
 import com.example.userservice.repository.UserRepository;
@@ -25,6 +23,7 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     private final RestTemplate restTemplate=new RestTemplate();
 
     public User registerUser(UserCreationRequest request,boolean isAdmin) {
@@ -50,19 +49,26 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<User> getAllUsers(){
-        return userRepository.findAll();
+    public Map<String, Object> getAllUser(int page) {
+        Pageable pageable = PageRequest.of(page, 12);
+        Page<User> userPage;
+        userPage = userRepository.findAll(pageable);
+
+        Map<String, Object> userList = new LinkedHashMap<>();
+        userList.put("data", userPage.getContent());
+        userList.put("currentItems", userPage.getNumberOfElements());
+        userList.put("pageSize", userPage.getSize());
+        userList.put("totalItems", userPage.getTotalElements());
+        userList.put("currentPage", userPage.getNumber());
+        userList.put("totalPages", userPage.getTotalPages());
+        return userList;
     }
 
     public User getUserByIdUser(String id) {
         return userRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.USER_UNEXISTED));
     }
 
-    public User getUser(String userId) {
-        return userRepository.findById(userId).orElse(null);
-    }
-
-    public User updateUser(String id, UserUpdateRequest request) {
+    public User updateUser(String id, UserUpdateRequest request, boolean isAdmin) {
         User user = getUserByIdUser(id);
 
         if(user==null){
@@ -75,7 +81,9 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPhoneNum(request.getPhoneNum());
         user.setDob(request.getDob());
-        user.setRoles(request.getRoles());
+        if (isAdmin) {
+            user.setRoles(request.getRoles());
+        }
         return userRepository.save(user);
     }
 
