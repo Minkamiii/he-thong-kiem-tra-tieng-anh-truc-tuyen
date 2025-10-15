@@ -34,9 +34,10 @@ export class CommentService{
         return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
-    private findRootComments(allComments: any[]): CommentItemDTO[] {
+    private findRootComments(allComments: any[]){
 
         const commentMap: Record<string, CommentItemDTO> = {};
+        let totalComment = 0;
         allComments.forEach(c => {
             commentMap[c._id.toString()] = {
                 commentId: c._id.toString(),
@@ -46,6 +47,7 @@ export class CommentService{
                 updatedAt: this.formatDate(c.updatedAt),
                 replies: []
             };
+            totalComment++;
         });
 
         //Mapping để tạo những replies trong từng comment
@@ -62,18 +64,22 @@ export class CommentService{
             }
         })
 
-        return rootComments;
+        return {
+            rootComments,
+            totalComment
+        };
     }
 
     async GetAllCommentsByTest(testId: string): Promise<GetAllCommentResponseDTO>{
         const allComments = await this.commentModel.find({testId: this.objectId(testId)}).sort({createdAt: -1}).lean();
         
         //Đưa toàn bộ comment vào một map với key là id của comment đó, value là comment
-        const rootComments = this.findRootComments(allComments);
+        const {rootComments, totalComment} = this.findRootComments(allComments);
 
         return plainToInstance(GetAllCommentResponseDTO, {
             testId: testId,
             comments: rootComments,
+            totalComment
         })
     }
 
@@ -91,7 +97,7 @@ export class CommentService{
 
         const deleteCommentIds: Types.ObjectId[] = [];
         //Lấy toàn bộ deleteComment 
-        for(const rootComment of rootComments){
+        for(const rootComment of rootComments.rootComments){
             if(rootComment.commentId === deleteCommentId){
                 deleteCommentIds.push(this.objectId(rootComment.commentId));
                 if(rootComment.replies){
