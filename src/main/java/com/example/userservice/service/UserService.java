@@ -27,7 +27,7 @@ public class UserService {
     private final RestTemplate restTemplate=new RestTemplate();
 
     public User registerUser(UserCreationRequest request,boolean isAdmin) {
-
+        System.out.println(2);
         if(userRepository.existsByUsername(request.getUsername())){
             throw new AppException(ErrorCode.USER_EXISTED);
         }

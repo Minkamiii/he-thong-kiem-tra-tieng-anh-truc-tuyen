@@ -5,6 +5,9 @@ public enum ErrorCode {
     USER_EXISTED(1001, "User existed"),
     USERNAME_INVALID(1002, "username invalid"),
     PASSWORD_INVALID(1002, "password invalid"),
+    EMAIL_INVALID(1002,"email invalid"),
+    PHONEN_INVALID(1002,"phoneNum invalid"),
+    DOB_INVALID(1002,"date of birth invalid"),
     INFORMATION_NOT_NULL(1003, "information not null"),
     UNAUTHENTICATED(1004, "unauthenticated"),
     USER_UNEXISTED(404, "user not found")

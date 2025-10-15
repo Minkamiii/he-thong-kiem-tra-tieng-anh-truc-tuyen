@@ -79,12 +79,15 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request,boolean adminLogin) {
         var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_UNEXISTED));
+                .filter(u -> u.getUsername().equals(request.getUsername()))
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_INVALID));
         
         PasswordEncoder passwordEncoder= new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        
+        if(!authenticated) throw new AppException(ErrorCode.PASSWORD_INVALID);
 
-        if(!authenticated || (adminLogin && !(user.getRoles().contains("SUPER_ADMIN") || user.getRoles().contains("ADMIN")))){
+        if(adminLogin && !(user.getRoles().contains("SUPER_ADMIN") || user.getRoles().contains("ADMIN"))){
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         String accessToken = generateToken(user,ACCESS_TOKEN_VALID_DURATION);

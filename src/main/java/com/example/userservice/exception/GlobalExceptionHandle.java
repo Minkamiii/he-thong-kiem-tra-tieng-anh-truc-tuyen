@@ -1,11 +1,15 @@
 package com.example.userservice.exception;
 
+import java.time.LocalDate;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.example.userservice.dto.reponse.ApiResponse;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 @ControllerAdvice
 public class GlobalExceptionHandle {
@@ -14,8 +18,8 @@ public class GlobalExceptionHandle {
     ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception){
         ApiResponse apiResponse =new ApiResponse();
 
-        apiResponse.setCode(ErrorCode.UNAUTHENTICATED.getCode());
-        apiResponse.setMessage(ErrorCode.UNAUTHENTICATED.getMessage());
+        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
+        apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
     }
@@ -41,6 +45,25 @@ public class GlobalExceptionHandle {
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(errorCode.getMessage());
 
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    ResponseEntity<ApiResponse> handleInvalidFormat(HttpMessageNotReadableException exception){
+        Throwable cause = exception.getCause();
+
+        // Kiểm tra xem có phải lỗi parse LocalDate hay không
+        if (cause instanceof InvalidFormatException ife && ife.getTargetType() == LocalDate.class) {
+            ApiResponse apiResponse = new ApiResponse();
+            apiResponse.setCode(ErrorCode.DOB_INVALID.getCode());
+            apiResponse.setMessage(ErrorCode.DOB_INVALID.getMessage());
+            return ResponseEntity.badRequest().body(apiResponse);
+        }
+
+        // Nếu không phải lỗi LocalDate -> trả mặc định
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
+        apiResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
 }
