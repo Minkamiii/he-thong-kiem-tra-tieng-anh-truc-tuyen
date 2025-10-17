@@ -10,6 +10,8 @@ public enum ErrorCode {
     DOB_INVALID(1002,"date of birth invalid"),
     INFORMATION_NOT_NULL(1003, "information not null"),
     UNAUTHENTICATED(1004, "unauthenticated"),
+    INVALID_TOKEN(1005, "invalid token"),
+    TOKEN_EXPIRED(1006, "token expired"),
     USER_UNEXISTED(404, "user not found")
     ;
 

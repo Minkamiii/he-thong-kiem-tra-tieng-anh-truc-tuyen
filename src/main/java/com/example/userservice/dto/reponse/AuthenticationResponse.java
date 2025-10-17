@@ -1,14 +1,10 @@
 package com.example.userservice.dto.reponse;
 
 public class AuthenticationResponse {
-    String accessToken;
-    String refreshToken;
     boolean authentication;
     Object data;
 
-    public AuthenticationResponse(String accessToken,String refreshToken, boolean authenticated, Object data) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+    public AuthenticationResponse(boolean authenticated, Object data) {
         this.authentication = authenticated;
         this.data = data;
     }
@@ -19,22 +15,6 @@ public class AuthenticationResponse {
 
     public void setAuthentication(boolean authentication) {
         this.authentication = authentication;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 
     public Object getData() {

@@ -1,7 +1,6 @@
 package com.example.userservice.exception;
 
 import java.time.LocalDate;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,7 +14,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 public class GlobalExceptionHandle {
     
     @ExceptionHandler(value = Exception.class) //exception cụ thể
-    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception){
+    ResponseEntity<ApiResponse> handlingRuntimeException(Exception exception){
         ApiResponse apiResponse =new ApiResponse();
 
         apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
@@ -24,8 +23,9 @@ public class GlobalExceptionHandle {
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
+
     @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(AppException exception){
+    ResponseEntity<ApiResponse> handlingRuntimeException1(AppException exception){
         ErrorCode errorCode= exception.getErrorCode();
         ApiResponse apiResponse =new ApiResponse();
 

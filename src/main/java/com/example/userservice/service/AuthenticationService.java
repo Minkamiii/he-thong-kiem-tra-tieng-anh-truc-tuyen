@@ -8,16 +8,19 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import com.example.userservice.dto.reponse.ApiResponse;
 import com.example.userservice.dto.reponse.AuthenticationResponse;
 import com.example.userservice.dto.reponse.IntrospectResponse;
-import com.example.userservice.dto.reponse.RefreshTokenReponse;
 import com.example.userservice.dto.request.AuthenticationRequest;
 import com.example.userservice.dto.request.IntrospectRequest;
 import com.example.userservice.dto.request.LogoutRequest;
+import com.example.userservice.dto.request.RefreshTokenRequest;
 import com.example.userservice.entity.InvalidatedToken;
 import com.example.userservice.entity.User;
 import com.example.userservice.exception.AppException;
@@ -72,12 +75,12 @@ public class AuthenticationService {
         try {
             verifyToken(token,false);
         } catch (Exception e) {
-            isValid=false;
+            throw e;
         }
         return new IntrospectResponse(isValid);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request,boolean adminLogin) {
+    public ResponseEntity<ApiResponse> authenticate(AuthenticationRequest request,boolean adminLogin) {
         var user = userRepository.findByUsername(request.getUsername())
                 .filter(u -> u.getUsername().equals(request.getUsername()))
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_INVALID));
@@ -92,8 +95,14 @@ public class AuthenticationService {
         }
         String accessToken = generateToken(user,ACCESS_TOKEN_VALID_DURATION);
         String refreshToken = generateToken(user,REFRESH_TOKEN_VALID_DURATION);
-
-        return new AuthenticationResponse(accessToken, refreshToken, authenticated, user);
+        AuthenticationResponse authResponse = new AuthenticationResponse(authenticated, user);
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setResult(authResponse);
+        System.out.println(apiResponse.getMessage());
+        return ResponseEntity.ok()
+                .header("Access-Token", accessToken)
+                .header("Refresh-Token", refreshToken)
+                .body(apiResponse);
     }
 
     public void logout (LogoutRequest request) throws ParseException, JOSEException {
@@ -109,7 +118,7 @@ public class AuthenticationService {
 
             invalidatedTokenRepository.save(invalidatedToken);
         } catch (AppException exception) {
-            System.out.println("token invalid");
+            throw exception;
         }
     }
 
@@ -117,7 +126,6 @@ public class AuthenticationService {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
-        
         Date expiryTime = (isRefresh) 
             ? 
             new Date(signedJWT.getJWTClaimsSet().getIssueTime()
@@ -125,37 +133,40 @@ public class AuthenticationService {
                 .toInstant().plus(ACCESS_TOKEN_VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli())
             :
             signedJWT.getJWTClaimsSet().getExpirationTime();
-
         var verified = signedJWT.verify(verifier);
-
-        if(!(verified && expiryTime.after(new Date()))){
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if(!verified){
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+        if(!expiryTime.after(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
 
-        // if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())){
-        //     throw new AppException(ErrorCode.UNAUTHENTICATED);
-        // }
-
+        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())){
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         return signedJWT;
     }
 
-    public RefreshTokenReponse refreshToken(IntrospectRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken(),true);
+    public ResponseEntity<ApiResponse> refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getRefreshToken(),true);
 
-        // var jit = signedJWT.getJWTClaimsSet().getJWTID();
-        // var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        // InvalidatedToken invalidatedToken = new InvalidatedToken();
-        // invalidatedToken.setId(jit);
-        // invalidatedToken.setExpirytime(expiryTime);
+        InvalidatedToken invalidatedToken = new InvalidatedToken();
+        invalidatedToken.setId(jit);
+        invalidatedToken.setExpirytime(expiryTime);
 
-        // invalidatedTokenRepository.save(invalidatedToken);
+        invalidatedTokenRepository.save(invalidatedToken);
 
         var username = signedJWT.getJWTClaimsSet().getSubject();
         var user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
         var newToken = generateToken(user,ACCESS_TOKEN_VALID_DURATION);
-        return new RefreshTokenReponse(newToken);
+        ApiResponse apiResponse = new ApiResponse();
+        return ResponseEntity.ok()
+                .header("Access-Token", newToken)
+                .body(apiResponse);
     }
 
     private String generateToken(User user,Long VALID_DURATION){

@@ -1,9 +1,9 @@
-package com.example.userservice.dto.reponse;
+package com.example.userservice.dto.request;
 
-public class RefreshTokenReponse {
+public class RefreshTokenRequest {
     String refreshToken;
 
-    public RefreshTokenReponse(String refreshToken) {
+    public RefreshTokenRequest(String refreshToken) {
         this.refreshToken = refreshToken;
     }
     public String getRefreshToken() {
