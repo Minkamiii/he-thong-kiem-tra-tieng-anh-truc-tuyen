@@ -23,6 +23,9 @@ public class CustomJwtDecoder implements JwtDecoder{
     @Value("${jwt.signerKey}")
     private String signerKey;
     
+    @Value("${jwt.signerKey-refresh}")
+    private String signerKeyRefresh;
+
     @Autowired
     private AuthenticationService authenticationService;;
 

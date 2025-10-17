@@ -23,18 +23,18 @@
 
 ## Các API đáng chú ý
 - **API mặc định** http://localhost:8081/userservice/api
-- **Đăng nhập** http://localhost:8081/userservice/api/auth/login
-- **Đăng nhập trang Admin** http://localhost:8081/userservice/api/auth/loginAdmin
-- **Đăng xuất** http://localhost:8081/userservice/api/auth/logout
-- **Kiểm tra token có hợp lệ không** http://localhost:8081/userservice/api/auth/introspect
-- **Làm mới token** http://localhost:8081/userservice/api/auth/refreshToken
-- **Đăng ký** http://localhost:8081/userservice/api/user/register
-- **Thêm user bằng admin** http://localhost:8081/userservice/api/user/adduser
-- **Lấy tất cả user** http://localhost:8081/userservice/api/user/getAll
-- **Lấy user theo id** http://localhost:8081/userservice/api/user/{userId}
-- **Cập nhập user** http://localhost:8081/userservice/api/user/update/{userId}
-- **Cập nhập user bằng Admin** http://localhost:8081/userservice/api/user/updateAdmin/{userId}
-- **Xóa user** http://localhost:8081/userservice/api/user/delete/{userId}
+- **Đăng nhập** POST http://localhost:8081/userservice/api/auth/login
+- **Đăng nhập trang Admin** POST http://localhost:8081/userservice/api/auth/loginAdmin
+- **Đăng xuất**POST http://localhost:8081/userservice/api/auth/logout
+- **Kiểm tra token có hợp lệ không** POST http://localhost:8081/userservice/api/auth/introspect
+- **Làm mới token** POST http://localhost:8081/userservice/api/auth/refreshToken
+- **Đăng ký** POST http://localhost:8081/userservice/api/user/register
+- **Thêm user bằng admin** POST http://localhost:8081/userservice/api/user/adduser
+- **Lấy tất cả user** GET http://localhost:8081/userservice/api/user/getAll
+- **Lấy user theo id** GET http://localhost:8081/userservice/api/user/{userId}
+- **Cập nhập user** PUT http://localhost:8081/userservice/api/user/update/{userId}
+- **Cập nhập user bằng Admin** PUT http://localhost:8081/userservice/api/user/updateAdmin/{userId}
+- **Xóa user** DELETE http://localhost:8081/userservice/api/user/delete/{userId}
 
 ## Các ErroCode
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception"),

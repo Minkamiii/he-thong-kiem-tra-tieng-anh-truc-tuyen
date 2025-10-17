@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception",HttpStatus.BAD_REQUEST),
     USER_EXISTED(1001, "User existed", HttpStatus.BAD_REQUEST),
+    LOGIN_INVALID(1002, "Wrong username or password", HttpStatus.BAD_REQUEST),
     USERNAME_INVALID(1002, "username invalid", HttpStatus.BAD_REQUEST),
     PASSWORD_INVALID(1002, "password invalid", HttpStatus.BAD_REQUEST),
     EMAIL_INVALID(1002,"email invalid", HttpStatus.BAD_REQUEST),

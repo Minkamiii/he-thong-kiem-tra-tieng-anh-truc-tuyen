@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @PutMapping("/update/{userId}")
-    @PreAuthorize("userId == authentication.principal.id")
+    // @PreAuthorize("userId == authentication.principal.id")
     ApiResponse updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
         ApiResponse apiResponse=new ApiResponse();
         apiResponse.setResult(userService.updateUser(userId,request,false));

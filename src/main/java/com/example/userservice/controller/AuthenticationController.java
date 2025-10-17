@@ -24,14 +24,14 @@ public class AuthenticationController {
     private AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    ResponseEntity<ApiResponse> authenticate(@RequestBody AuthenticationRequest request){
-        ResponseEntity<ApiResponse> authenticationResponse = authenticationService.authenticate(request,false);
+    ApiResponse authenticate(@RequestBody AuthenticationRequest request){
+        ApiResponse authenticationResponse = authenticationService.authenticate(request,false);
         return authenticationResponse;
     }
 
     @PostMapping("/loginAdmin")
-    ResponseEntity<ApiResponse> authenticateAdmin(@RequestBody AuthenticationRequest request){
-        ResponseEntity<ApiResponse> authenticationResponse = authenticationService.authenticate(request,true);
+    ApiResponse authenticateAdmin(@RequestBody AuthenticationRequest request){
+        ApiResponse authenticationResponse = authenticationService.authenticate(request,true);
         return authenticationResponse;
     }
 
@@ -51,8 +51,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refreshToken")
-    ResponseEntity<ApiResponse> refreshToken(@RequestBody RefreshTokenRequest request) throws ParseException, JOSEException{
-        ResponseEntity<ApiResponse> accessToken = authenticationService.refreshToken(request);
+    ApiResponse refreshToken(@RequestBody RefreshTokenRequest request) throws ParseException, JOSEException{
+        ApiResponse accessToken = authenticationService.refreshToken(request);
         return accessToken;
     }
 
