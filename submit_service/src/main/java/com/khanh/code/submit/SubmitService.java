@@ -25,7 +25,7 @@ import com.khanh.code.api_response.SectionsResponse;
 import com.khanh.code.api_response.TaskResponse;
 import com.khanh.code.api_response.TestDoneRespone;
 import com.khanh.code.api_response.TestResponse;
-
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class SubmitService {
@@ -33,6 +33,12 @@ public class SubmitService {
     @Autowired
     private final SubmitRepository submitRepository;
     private final AnswerService answerService;
+
+    @Value("${TEST_SERVICE_URL}")
+    private String testServiceUrl;
+
+    @Value("${USER_SERVICE_URL}")
+    private String userServiceUrl;
 
     private final RestTemplate restTemplate=new RestTemplate();
 
@@ -507,7 +513,7 @@ public class SubmitService {
 
     //call user service to check user exist
     public boolean checkUser(String userID){
-        String url ="http://localhost:8081/userservice/api/user/"+userID;
+        String url =userServiceUrl+userID;
         try{
             ResponseEntity<Void> response= restTemplate.getForEntity(url,Void.class);
             //System.out.println(response.getStatusCode());
@@ -523,7 +529,8 @@ public class SubmitService {
     // headers.setContentType(MediaType.APPLICATION_JSON);
     public TestResponse testAPI(String id_test,List<Integer>tasks)
     {
-        String baseUrl = "http://[::1]:8000/api/test/" + id_test+"/questions";
+        String baseUrl = testServiceUrl + id_test+"/questions";
+        //"http://[::1]:8000/api/test/" + id_test+"/questions";
 
     
         String tasksParam = tasks.stream()

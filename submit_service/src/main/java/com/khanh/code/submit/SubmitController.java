@@ -26,19 +26,6 @@ public class SubmitController {
     @Autowired
     private SubmitService submitService;
 
-    @PostMapping(path = "/newSubmit")
-    public ResponseEntity<ApiResponse> submitTest(@RequestBody SubmitRequest submitRequest) {
-        try {
-            ApiResponse response = submitService.saveSubmit(submitRequest);
-            return ResponseEntity.status(response.getStatus()).body(response);
-        } catch (Exception e) {
-            ApiResponse errorResponse = new ApiResponse();
-            errorResponse.setMessage("Error: " + e.getMessage());
-            errorResponse.setStatus(500);
-            return ResponseEntity.status(500).body(errorResponse);
-        }
-    }
-    
     @GetMapping(path="/user/id/{userID}")
     public ResponseEntity<ApiResponse> getSubmitsOfUser(
         @PathVariable String userID,
@@ -77,6 +64,19 @@ public class SubmitController {
         @RequestParam String testID) {
         try {
             ApiResponse response = submitService.getSubmitByUserAndTest(userID, testID);
+            return ResponseEntity.status(response.getStatus()).body(response);
+        } catch (Exception e) {
+            ApiResponse errorResponse = new ApiResponse();
+            errorResponse.setMessage("Error: " + e.getMessage());
+            errorResponse.setStatus(500);
+            return ResponseEntity.status(500).body(errorResponse);
+        }
+    }
+
+    @PostMapping(path = "/newSubmit")
+    public ResponseEntity<ApiResponse> submitTest(@RequestBody SubmitRequest submitRequest) {
+        try {
+            ApiResponse response = submitService.saveSubmit(submitRequest);
             return ResponseEntity.status(response.getStatus()).body(response);
         } catch (Exception e) {
             ApiResponse errorResponse = new ApiResponse();

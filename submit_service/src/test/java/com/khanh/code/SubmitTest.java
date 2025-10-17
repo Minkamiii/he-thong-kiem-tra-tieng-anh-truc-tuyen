@@ -103,7 +103,7 @@ public class SubmitTest {
 
         //create submitRequest
         submitRequest.setTasks(tasks);
-        submitRequest.setUser_id("a68feeb1-14f5-435d-bb44-09700b3560fe");
+        submitRequest.setUser_id("1da738e8-7648-4f4e-a2a5-7c60faf044e2");
         submitRequest.setTest_id("68d13a9cc35d63eb8543f27d");
         submitRequest.setKind("exam");
         
@@ -360,7 +360,7 @@ public class SubmitTest {
         Submit submit=submitRepository.findAllOrderDayDESC().get(0);
 
         assertEquals(submit.getId_test(), "68d13a9cc35d63eb8543f27d");
-        assertEquals(submit.getId_user(), "a68feeb1-14f5-435d-bb44-09700b3560fe");
+        assertEquals(submit.getId_user(), "1da738e8-7648-4f4e-a2a5-7c60faf044e2");
         assertEquals(submit.getType().toString(), "LISTENING");
         assertEquals(submit.getKind().toString(), "EXAM");
 
