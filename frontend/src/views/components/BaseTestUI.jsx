@@ -4,15 +4,14 @@ import { Box, Button, Container, Grid, Link, Typography, Paper, Dialog, DialogAc
 import { useSelector, useDispatch } from "react-redux";
 import { data, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-
+import authApi from "../../api/AuthApi.jsx";
 import { setTest, resetTest, resetAnswer } from '../states/TestSlice.jsx';
-
 import Header from "./Header";
 import ReadingTest from "./ReadingTest";
 import ListeningTest from "./ListeningTest";
 import WritingTest from "./WritingTest";
 
-const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
+const BaseTestUI = ({ testId, tasks }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const location = useLocation(); 
@@ -23,6 +22,8 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
     const [timeElapsed, setTimeElapsed] = useState(0);
     const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
     const [answers, setAnswers] = useState({}); // Store user answers here
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
 
     const questionsContainerRef = useRef(null);
     const isCountUp = useRef(false);
@@ -38,6 +39,31 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
 
     const test = useSelector((state) => state.test);
 
+    useEffect(() => {
+    
+        if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+            authApi.post('/introspect', {
+                token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
+            }).then(res => {
+                if(!user){
+                    axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
+                    .then(res => {
+                        setUser(res.data.result);
+                        setIsLoggedIn(true);
+                    })
+                    .catch(err => {
+                        alert("Can not find user. Please login again.");
+                        navigate("/home");
+                    })
+                }
+            }).catch(err => {
+                alert("Login session expired. Please login again.");
+                navigate("/home");
+            })
+        }
+        
+    }, [])
+
     const handleOpenSubmitDialog = () => setOpenSubmitDialog(true);
     const handleCloseSubmitDialog = () => setOpenSubmitDialog(false);
 
@@ -50,7 +76,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
     const handleSubmit = async () => {
         try {
             const user = JSON.parse(localStorage.getItem("user"));
-            const userId = user?.id || user?._id || "a68feeb1-14f5-435d-bb44-09700b3560fe";
+            const userId = localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID);
     
             if (!userId) {
                 alert("User not found. Please log in again.");
@@ -79,8 +105,8 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
             const response = await axios.post(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/newSubmit`, data);
     
             if (response.status === 200) {
-                alert("Test submitted successfully!");
                 dispatch(resetTest()); // Clear answers after submit
+                alert("Test submitted successfully!");
                 navigate("/home");
             } else {
                 alert("Submission failed. Please try again.");

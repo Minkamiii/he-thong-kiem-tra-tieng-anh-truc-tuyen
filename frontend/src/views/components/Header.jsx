@@ -1,32 +1,30 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, Avatar, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, Avatar, IconButton, Menu, MenuItem, Tooltip, ListItemIcon } from '@mui/material';
+import Logout from '@mui/icons-material/Logout';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
-import { setLoggedIn } from '../states/UserSlice.jsx';
 
 const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const [anchorElements, setAnchorElements] = useState(null);
-    const isMenuOpen = Boolean(anchorElements);
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const open = Boolean(anchorEl);
 
-    const handleAvatarClick = (event) => {
-        setAnchorElements(event.currentTarget);
+    const handleClose = () => {
+        setAnchorEl(null);
     };
 
-    const handleMenuClose = () => {
-        setAnchorElements(null);
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
     };
 
     const handleGoProfile = () => {
-        handleMenuClose();
+        handleClose();
         navigate('/profile');
     };
 
     const handleLogout = () => {
-        handleMenuClose();
+        handleClose();
 
         const data = {
             token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN),
@@ -34,18 +32,13 @@ const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
 
         axios.post(`${import.meta.env.VITE_BASE_AUTH_SERVICE_LINK}/logout`, data)
             .then(response => {
-                dispatch(setLoggedIn({isLoggedIn: false}));
+                localStorage.clear();
 
-                localStorage.removeItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN);
-                localStorage.removeItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN);
-                localStorage.removeItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID);
-
-                navigate('/login');
+                navigate('/home');
             })
             .catch(error => {
                 console.log(error);
             })
-        // }
     };
 
     return (
@@ -74,12 +67,12 @@ const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
                             <Button color="inherit" cursor="pointer" onClick={() => navigate('/history')}>History</Button>
                             <Tooltip title={user?.username || 'Account'}>
                                 <IconButton 
-                                    onClick={handleAvatarClick} 
+                                    onClick={handleClick} 
                                     size="small" 
                                     sx={{ ml: 1 }} 
-                                    aria-controls={isMenuOpen ? 'account-menu' : undefined} 
+                                    aria-controls={open ? 'account-menu' : undefined} 
                                     aria-haspopup="true" 
-                                    aria-expanded={isMenuOpen ? 'true' : undefined}
+                                    aria-expanded={open ? 'true' : undefined}
                                 >
                                     <Avatar>
                                         <Typography fontSize={18}>
@@ -89,15 +82,39 @@ const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
                                 </IconButton>
                             </Tooltip>
                             <Menu
-                                anchorElements={anchorElements}
+                                anchorEl={anchorEl}
                                 id="account-menu"
-                                open={isMenuOpen}
-                                onClose={handleMenuClose}
+                                open={open}
+                                onClose={handleClose}
+                                onClick={handleClose}
+                                slotProps={{
+                                    paper: {
+                                        elevation: 0,
+                                        sx: {
+                                            overflow: 'visible',
+                                            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                            mt: 0,
+                                            '& .MuiAvatar-root': {
+                                                width: 32,
+                                                height: 32,
+                                                ml: -0.5,
+                                                mr: 1.5,
+                                            },
+                                        },
+                                    },
+                                }}
                                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                                anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
+                                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                             >
-                                <MenuItem onClick={handleGoProfile}>Profile</MenuItem>
-                                <MenuItem onClick={handleLogout}>Log Out</MenuItem>
+                                <MenuItem onClick={handleClose}>
+                                    <Avatar /> Profile
+                                </MenuItem>
+                                <MenuItem onClick={handleLogout}>
+                                    <ListItemIcon>
+                                        <Logout fontSize="small" />
+                                    </ListItemIcon>
+                                    Logout
+                                </MenuItem>
                             </Menu>
                         </>
                     ) : (

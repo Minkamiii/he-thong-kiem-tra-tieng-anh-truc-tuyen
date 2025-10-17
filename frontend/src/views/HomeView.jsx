@@ -1,39 +1,50 @@
 // import './css/HomeView.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Avatar, Container, Grid, Paper, Link, List, ListItem, ListItemText } from '@mui/material';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import { useSelector } from 'react-redux';
 import axios from 'axios';
+import authApi from '../api/AuthApi';
+import { useNavigate } from 'react-router-dom';
 
 const HomeView = () => {
 
-    const userState = useSelector(state => state.user);
+    const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
+    const didRunRef = useRef(false);
 
     useEffect(() => {
-        if(userState.isLoggedIn) {
-            const headers = {
-                Authorization: `Bearer ${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)}`,
-                "Content-Type": 'application/json'
-            }
+        if (didRunRef.current) return; // guard để tránh chạy lần thứ 2 trong StrictMode (dev)
+        didRunRef.current = true;
 
-            axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`, 
-                // {headers: headers}
-            )
-                .then(response => {
-                    setUser(response.data.result);
-                })
-                .catch(error => {
-                    console.log(error)
-                })
+        if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+            authApi.post('/introspect', {
+                token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
+            }).then(res => {
+                if(!user){
+                    axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
+                    .then(res => {
+                        setUser(res.data.result);
+                        setIsLoggedIn(true);
+                    })
+                    .catch(err => {
+                        alert("Login session expired. Please login again.");
+                        navigate("/home");
+                    })
+                }
+            }).catch(err => {
+                alert("Login session expired. Please login again.");
+                navigate("/home");
+            })
         }
+        
     }, [])
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f7f7ff', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
-            <Header isLoggedIn={userState.isLoggedIn} user={user}/>
+            <Header isLoggedIn={isLoggedIn} user={user}/>
 
             {/* Main Content */}
             <Container maxWidth="xl" sx={{ flex: 1, py: 6 }}>

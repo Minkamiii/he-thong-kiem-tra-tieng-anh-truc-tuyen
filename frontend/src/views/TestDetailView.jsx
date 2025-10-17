@@ -1,13 +1,13 @@
 import { Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Grid, Box, Divider, Button, Select, MenuItem, Tabs, Tab } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BaseUI from './BaseUI';
+import BaseUI from './components/BaseUI.jsx';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
-
-import { setTest, setTaskAndAnswers } from '../states/TestSlice.jsx';
-import Comment from './Comments.jsx';
+import authApi from '../api/AuthApi.jsx';
+import { setTest, setTaskAndAnswers } from './states/TestSlice.jsx';
+import Comment from './components/Comments.jsx';
 
 const TabOptions = {
     custom: "practice",
@@ -15,7 +15,7 @@ const TabOptions = {
     comment: "comment"
 }
 
-const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
+const TestDetailView = ( {testId} ) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -23,6 +23,8 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
     const [checked, setChecked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [timeLimit, setTimeLimit] = useState(0);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
 
     const test = useSelector((state) => state.test);
 
@@ -34,6 +36,33 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
             default: return 0;
         }
     }
+
+
+    useEffect(() => {
+
+        if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+            authApi.post('/introspect', {
+                token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
+            }).then(res => {
+                if(!user){
+                    axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
+                    .then(res => {
+                        setUser(res.data.result);
+                        setIsLoggedIn(true);
+                    })
+                    .catch(err => {
+                        alert("Can not find user. Please login again.");
+                        navigate("/home");
+                    })
+                }
+            }).catch(err => {
+                alert("Login session expired. Please login again.");
+                navigate("/home");
+            })
+        }
+        
+    }, [])
+
     useEffect(() => {
         // Fetch test details from API using testId
         setLoading(true);

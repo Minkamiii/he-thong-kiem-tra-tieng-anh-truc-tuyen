@@ -1,7 +1,7 @@
 // import './css/HomeView.css';
 import React, { useEffect, useState } from 'react';
 import { Typography, Grid, Pagination, TextField, InputAdornment, Button, FormControlLabel, Switch, Box } from '@mui/material';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from "@mui/icons-material/Search";
 
 import { DateRangePicker } from '@mui/x-date-pickers-pro';
@@ -14,11 +14,14 @@ import TestChooseBoxView from './components/TestChooseBoxView';
 import BaseUI from './components/BaseUI';
 
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import authApi from '../api/AuthApi';
 dayjs.extend(customParseFormat);
 
-const TestView = ({ isLoggedIn = false, user = null } = {}) => {
+const TestView = () => {
     // const params = useParams();
-
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [, setSearchParams] = useSearchParams();
     const location = useLocation();
     const [testInPageArray, setTestInPageArray] = useState(Array(0));
@@ -31,7 +34,6 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
 
     const params = new URLSearchParams(location.search);
     const page = Number(params.get('page')) || 1;
-    const userId = user?.id || user?._id || "a68feeb1-14f5-435d-bb44-09700b3560fe";
 
     // Ensure URL always includes ?page=1 at minimum
     useEffect(() => {
@@ -44,63 +46,89 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
     }, [location.search]);
 
     useEffect(() => {
-        const controller = new AbortController();
-        setLoading(true);
-        setTestInPageArray([]);
-        const requestedPage = page;
 
-        // Build query parameters
-        const queryParams = new URLSearchParams({
-            page: String(page),
-            active: 'true'
-        });
+        authApi.post('/introspect', {
+            token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
+        }).then(res => {
+            
+            if(!user){
+                axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
+                .then(res => {
+                    setUser(res.data.result);
+                    setIsLoggedIn(true);
+                })
+                .catch(err => {
+                    alert("Can not find user. Please login again.");
+                    navigate("/home");
+                })
+            }
 
-        if (searchQuery) queryParams.set('testName', searchQuery);
-        if (filterType) queryParams.set('type', filterType);
-        
-        // Add date range if both dates are selected
-        if (dateRange[0] && dateRange[1]) {
-            const fromDate = dayjs(dateRange[0]).format('DDMMYYYY');
-            const toDate = dayjs(dateRange[1]).format('DDMMYYYY');
-            queryParams.set('fromto', `${fromDate}-${toDate}`);
-        }
+            return user;
+        }).then(res => {
+            const controller = new AbortController();
+            setLoading(true);
+            setTestInPageArray([]);
+            const requestedPage = page;
+    
+            // Build query parameters
+            const queryParams = new URLSearchParams({
+                page: String(page),
+                active: 'true'
+            });
+    
+            if (searchQuery) queryParams.set('testName', searchQuery);
+            if (filterType) queryParams.set('type', filterType);
+            
+            // Add date range if both dates are selected
+            if (dateRange[0] && dateRange[1]) {
+                const fromDate = dayjs(dateRange[0]).format('DDMMYYYY');
+                const toDate = dayjs(dateRange[1]).format('DDMMYYYY');
+                queryParams.set('fromto', `${fromDate}-${toDate}`);
+            }
+    
+            const testViewUrl = `${import.meta.env.VITE_BASE_TEST_SERVICE_LINK}?${queryParams}`;
+            const userId = localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID);
+    
+            axios
+                .get(testViewUrl, { signal: controller.signal })
+                .then(getTestResponse => {
+                    if (requestedPage !== page) return;
+                    const gotTestId = getTestResponse.data.data.map(test => test._id).join(",");
+    
+                    return axios.get(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/CheckDone?userID=${userId}&test_ids=${gotTestId}`)
+                        .then(checkDoneResponse => {
+                            let mergedData = getTestResponse.data.data.map((test, index) => ({
+                                ...test,
+                                number_of_user_done: checkDoneResponse.data.data[index].number_of_user_done,
+                                this_user_done_before: checkDoneResponse.data.data[index].this_user_done_before,
+                            }))
+    
+                            return{
+                                data: mergedData,
+                                totalPages: getTestResponse.data.totalPages
+                            }
+                        })
+                })
+                    
+                .then(result => {
+                    if (!result) return;
+                    setTestInPageArray(result.data);
+                    setTotalPages(result.totalPages);
+                })
+                .catch((error) => {
+                    if (!axios.isCancel(error)) {
+                        console.error("Failed to fetch tests:", error);
+                    }
+                })
+                .finally(() => setLoading(false));
+    
+            return () => controller.abort();
+        })
+        .catch(err => {
+            navigate("/home");
+            alert("Login session has expired. Please login again!");
+        })
 
-        const testViewUrl = `${import.meta.env.VITE_BASE_TEST_SERVICE_LINK}?${queryParams}`;
-
-        axios
-            .get(testViewUrl, { signal: controller.signal })
-            .then(getTestResponse => {
-                if (requestedPage !== page) return;
-                const gotTestId = getTestResponse.data.data.map(test => test._id).join(",");
-
-                return axios.get(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/CheckDone?userID=${userId}&test_ids=${gotTestId}`)
-                    .then(checkDoneResponse => {
-                        let mergedData = getTestResponse.data.data.map((test, index) => ({
-                            ...test,
-                            number_of_user_done: checkDoneResponse.data.data[index].number_of_user_done,
-                            this_user_done_before: checkDoneResponse.data.data[index].this_user_done_before,
-                        }))
-
-                        return{
-                            data: mergedData,
-                            totalPages: getTestResponse.data.totalPages
-                        }
-                    })
-            })
-                
-            .then(result => {
-                if (!result) return;
-                setTestInPageArray(result.data);
-                setTotalPages(result.totalPages);
-            })
-            .catch((error) => {
-                if (!axios.isCancel(error)) {
-                    console.error("Failed to fetch tests:", error);
-                }
-            })
-            .finally(() => setLoading(false));
-
-        return () => controller.abort();
     }, [page, filterType, searchQuery, dateRange]);
 
     const handlePageChange = (event, value) => {
@@ -143,7 +171,6 @@ const TestView = ({ isLoggedIn = false, user = null } = {}) => {
             
             {/* Search Bar */}
             <TextField
-                fullwidth
                 variant="outlined"
                 placeholder="Enter keywords"
                 value={searchQuery}

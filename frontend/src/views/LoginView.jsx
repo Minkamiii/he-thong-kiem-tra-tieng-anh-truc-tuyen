@@ -5,14 +5,10 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setLoggedIn } from '../views/states/UserSlice.jsx';
 
 const LoginView = () => {
 
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const user = useSelector(state => state.user);
     const [usernameValid, setUsernameValid] = useState({
         ok: true,
         message: "",
@@ -37,8 +33,8 @@ const LoginView = () => {
                 
                 localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN, result.accessToken);
                 localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN, result.refreshToken);
-                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID, result.data.id);
-                dispatch(setLoggedIn({isLoggedIn: true}))
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID, result.userId);
+
                 alert('Login successfully!');
                 navigate('/home');
             })
@@ -127,7 +123,7 @@ const LoginView = () => {
                                     fullWidth
                                     name="password"
                                     label="Password"
-                                    type="password"
+                                    type={passwordVisible ? "text" : "password"}
                                     id="password"
                                     autoComplete="current-password"
                                     sx={{mb:3}}
