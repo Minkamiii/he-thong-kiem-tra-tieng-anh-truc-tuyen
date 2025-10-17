@@ -108,7 +108,7 @@ public class AuthenticationService {
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
             InvalidatedToken invalidatedToken = new InvalidatedToken();
-            invalidatedToken.setId(jit);
+            invalidatedToken.setIdToken(jit);
             invalidatedToken.setExpirytime(expiryTime);
 
             invalidatedTokenRepository.save(invalidatedToken);
@@ -141,7 +141,7 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
 
-        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())){
+        if(invalidatedTokenRepository.existsByIdToken(signedJWT.getJWTClaimsSet().getJWTID())){
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
         return signedJWT;
