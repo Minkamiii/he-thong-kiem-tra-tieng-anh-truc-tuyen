@@ -106,7 +106,7 @@ const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
                                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                             >
-                                <MenuItem onClick={handleClose}>
+                                <MenuItem onClick={handleGoProfile}>
                                     <Avatar /> Profile
                                 </MenuItem>
                                 <MenuItem onClick={handleLogout}>

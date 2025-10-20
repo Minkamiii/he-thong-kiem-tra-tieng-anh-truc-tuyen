@@ -16,7 +16,7 @@ let failedQueue = [];
 const processQueue = (error, token = null) => {
     failedQueue.forEach(prom => {
         if(error){
-            prom.reject(error);
+            prom.resolve();
         }
         else{
             prom.resolve(token);
@@ -40,7 +40,7 @@ authApi.interceptors.response.use((response) => response, async (error) => {
 
                 return originalRequest
             }).catch(err => {
-                return Promise.reject(err);
+                return Promise.resolve();
             })
         }
     }
@@ -49,7 +49,7 @@ authApi.interceptors.response.use((response) => response, async (error) => {
     isRefreshing = true;
 
     const refreshToken = localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN);
-    if(!refreshToken) return Promise.reject();
+    if(!refreshToken) return Promise.resolve();
 
     try{
         const response = await axios.post(`${import.meta.env.VITE_BASE_AUTH_SERVICE_LINK}/refresh`, {
@@ -57,7 +57,7 @@ authApi.interceptors.response.use((response) => response, async (error) => {
         })
 
         const newAccessToken = response.data?.result;
-        if(!newAccessToken) return Promise.reject();
+        if(!newAccessToken) return Promise.resolve();
         localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN, newAccessToken);
 
         return authApi.post(processQueue(null, newAccessToken));
@@ -72,7 +72,7 @@ authApi.interceptors.response.use((response) => response, async (error) => {
 
         localStorage.clear();
         processQueue(err, null);
-        return Promise.reject();
+        return Promise.resolve();
     }
     finally{
         isRefreshing = false;

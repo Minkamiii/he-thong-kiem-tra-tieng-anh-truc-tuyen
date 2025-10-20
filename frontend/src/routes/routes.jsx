@@ -7,12 +7,14 @@ import BaseTestPage from '../views/components/BaseTestPage.jsx';
 import TestView from '../views/TestView.jsx';
 import HomeView from '../views/HomeView.jsx';
 import LoginView from '../views/LoginView.jsx';
+import HistoryDetailView from '../views/HistoryDetailView.js';
+import UserProfileView from '../views/UserProfileView.jsx';
 
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Navigate to="/home" replace={true} />} />
     <Route path="/home" element={<HomeView />} />
-    {/* <Route path="/profile" element={<ProfilePage />} /> */}
+    <Route path="/profile" element={<UserProfileView />} />
 
     <Route path="/login" element={<LoginView />} />
     <Route path="/register" element={<RegisterView />} />
@@ -21,6 +23,7 @@ const AppRoutes = () => (
     <Route path="/test" element={<TestView />} />
     <Route path="/test/:testId" element={<TestDetailPage />} />
     <Route path="/test/:testId/take" element={<BaseTestPage />} />    
+    <Route path="/history/:id" element={<HistoryDetailView />} />
 
   </Routes>
 );

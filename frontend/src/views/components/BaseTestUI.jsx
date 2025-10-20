@@ -52,7 +52,7 @@ const BaseTestUI = ({ testId, tasks }) => {
                         setIsLoggedIn(true);
                     })
                     .catch(err => {
-                        alert("Can not find user. Please login again.");
+                        alert("Login session expired. Please login again.");
                         navigate("/home");
                     })
                 }

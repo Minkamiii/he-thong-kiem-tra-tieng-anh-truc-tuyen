@@ -8,11 +8,13 @@ import dayjs from 'dayjs';
 import authApi from '../api/AuthApi.jsx';
 import { setTest, setTaskAndAnswers } from './states/TestSlice.jsx';
 import Comment from './components/Comments.jsx';
+import HistoryView from './components/HistoryView.jsx';
 
 const TabOptions = {
     custom: "practice",
     standard: "exam",
-    comment: "comment"
+    comment: "comment",
+    history: "history"
 }
 
 const TestDetailView = ( {testId} ) => {
@@ -51,7 +53,7 @@ const TestDetailView = ( {testId} ) => {
                         setIsLoggedIn(true);
                     })
                     .catch(err => {
-                        alert("Can not find user. Please login again.");
+                        alert("Login session expired. Please login again.");
                         navigate("/home");
                     })
                 }
@@ -193,6 +195,7 @@ const TestDetailView = ( {testId} ) => {
                             <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} centered>
                                 <Tab label="Standard" value= {TabOptions.standard} />
                                 <Tab label="Customization" value= {TabOptions.custom} />
+                                <Tab label="History" value= {TabOptions.history} />
                                 <Tab label="Discussion" value = {TabOptions.comment} />
                             </Tabs>
                         </Box>
@@ -252,12 +255,16 @@ const TestDetailView = ( {testId} ) => {
                             </Box>
                         )}
 
+                        {tab === TabOptions.history && (
+                            <HistoryView testID={test._id}/>
+                        )}
+
                         {tab == TabOptions.comment && (
                             <Comment testId={test._id} />
                         )}
                         
                         {/* Start Test Button */}
-                        {tab !== TabOptions.comment && (
+                        {(tab !== TabOptions.comment && tab!== TabOptions.history) && (
                             <Button 
                                 variant='contained' 
                                 color='primary' 
@@ -265,7 +272,6 @@ const TestDetailView = ( {testId} ) => {
                                 disabled={checked.length === 0}
                             >Start Test</Button>
                         )}
-
 
                     </Box>
                 </Grid>

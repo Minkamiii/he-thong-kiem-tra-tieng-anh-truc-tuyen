@@ -19,9 +19,15 @@ const HomeView = () => {
         didRunRef.current = true;
 
         if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+
             authApi.post('/introspect', {
                 token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
             }).then(res => {
+                if(!localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+                    alert("Login session expired. Please login again.");
+                    navigate("/home");
+                    return;
+                }
                 if(!user){
                     axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
                     .then(res => {
