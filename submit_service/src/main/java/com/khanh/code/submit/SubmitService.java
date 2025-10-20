@@ -99,7 +99,7 @@ public class SubmitService {
             List<SubmitDTO> submitDTOs = transferSubmit(submitPage.getContent());
             Map<String, Object> data = new HashMap<>();
             data.put("submits", submitDTOs);
-            data.put("currentPage", submitPage.getNumber());
+            data.put("currentPage", submitPage.getNumber()+1);
             data.put("pageSize", submitPage.getSize());
             data.put("totalItems", submitPage.getTotalElements());
             data.put("totalPages", submitPage.getTotalPages());
@@ -111,10 +111,9 @@ public class SubmitService {
         }
     }
 
-    //get submit by user ID and test ID
-    public ApiResponse getSubmitByUserAndTest(String id_user,String id_test)
+    //get submits by user ID and test ID
+    public ApiResponse getSubmitByUserAndTest(String id_user,String id_test,Integer page)
     {
-
         if(answerService.isNullOrBlank(id_test) && answerService.isNullOrBlank(id_user)){
             ApiResponse response = new ApiResponse();
             response.setMessage("ID user and test can not be null or empty");
@@ -138,22 +137,49 @@ public class SubmitService {
             return response;
         }
 
-        List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayDESC(id_user, id_test);
-        //submitRepository.findByUserIdAndTestId(id_user, id_test);
+        Pageable pageable = PageRequest.of(page-1, 5);
 
-        if(submits==null||submits.isEmpty()){
+        Page<Submit> submitPage = submitRepository.findByUserIdAndTestIdOrderBySubmitDayDESC(id_user, id_test, pageable);
+
+        if(submitPage==null||submitPage.isEmpty()){
             ApiResponse response = new ApiResponse();
             response.setMessage("User with id "+ id_user+ " did not submit anything for test with ID " + id_test);
             response.setStatus(404);
             return response;
         }
+        // Submit s=submitPage.getContent().get(0);
+        // Submit.Type type=s.getType();
 
-        List<SubmitDTO> submitDTOs=transferSubmit(submits);
+        List<SubmitDTO> submitDTOs=transferSubmit(submitPage.getContent());
 
         ApiResponse response = new ApiResponse();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("submits", submitDTOs);
+        data.put("currentPage", submitPage.getNumber()+1);
+        data.put("pageSize", submitPage.getSize());
+        data.put("totalItems", submitPage.getTotalElements());
+        data.put("totalPages", submitPage.getTotalPages());
+
         response.setMessage("Get all submits successfully");
         response.setStatus(200);
-        response.setData(submitDTOs);
+        
+        // if(type==Submit.Type.LISTENING){
+        //     Integer max_listening=submitRepository.findMaxListeningCorrect(id_test);
+        //     Integer min_listening=submitRepository.findMinListeningCorrect(id_test);
+        //     data.put("highest", max_listening);
+        //     data.put("lowest", min_listening);
+            
+        // }
+
+        // else if(type==Submit.Type.READING){
+        //     Integer max_reading=submitRepository.findMaxReadingCorrect(id_test);
+        //     Integer min_reading=submitRepository.findMinReadingCorrect(id_test);
+        //     data.put("highest", max_reading);
+        //     data.put("lowest", min_reading);
+        // }
+        response.setData(data);
+
         return response;
     }
 
@@ -176,9 +202,12 @@ public class SubmitService {
             }
             int count = submitRepository.countDistinctUsersByTestId(id_test);
 
-            List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayDESC(userID, id_test);
+            Page<Submit> submitPage = submitRepository.findByUserIdAndTestIdOrderBySubmitDayDESC(userID, id_test, 
+            PageRequest.of(0,1));
+
+            //List<Submit> submits=submitRepository.findByUserIdAndTestIdBySubmitDayDESC(userID, id_test);
             
-            if(submits==null||submits.isEmpty()){
+            if(submitPage==null||submitPage.isEmpty()){
                 done=false;
             }
 

@@ -103,7 +103,9 @@ public class SubmitTest {
 
         //create submitRequest
         submitRequest.setTasks(tasks);
-        submitRequest.setUser_id("1da738e8-7648-4f4e-a2a5-7c60faf044e2");
+        //a68feeb1-14f5-435d-bb44-09700b3560fe
+        //1da738e8-7648-4f4e-a2a5-7c60faf044e2
+        submitRequest.setUser_id("a68feeb1-14f5-435d-bb44-09700b3560fe");
         submitRequest.setTest_id("68d13a9cc35d63eb8543f27d");
         submitRequest.setKind("exam");
         
@@ -131,6 +133,7 @@ public class SubmitTest {
         assertInstanceOf(List.class, data2);
 
         assertInstanceOf(SubmitDTO.class, data2.get(0));
+
         List<SubmitDTO> data3=(List<SubmitDTO>) data1.get("submits");
         assertEquals(data3.size(), 1);
         
@@ -167,27 +170,35 @@ public class SubmitTest {
     @Test
     void SUBMIT_004_get_Submit_Of_User_Of_Test_Exisited()
     {
-
-        ApiResponse response=submitService.getSubmitByUserAndTest("123","456");
+    
+        ApiResponse response=submitService.getSubmitByUserAndTest("123","456",1);
         Object data= response.getData();
-        assertInstanceOf(List.class, data);
-        List<SubmitDTO> data1=(List<SubmitDTO>) response.getData();
-        assertEquals(data1.size(), 1);
-        assertEquals(200, response.getStatus());    
-        SubmitDTO submit=data1.get(0);
+        assertInstanceOf(HashMap.class, data);
 
+        Map<String, Object> data1=(Map<String, Object>) response.getData();
+        
+        List<?> data2=(List<?>) data1.get("submits");
+        assertInstanceOf(List.class, data2);
+
+        assertInstanceOf(SubmitDTO.class, data2.get(0));
+        List<SubmitDTO> data3=(List<SubmitDTO>) data1.get("submits");
+        assertEquals(data3.size(), 1);
+        
+        SubmitDTO submit=data3.get(0);
         assertEquals("456", submit.getId_test());
         assertEquals("123", submit.getId_user());
         assertEquals("READING", submit.getType());
-        assertEquals("Get all submits successfully", response.getMessage());
-        assertEquals("PRACTICE", submit.getKind());
+        assertEquals("PRACTICE", submit.getKind());  
+
+        assertEquals(200, response.getStatus());
+        assertEquals(response.getMessage(), "Get all submits successfully");
 
     }
 
     @Test
     void SUBMIT_005_get_Submit_Of_User_Of_Test_NullOrEmpty_IdUser(){
 
-        ApiResponse response=submitService.getSubmitByUserAndTest("","456");
+        ApiResponse response=submitService.getSubmitByUserAndTest("","456",1);
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -198,7 +209,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_006_get_Submit_Of_User_Of_Test_NullOrEmpty_IdTest(){
 
-        ApiResponse response=submitService.getSubmitByUserAndTest("123","");
+        ApiResponse response=submitService.getSubmitByUserAndTest("123","",1);
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -208,7 +219,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_007_get_Submit_Of_User_Of_Test_NullOrEmpty_Both(){
 
-        ApiResponse response=submitService.getSubmitByUserAndTest(null,null);
+        ApiResponse response=submitService.getSubmitByUserAndTest(null,null,1);
         Object data= response.getData();
         assertNull(data);
         assertEquals(400, response.getStatus());
@@ -218,7 +229,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_008_get_Submit_Of_User_Of_Test_NonExisited_Both(){
         
-        ApiResponse response=submitService.getSubmitByUserAndTest("124","457");
+        ApiResponse response=submitService.getSubmitByUserAndTest("124","457",1);
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());
@@ -360,7 +371,7 @@ public class SubmitTest {
         Submit submit=submitRepository.findAllOrderDayDESC().get(0);
 
         assertEquals(submit.getId_test(), "68d13a9cc35d63eb8543f27d");
-        assertEquals(submit.getId_user(), "1da738e8-7648-4f4e-a2a5-7c60faf044e2");
+        assertEquals(submit.getId_user(), "a68feeb1-14f5-435d-bb44-09700b3560fe");
         assertEquals(submit.getType().toString(), "LISTENING");
         assertEquals(submit.getKind().toString(), "EXAM");
 
@@ -692,7 +703,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_033_get_Submit_Of_User_Of_Test_NonExisited_TestID(){
         
-        ApiResponse response=submitService.getSubmitByUserAndTest("123","459");
+        ApiResponse response=submitService.getSubmitByUserAndTest("123","459",1);
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());
@@ -703,7 +714,7 @@ public class SubmitTest {
     @Test
     void SUBMIT_034_get_Submit_Of_User_Of_Test_NonExisited_UserID(){
         
-        ApiResponse response=submitService.getSubmitByUserAndTest("124","456");
+        ApiResponse response=submitService.getSubmitByUserAndTest("124","456",1);
         Object data= response.getData();
         assertNull(data);
         assertEquals(404, response.getStatus());

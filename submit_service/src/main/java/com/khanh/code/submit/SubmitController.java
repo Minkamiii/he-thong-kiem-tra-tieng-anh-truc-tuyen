@@ -61,9 +61,10 @@ public class SubmitController {
     @GetMapping(path="/user/test")
     public ResponseEntity<ApiResponse> GetByUserAndTestID(
         @RequestParam String userID,
-        @RequestParam String testID) {
+        @RequestParam String testID,
+        @RequestParam(required = false, defaultValue = "1") Integer page) {
         try {
-            ApiResponse response = submitService.getSubmitByUserAndTest(userID, testID);
+            ApiResponse response = submitService.getSubmitByUserAndTest(userID, testID, page);
             return ResponseEntity.status(response.getStatus()).body(response);
         } catch (Exception e) {
             ApiResponse errorResponse = new ApiResponse();
@@ -116,7 +117,6 @@ public class SubmitController {
     @DeleteMapping(path="/delete/user/{userID}")
     public ResponseEntity<ApiResponse> deleteSubmitByUserId(@PathVariable String userID)
     {
-
         try{
             ApiResponse response=submitService.deleteSubmitByUserId(userID);
             return ResponseEntity.status(response.getStatus()).body(response);

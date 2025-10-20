@@ -21,7 +21,7 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
     Page<Submit> findByUserIdAndTypeOrderBySubmitDayDesc(String userId, Submit.Type type, Pageable pageable);
 
     @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.id_test = ?2 ORDER BY s.submit_day DESC")
-    List<Submit> findByUserIdAndTestIdBySubmitDayDESC(String userId, String testId);
+    Page<Submit> findByUserIdAndTestIdOrderBySubmitDayDESC(String userId, String testId, Pageable pageable);
 
     @Query("SELECT s FROM Submit s WHERE s.id_test = ?1")
     List<Submit> findByTestId(String testId);
@@ -40,7 +40,19 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
 
     @Query("SELECT COUNT(DISTINCT s.id_user) FROM Submit s WHERE s.id_test = ?1")
     int countDistinctUsersByTestId(String testId);
-     
+
+    @Query("SELECT MAX(s.number_of_correct) FROM Submit_Listening s WHERE s.id_test = :testID")
+    Integer findMaxListeningCorrect(String testID);
+
+    @Query("SELECT MIN(s.number_of_correct) FROM Submit_Listening s WHERE s.id_test = :testID")
+    Integer findMinListeningCorrect(String testID);
+
+    @Query("SELECT MAX(s.number_of_correct) FROM Submit_Reading s WHERE s.id_test = :testID")
+    Integer findMaxReadingCorrect(String testID);
+
+    @Query("SELECT MIN(s.number_of_correct) FROM Submit_Reading s WHERE s.id_test = :testID")
+    Integer findMinReadingCorrect(String testID);
+
     // @Query("SELECT DISTINCT s.id_test FROM Submit s WHERE s.id_user = ?1")
     // List<String> findDistinctIdTestByUserId(String userId);
 
@@ -55,6 +67,9 @@ public interface SubmitRepository extends JpaRepository<Submit, String> {
 
     // @Query("SELECT s FROM Submit_Listening s WHERE s.id_user = ?1")
     // List<Submit_Listening> findListeningSubmissionsByUserId(String userId);
+
+    // @Query("SELECT s FROM Submit s WHERE s.id_user = ?1 AND s.id_test = ?2 ORDER BY s.submit_day DESC")
+    // List<Submit> findByUserIdAndTestIdBySubmitDayDESC(String userId, String testId);
 
 }
     

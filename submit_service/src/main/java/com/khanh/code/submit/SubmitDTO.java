@@ -17,7 +17,7 @@ public class SubmitDTO {
 
     private List<Integer> tasks;
     // int float always default 0 => class for writing with no correct answer and question answered
-
+    
     private Integer numCorrectAnswers;
     private Integer num_Of_Answered_Questions;
     private int total_Requirement_to_answer;
@@ -85,7 +85,7 @@ public class SubmitDTO {
         this.submit_day = submit_day;
     }
 
-    public int getNumCorrectAnswers() {
+    public Integer getNumCorrectAnswers() {
         return numCorrectAnswers;
     }
 
