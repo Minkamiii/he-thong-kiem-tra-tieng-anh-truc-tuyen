@@ -384,7 +384,7 @@ public class SubmitService {
             return response;
         }
     
-        String type=testResponse.getTestType().toUpperCase();
+        String type=testResponse.getType().toUpperCase();
 
         try {
             submitType = Submit.Type.valueOf(type);

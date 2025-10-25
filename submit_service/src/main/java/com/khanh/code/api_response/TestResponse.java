@@ -5,7 +5,7 @@ import java.util.List;
 public class TestResponse 
 {
 
-    private String testType;
+    private String type;
     private List<TaskResponse> tasks;
     private String testName;
     
@@ -16,21 +16,21 @@ public class TestResponse
     public void setTasks(List<TaskResponse> tasks) {
         this.tasks = tasks;
     }
-
-    public String getTestType() {
-        return testType;
-    }
-
-    public void setTestType(String testType) {
-        this.testType = testType;
-    }
-
+    
     public String getTestName() {
         return testName;
     }
 
     public void setTestName(String testName) {
         this.testName = testName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     

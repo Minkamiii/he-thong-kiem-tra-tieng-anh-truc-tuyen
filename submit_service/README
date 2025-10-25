@@ -1,16 +1,16 @@
 Submit api:
 
 - nộp bài: http://localhost:8080/api/submit/newSubmit
-- lấy tất cả submit của user: http://localhost:8080/api/submit/user/id/{userID}?type=&page= 
+- lấy tất cả submit của user: 
+    http://localhost:8080/api/submit/user/id/{userID}?type=listening&page=1
     (mặc định là type="" và page=1)
 - lấy thông tin xem test đã từng làm chưa và có bao người đã làm test này: 
     http://localhost:8080/api/submit/CheckDone?userID=&test_ids=hello,hi
 - lấy tất cả submit của user theo test: 
-    http://localhost:8080/api/submit/user/test?userID=123&testID=123
+    http://localhost:8080/api/submit/user/test?userID=123&testID=123&page=1
 - xóa submit theo id: http://localhost:8080/api/submit/delete/{submitID}
 - xóa tất cả submit theo user: http://localhost:8080/api/submit/delete/user/{userID}
 - xóa tất cả submit theo test: http://localhost:8080/api/submit/delete/test/{testID}
-
 
 Answer api:
 

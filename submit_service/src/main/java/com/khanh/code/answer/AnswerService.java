@@ -441,8 +441,8 @@ public class AnswerService {
             //System.out.println(userAnswer);
 
             String answerEssay = (String) userAnswer;
-            answerEssay = answerEssay.replace("\n", "\\n");
-            answerEssay = answerEssay.replace("\r", "\\r");
+            // answerEssay = answerEssay.replace("\n", "\\n");
+            // answerEssay = answerEssay.replace("\r", "\\r");
             //System.out.println(answerEssay);
             answer = new Answer_Essay(id_question, submit,answer_type,answerEssay);
             answer.setNumber_of_requiremient_to_answer(1);
