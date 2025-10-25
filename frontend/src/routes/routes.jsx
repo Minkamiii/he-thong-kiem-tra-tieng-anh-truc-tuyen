@@ -7,8 +7,9 @@ import BaseTestPage from '../views/components/BaseTestPage.jsx';
 import TestView from '../views/TestView.jsx';
 import HomeView from '../views/HomeView.jsx';
 import LoginView from '../views/LoginView.jsx';
-import HistoryDetailView from '../views/HistoryDetailView.js';
+import HistoryView from '../views/HistoryView.js'
 import UserProfileView from '../views/UserProfileView.jsx';
+import HistoryDetailView from '../views/HistoryDetailView.jsx';
 
 const AppRoutes = () => (
   <Routes>
@@ -23,6 +24,7 @@ const AppRoutes = () => (
     <Route path="/test" element={<TestView />} />
     <Route path="/test/:testId" element={<TestDetailPage />} />
     <Route path="/test/:testId/take" element={<BaseTestPage />} />    
+    <Route path="/history" element={<HistoryView />} />
     <Route path="/history/:id" element={<HistoryDetailView />} />
 
   </Routes>

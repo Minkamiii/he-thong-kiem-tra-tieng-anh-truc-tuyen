@@ -27,6 +27,24 @@ const EssayView = ({ question, onAnswerChange }) => {
         }
     }
 
+    const handleTabDown = (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const target = e.target;
+            const start = target.selectionStart;
+            const end = target.selectionEnd;
+
+            const value = target.value;
+            const newValue = value.substring(0, start) + '\t' + value.substring(end);
+            target.value = newValue;
+            target.selectionStart = target.selectionEnd = start + 1;
+            
+            setEssay(newValue);
+            dispatch(saveAnswer({ id_question: question._id, answer: newValue }));
+
+        }
+    }
+
     return (
         <Box sx={{mb:3, width: '100%'}}>
             <TextField 
@@ -35,6 +53,7 @@ const EssayView = ({ question, onAnswerChange }) => {
                 value={essay}
                 onChange={handleChange}
                 onBlur={handleBlur}
+                onKeyDown={handleTabDown}
                 variant="outlined"
                 placeholder="Write your answer here..."
                 sx={{

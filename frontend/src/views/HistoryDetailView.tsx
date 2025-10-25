@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { Typography } from "@mui/material";
 
 enum TestType {
   READING = "reading",
@@ -18,7 +19,7 @@ export default function SubmitDetail() {
   const [test, setTest] = useState<any>(null);
   const [idTest, setIdTest] = useState<string | null>(stateIdTest || null);
   const [tasks, setTasks] = useState<number[] | null>(stateTasks || null);
-  const [filter, setFilter] = useState<"all" | "correct" | "incorrect" | "unanswered">("all");
+  const [filter, setFilter] = useState<"all" | "correct" | "incorrect" | "unanswered"| "answered">("all");
 
   const loadData = async (submitId: string, testId: string, tasks: number[]) => {
     try {
@@ -39,9 +40,10 @@ export default function SubmitDetail() {
 
   useEffect(() => {
     if (id && idTest && tasks) loadData(id, idTest, tasks);
+    console.log("Params:", idTest);
   }, [id, idTest]);
 
-  console.log(answers);
+  console.log("answer state", answers);
 
   const getUserAnswer = (questionId: string) => {
     return answers.find((a) => a.id_question === questionId);
@@ -49,41 +51,36 @@ export default function SubmitDetail() {
 
   const isUnanswered = (userAns: any) => {
     if (!userAns) return true;
-    if (
-      userAns.answer === "-" ||
-      userAns.answer === null ||
-      userAns.answer === "" ||
-      (typeof userAns.answer === "object" &&
-        Object.values(userAns.answer).every((v) => v === false))
-    ) {
-      return true;
-    }
-    return false;
+    const ans = userAns.answer;
+    return String(ans).length === 0|| Object.keys(ans).length === 0;
   };
 
   const isCorrect = (question: any, userAns: any) => {
-    if (!userAns || isUnanswered(userAns)) return false;
-    const correct = question.keys || question.key;
-    const answer = userAns.answer;
+  if (!userAns || isUnanswered(userAns)) return false;
 
-    if (Array.isArray(correct)) {
-      const correctLabels = correct.map((k: number) =>
-        String.fromCharCode(65 + k)
-      );
-      const chosenLabels = Object.entries(answer || {})
-        .filter(([_, v]) => v)
-        .map(([k]) => String.fromCharCode(65 + Number(k)));
-      return (
-        correctLabels.length === chosenLabels.length &&
-        correctLabels.every((c) => chosenLabels.includes(c))
-      );
-    } else {
-      return (
-        String(answer).trim().toLowerCase() ===
-        String(correct).trim().toLowerCase()
-      );
-    }
-  };
+  // Trường hợp type = FILL → có trường correct
+  if (userAns.type === "FILL") {
+    return userAns.correct;
+  }
+
+  // Trường hợp type = CHOICE → đúng nếu có ít nhất 1 lựa chọn true
+  if (userAns.type === "CHOICE" && typeof userAns.answer === "object") {
+  const correctKeys = Array.isArray(question.keys) ? question.keys : [question.key];
+  const selectedKeys = Object.entries(userAns.answer)
+    .filter(([_, v]) => v === true)
+    .map(([k]) => Number(k));
+
+  // Kiểm tra: phải chọn đủ và không chọn sai
+  const isExactlyCorrect =
+    selectedKeys.length === correctKeys.length &&
+    correctKeys.every((key: number) => selectedKeys.includes(key));
+
+  return isExactlyCorrect;
+}
+
+  // Trường hợp khác (viết, essay...) mặc định là false hoặc tuỳ xử lý thêm
+  return false;
+};
 
   if (!test) return <p>Loading...</p>;
 
@@ -103,7 +100,6 @@ export default function SubmitDetail() {
         {test.testName}
       </h2>
 
-      {/* 🧭 Bộ lọc */}
       <div
         style={{
           display: "flex",
@@ -111,31 +107,55 @@ export default function SubmitDetail() {
           gap: "12px",
           marginBottom: "20px",
         }}
-      >
-        {[
-          { key: "all", label: "TẤT CẢ" },
-          { key: "correct", label: "ĐÚNG" },
-          { key: "incorrect", label: "SAI" },
-          { key: "unanswered", label: "CHƯA TRẢ LỜI" },
-        ].map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key as any)}
-            style={{
-              padding: "8px 20px",
-              borderRadius: "8px",
-              border: filter === key ? "2px solid #1976d2" : "1px solid #ccc",
-              backgroundColor: filter === key ? "#1976d2" : "white",
-              color: filter === key ? "white" : "#1976d2",
-              cursor: "pointer",
-              fontWeight: 600,
-              minWidth: "130px",
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      > 
+        {/* Bộ lọc */}
+        {test.type === TestType.WRITING
+          ? [
+              { key: "all", label: "ALL" },
+              { key: "answered", label: "ANSWERED" },
+              { key: "unanswered", label: "UNANSWERED" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setFilter(key as any)}
+                style={{
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  border: filter === key ? "2px solid #1976d2" : "1px solid #ccc",
+                  backgroundColor: filter === key ? "#1976d2" : "white",
+                  color: filter === key ? "white" : "#1976d2",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  minWidth: "130px",
+                }}
+              >
+                {label}
+              </button>
+            ))
+          : [
+              { key: "all", label: "ALL" },
+              { key: "correct", label: "CORRECT" },
+              { key: "incorrect", label: "INCORRECT" },
+              { key: "unanswered", label: "UNANSWERED" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setFilter(key as any)}
+                style={{
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  border: filter === key ? "2px solid #1976d2" : "1px solid #ccc",
+                  backgroundColor: filter === key ? "#1976d2" : "white",
+                  color: filter === key ? "white" : "#1976d2",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  minWidth: "130px",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
       {/* Danh sách Task */}
       {test.tasks.map((task: any, taskIndex: number) => {
@@ -143,9 +163,17 @@ export default function SubmitDetail() {
           const filteredQuestions = section.questions.filter((q: any) => {
             const userAns = getUserAnswer(q.question._id);
             const correct = isCorrect(q.question, userAns);
+
+            if (test.type === TestType.WRITING) {
+              if (filter === "all") return true;
+              if (filter === "answered") return !isUnanswered(userAns);
+              if (filter === "unanswered") return isUnanswered(userAns);
+              return true;
+            }
+
             if (filter === "all") return true;
             if (filter === "correct") return userAns && correct;
-            if (filter === "incorrect") return userAns && !correct && !isUnanswered(userAns);
+            if (filter === "incorrect") return userAns && !isUnanswered(userAns) && !correct;
             if (filter === "unanswered") return isUnanswered(userAns);
             return true;
           });
@@ -193,24 +221,38 @@ export default function SubmitDetail() {
                   {section.title}
                 </h4>
 
-                {section.questions.map((q: any) => {
+                {section.questions.map((q: any, i: number) => {
                   const userAns = getUserAnswer(q.question._id);
                   const correct = isCorrect(q.question, userAns);
                   const unanswered = isUnanswered(userAns);
 
-                  const bgColor = unanswered || (test.type === TestType.WRITING)
+                  const bgColor =q.question.type === "essay"
+                    ? "#f5f5f5"
+                    : unanswered
                     ? "#f5f5f5"
                     : correct
                     ? "#d4edda"
                     : "#f8d7da";
 
+
                   const userAnswerText =
                     typeof userAns?.answer === "object"
-                      ? Object.entries(userAns.answer)
-                          .filter(([_, v]) => v)
-                          .map(([k]) => String.fromCharCode(65 + Number(k)))
-                          .join(", ") || "—"
-                      : userAns?.answer || "—";
+                      ? Object.entries(userAns.answer).map(([k, v]) => {
+                          const label = String.fromCharCode(65 + Number(k));
+                          return (
+                            <span
+                              key={k}
+                              style={{
+                                color: v ? "green" : "red",
+                                fontWeight: "bold",
+                                marginRight: "8px",
+                              }}
+                            >
+                              {label}
+                            </span>
+                          );
+                        })
+                      : userAns?.answer;
 
                   const correctAnswerText = Array.isArray(q.question.keys)
                     ? q.question.keys
@@ -252,33 +294,35 @@ export default function SubmitDetail() {
                       {/* ✅ Logic hiển thị */}
                       { test.type === TestType.WRITING ? (
                         <>
-                          <p style={{ color: "grey", fontWeight: "bold" }}>
-                            📝 Your Answer: {userAnswerText}
+                          <p style={{ color: "grey", fontWeight: "bold"}}>
+                            Your Answer: 
+                            <Typography sx={{color: "#525151", fontWeight: "inherit", whiteSpace: "pre-wrap"}}>
+                              {userAnswerText}
+                            </Typography>
                           </p>
                         </>
                       ) : unanswered ? (
                         <>
                           <p style={{ color: "grey", fontWeight: "bold" }}>
-                            📝 Your Answer: Chưa trả lời
+                            Your Answer: Chưa trả lời
                           </p>
-                          {
-                            test.type !== TestType.WRITING && 
-                            <p style={{ color: "green", fontWeight: "bold" }}>
-                              🔑 Đáp án đúng: {correctAnswerText}
-                            </p>
-                          }
+
+                          <p style={{ color: "green", fontWeight: "bold" }}>
+                            Đáp án đúng: {correctAnswerText}
+                          </p>
+                          
                         </>
                       ) : correct ? (
                         <p style={{ color: "green", fontWeight: "bold" }}>
-                          📝 Your Answer: {userAnswerText}
+                          Your Answer: {userAnswerText}
                         </p>
                       ) : (
                         <>
                           <p style={{ color: "red", fontWeight: "bold" }}>
-                            📝 Your Answer: {userAnswerText}
+                            Your Answer: {userAnswerText}
                           </p>
                           <p style={{ color: "green", fontWeight: "bold" }}>
-                            🔑 Đáp án đúng: {correctAnswerText}
+                            Đáp án đúng: {correctAnswerText}
                           </p>
                         </>
                       )}

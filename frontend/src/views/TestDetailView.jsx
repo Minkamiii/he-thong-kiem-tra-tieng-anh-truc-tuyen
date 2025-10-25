@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import authApi from '../api/AuthApi.jsx';
 import { setTest, setTaskAndAnswers } from './states/TestSlice.jsx';
 import Comment from './components/Comments.jsx';
-import HistoryView from './components/HistoryView.jsx';
+import HistoryView from './HistoryView.js';
 
 const TabOptions = {
     custom: "practice",
