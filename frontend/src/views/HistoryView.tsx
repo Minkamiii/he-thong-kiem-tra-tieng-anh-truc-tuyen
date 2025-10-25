@@ -197,7 +197,6 @@ export default function History({testID = null}) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  console.log(testID);
     
   useEffect(() => {
 

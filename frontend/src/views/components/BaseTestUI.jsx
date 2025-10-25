@@ -383,7 +383,7 @@ const BaseTestUI = ({ testId, tasks }) => {
                 aria-labelledby="submit-dialog-title"
                 aria-describedby="submit-dialog-description"
             >
-                <DialogTitle id="submit-dialog-title">{"Xác nhận nộp bài"}</DialogTitle>
+                <DialogTitle id="submit-dialog-title">{"Confirm Submission"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="submit-dialog-description">
                         Are you sure you want to submit your answers?
