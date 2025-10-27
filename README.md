@@ -32,6 +32,7 @@
 - **Thêm user bằng admin** POST http://localhost:8081/userservice/api/user/adduser
 - **Lấy tất cả user** GET http://localhost:8081/userservice/api/user/getAll
 - **Lấy user theo id** GET http://localhost:8081/userservice/api/user/{userId}
+- **Lấy danh sách user theo danh sách id** GET http://localhost:8081/userservice/api/user/getListUser
 - **Cập nhập user** PUT http://localhost:8081/userservice/api/user/update/{userId}
 - **Cập nhập user bằng Admin** PUT http://localhost:8081/userservice/api/user/updateAdmin/{userId}
 - **Xóa user** DELETE http://localhost:8081/userservice/api/user/delete/{userId}

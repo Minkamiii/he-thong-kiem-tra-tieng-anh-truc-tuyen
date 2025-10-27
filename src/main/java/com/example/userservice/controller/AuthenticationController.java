@@ -47,6 +47,7 @@ public class AuthenticationController {
     ApiResponse logout(@RequestBody LogoutRequest request) throws JOSEException, ParseException{
         authenticationService.logout(request);
         ApiResponse apiResponse = new ApiResponse();
+        System.out.println("haha");
         return apiResponse;
     }
 

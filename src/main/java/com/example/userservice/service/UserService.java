@@ -2,6 +2,7 @@ package com.example.userservice.service;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.example.userservice.dto.reponse.UserListResponse;
 import com.example.userservice.dto.request.UserCreationRequest;
 import com.example.userservice.dto.request.UserUpdateRequest;
 import com.example.userservice.entity.User;
@@ -48,10 +51,14 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Map<String, Object> getAllUser(int page) {
+    public Map<String, Object> getAllUser(int page,String keyword) {
         Pageable pageable = PageRequest.of(page, 12);
         Page<User> userPage;
-        userPage = userRepository.findAll(pageable);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            userPage = userRepository.findByUsernameContainingIgnoreCase(keyword.trim(), pageable);
+        } else {
+            userPage = userRepository.findAll(pageable);
+        }
 
         Map<String, Object> userList = new LinkedHashMap<>();
         userList.put("data", userPage.getContent());
@@ -77,7 +84,9 @@ public class UserService {
             throw new AppException(ErrorCode.USER_EXISTED);
         }   
         user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        if(request.getPassword()!=null){
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
         user.setEmail(request.getEmail());
         user.setPhoneNum(request.getPhoneNum());
         user.setDob(request.getDob());
@@ -85,6 +94,14 @@ public class UserService {
             user.setRoles(request.getRoles());
         }
         return userRepository.save(user);
+    }
+
+    public List<UserListResponse> getListUserById(List<String> userId) {
+        List<User> users=userRepository.findByIdIn(userId);
+        List<UserListResponse> response=users.stream()
+            .map(user -> new UserListResponse(user.getId(), user.getUsername()))
+            .toList();
+        return response;
     }
 
     public void deleteUser(String id) {

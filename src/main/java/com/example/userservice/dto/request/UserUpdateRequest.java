@@ -17,7 +17,7 @@ public class UserUpdateRequest {
     private String username;
 
     @Size(min = 8, max = 20 , message = "PASSWORD_INVALID")
-    @NotBlank(message = "INFORMATION_NOT_NULL")
+    // @NotBlank(message = "INFORMATION_NOT_NULL")
     private String password;
 
     @Email(message = "EMAIL_INVALID")

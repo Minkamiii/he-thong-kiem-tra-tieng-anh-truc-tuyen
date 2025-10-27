@@ -17,5 +17,5 @@ spring:
 jwt:
     signerKey: "2g+zQB+GOpT7DAUQ0YH34vPXaTc70DCVEVQMIGZN0KHqhBnMI7q4D6yrOx/xLmcZ"
     signerKey-refresh: "RFW2yRZUqbS06F7GS5ScxsyD6FTk55atWmT6C73azCEzmZN0eUagKCyBOsMSrQPu"
-    access-token-valid-duration: 15 #seconds
-    refresh-token-valid-duration: 10  #seconds
+    access-token-valid-duration: 6000 #seconds
+    refresh-token-valid-duration: 60000  #seconds

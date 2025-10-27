@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.userservice.dto.reponse.ApiResponse;
 import com.example.userservice.dto.request.UserCreationRequest;
+import com.example.userservice.dto.request.UserIdListRequest;
 import com.example.userservice.dto.request.UserUpdateRequest;
 import com.example.userservice.service.UserService;
 
@@ -44,10 +45,11 @@ public class UserController {
     @GetMapping("/getAll")
     @PreAuthorize("hasAuthority('SCOPE_SUPER_ADMIN')||hasAuthority('SCOPE_ADMIN')")
     ApiResponse getAllUsers(
-        @RequestParam(required = false, defaultValue = "0") int page
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false) String keyword
     ) {
         ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setResult(userService.getAllUser(page));
+        apiResponse.setResult(userService.getAllUser(page,keyword));
         return apiResponse;
     }
 
@@ -55,6 +57,13 @@ public class UserController {
     ApiResponse getUserById(@PathVariable String userId) {
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setResult(userService.getUserByIdUser(userId));
+        return apiResponse;
+    }
+
+    @GetMapping("/getListUser")
+    ApiResponse getListUserById(@RequestBody UserIdListRequest request) {
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setResult(userService.getListUserById(request.getUserIds()));
         return apiResponse;
     }
 
