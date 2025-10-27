@@ -20,7 +20,9 @@ export default function Login() {
       // res: { token, authentication }
 
     if (res.authentication) {
-      localStorage.setItem("token", res.token);
+      localStorage.setItem("userId", res.userId);
+      localStorage.setItem("accessToken", res.accessToken);
+      localStorage.setItem("refreshToken", res.refreshToken);
       console.log("111");
       navigate("/home");
     } else {

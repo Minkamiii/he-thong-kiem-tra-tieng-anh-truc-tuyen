@@ -31,6 +31,7 @@ export interface Test {
   testName: string;
   type: string;
   tasks: Task[];
+  active: boolean;
   createdAt: string;
   updatedAt: string;
   __v: number;

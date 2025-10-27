@@ -2,6 +2,7 @@ import React from "react";
 import "./css/TopicCard.css";
 import { useNavigate } from "react-router-dom";
 import type { Test } from "../api/TestApi";
+import { Chip, Stack } from "@mui/material";
 
 interface TestCardProps {
   test: Test;
@@ -32,7 +33,14 @@ const TestCard: React.FC<TestCardProps> = ({ test, detailPath }) => {
 
       {/* Thông tin */}
       <div className="test-card__details">
-        <span>⏰ {test.type}</span>
+        <span><strong>⏰ {test.type}</strong></span>
+        <Chip
+          label={test.active ? "ACTIVE" : "INACTIVE"}
+          color={test.active ? "success" : "error"}
+          variant="filled"
+          size="small"
+          sx={{ ml: 1 }}
+        />
       </div>
 
       {/* Ngày tạo & cập nhật */}

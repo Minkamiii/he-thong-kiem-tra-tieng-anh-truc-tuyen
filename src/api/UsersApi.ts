@@ -4,7 +4,7 @@ import axiosClient from "./AxiosClient";
 export type User = {
   id: string;
   username: string;
-  password: string;
+  password: "";
   email: string;
   phoneNum: string;
   dob: string;
@@ -21,30 +21,31 @@ export type AddUserRequest = {
   roles: string[] | null;
 }
 
-// export const getAllUsers = async (): Promise<User[]> => {
-//   const res = await axiosClient.get<User[]>("/api/user/getAll");
-//   console.log("API raw response:", res);
-//   console.log("res.data:", res.data);
-//   return res.data.results;
-// };
+export interface listUsersResponse {
+  data: User[];
+  currentItems: number;
+  pageSize: number;
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
 
-  export const getAllUsers = async (): Promise<User[]> => {
-    const res:{
+export async function getAllUsers(page = 0,keyword=""): Promise<listUsersResponse> {
+  const res :{
       code: number;
       message: string;
-      result: User[];
-    } = await axiosClient.get("/api/user/getAll");
-    console.log("API raw response:", res);
-    console.log("res.results:", res.result);
-    return res.result;
-  };
+      result: listUsersResponse ;
+    }= await axiosClient.get(`api/user/getAll?page=${page}${keyword ? `&keyword=${keyword}` : ""}`);
+  console.log("API raw response:", res);
+  return res.result;
+}
 
   export const getUsers = async (data: { id: string }): Promise<User | null> => {
     const res:{
       code: number;
       message: string;
       result: User | null;
-    } = await axiosClient.get(`/api/user/info/${data.id}`);
+    } = await axiosClient.get(`/api/user/${data.id}`);
     console.log("API raw response:", res);
     console.log("res.results:", res.result);
     return res.result;
@@ -59,17 +60,15 @@ export type AddUserRequest = {
   };
 
   export const updateUser = async ( id: string, user: AddUserRequest): Promise<User> => {
-    const { password, ...payload } = user;
+    const {  ...payload } = user;
     try {
-      const res = await axiosClient.put<User>(`/api/user/update/${id}`, payload);
+      const res = await axiosClient.put<User>(`/api/user/updateAdmin/${id}`, payload);
+      console.log("Updated user response:", res);
       return res.data;
     } catch (error) {
       console.error("Failed to update user:", error);
       throw error;
     }
-    // const res = await axiosClient.put<User>(`/api/user/update/${id}`, user);
-    // console.log("sajd",res.data)
-    // return res.data;
   }
 
   export const deleteUser = async (id: string): Promise<void> => {

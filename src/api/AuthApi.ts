@@ -6,7 +6,9 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-  token: string;
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
   authentication: boolean;
 };
 
@@ -17,12 +19,12 @@ const authApi = {
       code: number;
       message: string;
       result: LoginResponse;
-    } = await axiosClient.post("/api/auth/admin", data);
-
+    } = await axiosClient.post("/api/auth/loginAdmin", data);
+    
     // ✅ Không còn dùng res.data, mà dùng trực tiếp res.result
-    const { token, authentication } = res.result;
+    const {userId, accessToken, refreshToken, authentication, } = res.result;
 
-    return { token, authentication };
+    return { userId, accessToken, refreshToken, authentication };
   },
 };
 

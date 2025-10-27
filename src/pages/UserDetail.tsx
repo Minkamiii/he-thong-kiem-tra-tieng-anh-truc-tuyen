@@ -192,18 +192,6 @@ export default function UserDetail() {
             />
             <FormControl fullWidth>
               <InputLabel id="roles-label">Roles</InputLabel>
-              {/* <Select
-                labelId="roles-label"
-                id="roles-select"
-                multiple // Cho phép chọn nhiều vai trò
-                value={formData?.roles || []}
-                onChange={(e) => {
-                  const value = e.target.value as string[];
-                  setFormData((prev) => prev && { ...prev, roles: value });
-                }}
-                label="Roles"
-                renderValue={(selected) => selected.join(', ')} // Hiển thị các giá trị đã chọn
-              > */}
               <Select
                 labelId="roles-label"
                 id="roles-select"
@@ -214,9 +202,9 @@ export default function UserDetail() {
                 }}
                 label="Roles"
               >
-                <MenuItem value="SuperAdmin">Super Admin</MenuItem>
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="User">User</MenuItem>
+                <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
+                <MenuItem value="ADMIN">Admin</MenuItem>
+                <MenuItem value="USER">User</MenuItem>
               </Select>
             </FormControl>
             {submitError && (

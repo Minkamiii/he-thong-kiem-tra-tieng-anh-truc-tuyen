@@ -9,9 +9,9 @@ const axiosClient = axios.create({
 
 // Gắn token vào mọi request nếu có
 axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   const isAuthUrl =
-    config.url?.includes("/api/auth/admin") ;
+    config.url?.includes("/api/auth/loginAdmin") ;
 
   if (token && !isAuthUrl) {
     config.headers.Authorization = `Bearer ${token}`;

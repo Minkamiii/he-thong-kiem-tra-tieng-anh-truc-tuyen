@@ -8,6 +8,7 @@ import {
   CardContent,
   Button,
   Box,
+  MenuItem,
 } from "@mui/material";
 import axios from "axios";
 import type { Test, Question } from "../api/TestApi";
@@ -113,26 +114,92 @@ export default function UpdateTestPage() {
         label="Loại đề"
         sx={{ mb: 3 }}
         value={test.type}
-        onChange={(e) => setTest({ ...test, type: e.target.value })}
+        disabled
       />
 
+      <TextField
+        select
+        fullWidth
+        label="Trạng thái"
+        sx={{ mb: 3 }}
+        value={test.active ? "active" : "inactive"}
+        onChange={(e) =>
+          setTest({ ...test, active: e.target.value === "active" })
+        }
+      >
+        <MenuItem value="active">Active</MenuItem>
+        <MenuItem value="inactive">Inactive</MenuItem>
+      </TextField>
+
+
       {test.tasks.map((task, taskIndex) => (
-  <Card key={taskIndex} sx={{ mb: 3 }}>
-    <CardContent>
-      {/* Listening mới có audio */}
-      {test.type === "listening" && (
-        <TextField
-          fullWidth
-          label="Audio"
-          sx={{ mb: 2 }}
-          value={task.audio || ""}
-          onChange={(e) => {
-            const updated = { ...test };
-            updated.tasks[taskIndex].audio = e.target.value;
-            setTest(updated);
-          }}
-        />
-      )}
+        <Card key={taskIndex} sx={{ mb: 3 }}>
+          <CardContent>
+            {/* Listening mới có audio */}
+            {test.type === "listening" && (
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                  Audio
+                </Typography>
+
+                {/* Hiển thị audio nếu có */}
+                {task.audio && (
+                  <audio
+                    controls
+                    src={task.audio}
+                    style={{ display: "block", marginBottom: "10px" }}
+                  />
+                )}
+
+                {/* Input file để upload */}
+                <Button
+                  variant="contained"
+                  component="label"
+                  sx={{ textTransform: "none" }}
+                >
+                  Chọn file MP3
+                  <input
+                    type="file"
+                    accept="audio/mp3,audio/mpeg"
+                    hidden
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const formData = new FormData();
+                      formData.append("audio", file); // 👈 đúng tên theo Swagger
+
+                      try {
+                        const res = await axios.post(
+                          "http://[::1]:8000/api/test/audio",
+                          formData,
+                          { headers: { "Content-Type": "multipart/form-data" } }
+                        );
+
+                        const url = res.data.urls?.[0];
+                        if (url) {
+                          const updated = { ...test };
+                          updated.tasks[taskIndex].audio = url;
+                          setTest(updated);
+                          alert("Tải file audio thành công!");
+                        } else {
+                          alert("Không nhận được URL từ server!");
+                        }
+                      } catch (err) {
+                        console.error("Lỗi upload audio:", err);
+                        alert("Lỗi khi tải audio!");
+                      }
+
+                      // Reset input để lần sau chọn lại cùng file vẫn trigger onChange
+                      e.target.value = "";
+                    }}
+                  />
+                </Button>
+
+                
+              </Box>
+            )}
+
 
       {/* Reading mới có passage */}
       {test.type === "reading" && (

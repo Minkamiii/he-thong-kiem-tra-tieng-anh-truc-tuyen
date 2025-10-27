@@ -15,6 +15,9 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Pagination,
+  CircularProgress,
+  Typography,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { Link } from "react-router-dom";
@@ -27,36 +30,41 @@ export default function UserList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch users khi load component
-  const fetchUsers = async () => {
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  // 🔹 Lấy danh sách user theo trang và keyword
+  const fetchUsers = async (pageNumber: number, keyword: string) => {
     setLoading(true);
     try {
-      const data = await getAllUsers();
-      setUsers(data || []);
+      const result = await getAllUsers(pageNumber, keyword);
+      // Giả sử API trả về: { content: User[], totalPages: number, totalItems: number, pageSize: number }
+      setUsers(result.data || []);
+      setTotalPages(result.totalPages || 0);
+      setPageSize(result.pageSize || 10);
     } catch (err) {
       console.error("Lỗi khi lấy user:", err);
       setUsers([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
   };
 
-  // Sử dụng useEffect để tải dữ liệu lần đầu khi component mount
+  // Load dữ liệu ban đầu
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers(page, searchQuery);
+  }, [page, searchQuery]);
 
-  // Search
+  // 🔹 Tìm kiếm
   const handleSearch = (query: string) => {
-    setSearchQuery(query.toLowerCase());
+    setPage(0); // reset page
+    setSearchQuery(query);
   };
 
-  const filteredUsers = (users || []).filter(
-    (u) => u?.username && u.username.toLowerCase().includes(searchQuery)
-  );
-
-
-  // Form add user
+  // --- Form Add User ---
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -76,7 +84,7 @@ export default function UserList() {
       email: "",
       phoneNum: "",
       dob: "",
-      roles: [] as string[],
+      roles: [],
       password: "",
       confirmPassword: "",
     });
@@ -91,12 +99,11 @@ export default function UserList() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Changing", e.target.name, "to", e.target.value);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const validate = () => {
-    let newErrors: { [key: string]: string } = {};
+    const newErrors: { [key: string]: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!formData.username) newErrors.username = "Vui lòng nhập username";
@@ -106,7 +113,7 @@ export default function UserList() {
 
     if (!formData.phoneNum) newErrors.phoneNum = "Vui lòng nhập số điện thoại";
     if (!formData.dob) newErrors.dob = "Vui lòng chọn ngày sinh";
-    if (!formData.roles) newErrors.roles = "Vui lòng chọn role";
+    if (!formData.roles.length) newErrors.roles = "Vui lòng chọn role";
 
     if (!formData.password) newErrors.password = "Vui lòng nhập mật khẩu";
     else if (formData.password.length < 8)
@@ -124,7 +131,6 @@ export default function UserList() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    console.log("Submitting form with data:", formData);
     const newUserData: AddUserRequest = {
       username: formData.username,
       email: formData.email,
@@ -135,11 +141,10 @@ export default function UserList() {
     };
 
     try {
-      const newUser = await addUser(newUserData);
-      setUsers((prev) => [...prev, newUser]);
+      await addUser(newUserData); // giả sử addUser chỉ cần 1 tham số
       alert("Thêm user thành công.");
       handleClose();
-      await fetchUsers(); // Tải lại danh sách user sau khi thêm
+      fetchUsers(page, searchQuery); // reload danh sách
     } catch (err: any) {
       console.error("Lỗi khi thêm user:", err);
       setSubmitError(
@@ -148,21 +153,26 @@ export default function UserList() {
     }
   };
 
+  // --- Xử lý chuyển trang ---
+  const handleChangePage = (_: any, newPage: number) => {
+    setPage(newPage - 1); // backend page bắt đầu từ 0
+  };
+
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <h2>List User</h2>
+        <Typography variant="h5">List User</Typography>
         <Button variant="contained" startIcon={<Add />} onClick={handleOpen}>
           Add User
         </Button>
       </Box>
 
-      {/* Search box */}
+      {/* Ô tìm kiếm */}
       <Box mb={2}>
         <Searching onSearch={handleSearch} />
       </Box>
 
-      {/* Table */}
+      {/* Bảng danh sách user */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -170,20 +180,20 @@ export default function UserList() {
               <TableCell>#</TableCell>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell></TableCell>
+              <TableCell>Thao tác</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  Đang tải dữ liệu...
+                  <CircularProgress size={24} />
                 </TableCell>
               </TableRow>
-            ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((u, index) => (
+            ) : users.length > 0 ? (
+              users.map((u, index) => (
                 <TableRow key={u.id}>
-                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{index + 1 + page * pageSize}</TableCell>
                   <TableCell>{u.username}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
@@ -193,7 +203,7 @@ export default function UserList() {
                       variant="outlined"
                       size="small"
                     >
-                      See detail
+                      Xem chi tiết
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -209,9 +219,21 @@ export default function UserList() {
         </Table>
       </TableContainer>
 
-      {/* Form Add User */}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={3}>
+          <Pagination
+            count={totalPages}
+            page={page + 1}
+            onChange={handleChangePage}
+            color="primary"
+          />
+        </Box>
+      )}
+
+      {/* Form thêm user */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Add User</DialogTitle>
+        <DialogTitle>Thêm User</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
@@ -262,16 +284,17 @@ export default function UserList() {
             name="roles"
             select
             fullWidth
-            value={formData.roles[0] || ""}   // lấy phần tử đầu
-            onChange={(e) => setFormData({ ...formData, roles: [e.target.value] })} 
+            value={formData.roles[0] || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, roles: [e.target.value] })
+            }
             error={!!errors.roles}
             helperText={errors.roles}
           >
-            <MenuItem value="SuperAdmin">SuperAdmin</MenuItem>
-            <MenuItem value="Admin">Admin</MenuItem>
-            <MenuItem value="User">User</MenuItem>
+            <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
+            <MenuItem value="ADMIN">Admin</MenuItem>
+            <MenuItem value="USER">User</MenuItem>
           </TextField>
-
           <TextField
             margin="dense"
             label="Password"
@@ -301,9 +324,9 @@ export default function UserList() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Close</Button>
+          <Button onClick={handleClose}>Đóng</Button>
           <Button variant="contained" onClick={handleSubmit}>
-            Save
+            Lưu
           </Button>
         </DialogActions>
       </Dialog>
