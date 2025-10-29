@@ -11,10 +11,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
+// import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+// import org.springframework.web.client.HttpClientErrorException;
+// import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import com.khanh.code.answer.Answer;
@@ -559,29 +561,16 @@ public class SubmitService {
     // HttpHeaders headers = new HttpHeaders();
     // headers.setContentType(MediaType.APPLICATION_JSON);
     public TestResponse testAPI(String id_test, List<Integer> tasks) {
-        String baseUrl = testServiceUrl + id_test + "/questions";
 
-        String tasksParam = tasks.stream()
-                .map(String::valueOf)
-                .collect(Collectors.joining(","));
-
-        String url = baseUrl + "?tasks=" + tasksParam;
-
+        String url = testServiceUrl + id_test + "/questions?tasks=" +
+                tasks.stream().map(String::valueOf).collect(Collectors.joining(","));
         try {
-            ResponseEntity<TestResponse> response =
-                    restTemplate.exchange(url, HttpMethod.GET, null, TestResponse.class);
 
-            if (response.getStatusCode().is4xxClientError() ||
-                    response.getStatusCode().is5xxServerError()) {
-                return null;
-            }
+            ResponseEntity<TestResponse> response= restTemplate.exchange(url, HttpMethod.GET, null, TestResponse.class);
             return response.getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            System.err.println("Error calling test service: " + ex.getStatusCode() + " - " + ex.getResponseBodyAsString());
-            return null;
-        } 
-        catch (Exception ex) {
-            System.err.println("Unexpected error calling test service: " + ex.getMessage());
+            
+        } catch (HttpStatusCodeException ex) {
+            System.err.println("Error calling test service: " + ex.getStatusCode());
             return null;
         }
     }
