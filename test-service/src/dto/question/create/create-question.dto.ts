@@ -37,6 +37,15 @@ export class CreateQuestionDTO{
     })
     question: string;
 
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        type: String,
+        required: false,
+        description: "Link ảnh"
+    })
+    image?: string;
+
     @IsEnum(QuestionType)
     @ApiProperty({
         enum: QuestionType,

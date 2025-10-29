@@ -40,6 +40,14 @@ export class TestTaskSectionDTO{
     })
     title?: string;
 
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        type: String,
+        required: false,
+    })
+    image?: string;
+
     @IsArray()
     @ArrayNotEmpty()
     @IsObject({each: true})
@@ -75,6 +83,14 @@ export class TestTaskDTO{
         example: "http://[::1]:8000/uploads/listening/test.mp3"
     })
     audio?: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        type: String,
+        required: false,
+    })
+    image?: string;
 
     @IsArray()
     @ArrayNotEmpty()

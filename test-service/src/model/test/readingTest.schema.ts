@@ -36,6 +36,12 @@ class ReadingTaskSection{
     //Lưu lại đề bài của section này dưới dạng MarkDown để có thể dễ dàng hiển thị nội dung. (Bắt buộc phải là MarkDown)
     title: string;
 
+    @Prop({
+        type: String,
+        required: false,
+    })
+    image: string;
+
      @Prop({
         type: [ReadingTaskSectionQuestion],
         required: true
@@ -51,6 +57,13 @@ class ReadingTask{
     @Prop({required: true})
     //Đoạn văn (Lưu MarkDown để có thể dynamic được những text khác nhau)
     passage: string;
+
+    @Prop({
+        type: String,
+        required: false
+    })
+    image: string; //Link ảnh
+
 
     @Prop({
         type: [ReadingTaskSection],
@@ -71,6 +84,13 @@ export class ReadingTest extends Test{
     })
     //Một bài reading test có nhiều passage
     tasks: ReadingTask[];
+
+    @Prop({
+        type: String,
+        required: false
+    })
+    image: string; //Link ảnh
+
 
 }
 

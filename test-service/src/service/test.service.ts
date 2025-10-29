@@ -221,17 +221,19 @@ export class TestService {
               if(foundTest.type === TestType.LISTENING){
                 deleteAudioFile.push(section.audio);
               }
-                for(const question of section.questions){
-                    deleteQuestionIds.push(question.question._id);
-                }
+              for (const question of section.questions) {
+                deleteQuestionIds.push(question.question._id);
+              }
             }
         }
-        
-        // deleteAudioFile.forEach(path => {
-        //   fs.unlink(path, (err) => {
-        //     if(err) console.log(err);
-        //   });
-        // })
+
+        if(foundTest.type === TestType.LISTENING){
+          deleteAudioFile.forEach(path => {
+            fs.unlink(path, (err) => {
+              if(err) console.log(err);
+            });
+          }) 
+        }
         
         await this.questionService.bulkDeleteQuestions(deleteQuestionIds); //Xoá trong collection 'question'
 
@@ -267,7 +269,6 @@ export class TestService {
         }
 
         const updatedQuestion = await this.questionService.bulkUpdateQuestions(questionUpdates);
-        console.log(updatedQuestion);
 
         const updatedTasks: any[] = updateTestDTO.tasks.map((task) => {
             const updatedSections = task.sections.map((section) => {
@@ -322,7 +323,7 @@ export class TestService {
 
         const returnData = {
             testName: data.testName,
-            testType: data.type,
+            type: data.type,
             tasks: returnDataList
         }
 
@@ -364,8 +365,10 @@ export class TestService {
           }[] = [];
     
           let haveTask: boolean = true;
-          for(let row = taskSheetStartRow; row < maxTaskRowCount; row++){
+          for(let row = taskSheetStartRow + 1; row < maxTaskRowCount; row++){
             if(!haveTask) break;
+            const taskData = new TestTaskDTO;
+            taskData.sections = [];
             for(let col = taskSheetStartColumn; col < maxTaskColumnCount; col++){
               const cellValue = data instanceof GoogleSpreadsheet ? 
                                 taskSheet.getCell(row, col).value : 
@@ -377,11 +380,9 @@ export class TestService {
     
               switch(col){
                 case 1:
-                  const taskData = new TestTaskDTO;
-                  taskData.sections = [];
                   switch(testType){
                     case TestType.LISTENING:
-                      taskData.audio = "test";
+                      taskData.audio = "";
                       break;
                     case TestType.READING:
                       taskData.passage = cellValue as string;
@@ -391,19 +392,28 @@ export class TestService {
                   if(!taskData.audio) delete taskData.audio;
                   if(!taskData.passage) delete taskData.passage;
     
-                  returnData.tasks.push(taskData)
-    
                   break;
                 case 2:
+                  if(cellValue){
+                    if(testType === TestType.WRITING)
+                      throw new HttpException(`Task ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST)
+                    taskData.image = cellValue as string;
+                  }
+
+                  if(!taskData.image) delete taskData.image;
+                  
+                  returnData.tasks.push(taskData);
                   break;
               }
             }
           }
     
           let hasSection: boolean = true;
-          for(let row = sectionSheetStartRow; row < maxSectionRowCount; row++){
+          for(let row = sectionSheetStartRow + 1; row < maxSectionRowCount; row++){
             if(!hasSection) break;
             let taskPosition: number = -1;
+            const sectionData = new TestTaskSectionDTO;
+            sectionData.questions = [];
             for(let col = sectionSheetStartColumn; col < maxSectionColumnCount; col++){
               const cellValue = data instanceof GoogleSpreadsheet ? 
                                 sectionSheet.getCell(row, col).value : 
@@ -412,30 +422,42 @@ export class TestService {
                 hasSection = false;
                 break;
               }
-              if(!cellValue) continue;
     
               switch(col){
                 case 1:
+                  if(!cellValue)
+                    throw new HttpException(`Section ${row} field "Task No" is must have`, HttpStatus.BAD_REQUEST)
                   taskPosition = cellValue as any;
                   break;
                 case 2:
-                  const sectionData = new TestTaskSectionDTO;
-                  sectionData.title = cellValue as any;
-                  sectionData.questions = [];
-                  returnData.tasks[taskPosition-1].sections.push(sectionData);
-    
+                  if(testType !== TestType.WRITING && !cellValue)
+                    throw new HttpException(`Section ${row} field "Title" is must have`, HttpStatus.BAD_REQUEST)
+                  if(testType !== TestType.WRITING)
+                    sectionData.title = cellValue as any;
+
+                  break;
+                case 3:
+                  if(cellValue){
+                    if(testType === TestType.WRITING)
+                      throw new HttpException(`Section ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST);
+                    sectionData.image = cellValue as string;
+                  }
+
+                  if(!sectionData.image) delete sectionData.image;
+
+                  returnData.tasks[taskPosition - 1].sections.push(sectionData);
+
                   taskSectionIndexes.push({
                     taskIndex: taskPosition,
-                    sectionIndex: returnData.tasks[taskPosition-1].sections.length
+                    sectionIndex: returnData.tasks[taskPosition - 1].sections.length
                   })
-    
                   break;
               }
             }
           }
     
           let hasQuestion: boolean = true;
-          for(let row = questionSheetStartRow; row < maxQuestionRowCount; row++){
+          for(let row = questionSheetStartRow + 1; row < maxQuestionRowCount; row++){
             if(!hasQuestion) break;
             let sectionPosition: number = -1;
             let taskPosition: number = -1;
@@ -481,6 +503,7 @@ export class TestService {
                   question.question = !cellValue ? "" : cellValue.toString();
                   break;
                 case 4: //TO-DO
+                  if(cellValue) question.image = cellValue as string;
                   break;
                 case maxQuestionColumnCount-1:
                   const choiceTypeQuestionRegex = /^(?:[0-9]|10)(?:,(?:[0-9]|10)){0,10}$/;

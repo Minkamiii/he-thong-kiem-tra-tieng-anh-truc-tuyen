@@ -34,6 +34,12 @@ class ListeningTaskSection{
     })
     //Lưu lại đề bài của section này dưới dạng MarkDown để có thể dễ dàng hiển thị nội dung
     title: string;
+
+    @Prop({
+        type: String,
+        required: false
+    })
+    image: string;
     
     @Prop({
         type: [ListeningTaskSectionQuestion],
@@ -50,6 +56,12 @@ class ListeningTask{
     @Prop({required: true})
     //Lưu lại file path của audio file
     audio: string;
+
+    @Prop({
+        type: String,
+        required: false
+    })
+    image: string; //Link ảnh
 
     @Prop({
         type: [ListeningTaskSection],
@@ -69,6 +81,12 @@ export class ListeningTest extends Test{
         required: true
     })
     tasks: ListeningTask[];
+
+    @Prop({
+        type: String,
+        required: false
+    })
+    image: string; //Link ảnh
 
 }
 

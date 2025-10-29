@@ -15,6 +15,12 @@ export class Question{
     @Prop({required: false})
     question: string; //Phần đề bài của câu hỏi
 
+    @Prop({
+        type: String,
+        required: false,
+    })
+    image?: string; //Link ảnh
+
     // @Prop({
     //     type: String,
     //     required: true,
