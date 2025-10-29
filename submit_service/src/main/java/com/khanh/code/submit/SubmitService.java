@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.khanh.code.answer.Answer;
@@ -556,23 +558,32 @@ public class SubmitService {
     // call test service
     // HttpHeaders headers = new HttpHeaders();
     // headers.setContentType(MediaType.APPLICATION_JSON);
-    public TestResponse testAPI(String id_test,List<Integer>tasks)
-    {
-        String baseUrl = testServiceUrl + id_test+"/questions";
-        //"http://[::1]:8000/api/test/" + id_test+"/questions";
+    public TestResponse testAPI(String id_test, List<Integer> tasks) {
+        String baseUrl = testServiceUrl + id_test + "/questions";
 
-    
         String tasksParam = tasks.stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(","));
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
 
         String url = baseUrl + "?tasks=" + tasksParam;
 
-        ResponseEntity<TestResponse> response =
-                restTemplate.exchange(url, HttpMethod.GET, null, TestResponse.class);
+        try {
+            ResponseEntity<TestResponse> response =
+                    restTemplate.exchange(url, HttpMethod.GET, null, TestResponse.class);
 
-        return response.getBody();
-
+            if (response.getStatusCode().is4xxClientError() ||
+                    response.getStatusCode().is5xxServerError()) {
+                return null;
+            }
+            return response.getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            System.err.println("Error calling test service: " + ex.getStatusCode() + " - " + ex.getResponseBodyAsString());
+            return null;
+        } 
+        catch (Exception ex) {
+            System.err.println("Unexpected error calling test service: " + ex.getMessage());
+            return null;
+        }
     }
 
     //delete list submits

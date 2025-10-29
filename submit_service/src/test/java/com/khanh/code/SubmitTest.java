@@ -842,5 +842,43 @@ public class SubmitTest {
         assertEquals(size_Answer1, size_Answer2); 
     }
 
-    //submit write and listen success (test 42,43)
+    @Test
+    void SUBMIT_042_Add_Submit_NoUserFound(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setUser_id("Hello");
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(404, response.getStatus());
+        assertEquals("Can not get user in user service with ID Hello", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2); 
+    }
+
+    @Test
+    void SUBMIT_043_Add_Submit_NoTestFound(){
+
+        int size_Submit1=submitRepository.findAll().size();
+        int size_Answer1=answerRepository.findAll().size();
+
+        submitRequest.setTest_id("hello");
+
+        ApiResponse response=submitService.saveSubmit(submitRequest);
+        assertEquals(404, response.getStatus());
+        assertEquals("Can not find test in test service with ID hello", response.getMessage());
+
+        int size_Submit2=submitRepository.findAll().size();
+        int size_Answer2=answerRepository.findAll().size();
+
+        assertEquals(size_Submit1, size_Submit2);
+        assertEquals(size_Answer1, size_Answer2); 
+    }
+
+    //submit write and listen success (test 44,45)
 }
