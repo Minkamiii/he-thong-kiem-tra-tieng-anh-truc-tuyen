@@ -10,6 +10,7 @@ public enum ErrorCode {
     PASSWORD_INVALID(1002, "password invalid", HttpStatus.BAD_REQUEST),
     EMAIL_INVALID(1002,"email invalid", HttpStatus.BAD_REQUEST),
     PHONEN_INVALID(1002,"phoneNum invalid", HttpStatus.BAD_REQUEST),
+    ROLE_INVALID(1002,"roleinvalid", HttpStatus.BAD_REQUEST),
     DOB_INVALID(1002,"date of birth invalid", HttpStatus.BAD_REQUEST),
     INFORMATION_NOT_NULL(1003, "information not null", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1004, "unauthenticated", HttpStatus.UNAUTHORIZED),

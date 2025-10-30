@@ -1,5 +1,6 @@
 package com.example.userservice.repository;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,5 +17,5 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByUsernameAndIdNot(String username,String userId);
     boolean existsByUsername(String username);
     Optional<User> findByUsername(String username);
-    List<User> findByIdIn(List<String> userId);
+    LinkedList<User> findByIdIn(List<String> userId);
 }

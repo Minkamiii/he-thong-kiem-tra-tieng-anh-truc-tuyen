@@ -3,7 +3,6 @@ package com.example.userservice.controller;
 import java.text.ParseException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +36,7 @@ public class AuthenticationController {
 
     @PostMapping("/introspect")
     ApiResponse introspect(@RequestBody IntrospectRequest request) throws JOSEException, ParseException{
-        IntrospectResponse introspectResponse = authenticationService.introspect(request);
+        IntrospectResponse introspectResponse = authenticationService.introspect(request,false);
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setResult(introspectResponse);
         return apiResponse;

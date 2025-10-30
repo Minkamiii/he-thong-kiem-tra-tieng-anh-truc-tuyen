@@ -49,6 +49,7 @@ public class UserController {
         @RequestParam(required = false) String keyword
     ) {
         ApiResponse apiResponse = new ApiResponse();
+        System.out.println("test");
         apiResponse.setResult(userService.getAllUser(page,keyword));
         return apiResponse;
     }

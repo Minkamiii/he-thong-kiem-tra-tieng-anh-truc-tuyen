@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+// import org.springframework.web.client.RestTemplate;
 
 import com.example.userservice.dto.reponse.UserListResponse;
 import com.example.userservice.dto.request.UserCreationRequest;
@@ -27,7 +27,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private final RestTemplate restTemplate=new RestTemplate();
+    // private final RestTemplate restTemplate=new RestTemplate();
 
     public User registerUser(UserCreationRequest request,boolean isAdmin) {
         if(userRepository.existsByUsername(request.getUsername())){
@@ -42,8 +42,14 @@ public class UserService {
         user.setDob(request.getDob());
         HashSet<String> roles = new HashSet<>();
         if(isAdmin){
+            if(request.getRoles()==null){
+                throw new AppException(ErrorCode.ROLE_INVALID);
+            }
             roles.addAll(request.getRoles());
         }else{
+            if(request.getRoles()!=null ){
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
             roles.add("USER");
         }
         user.setRoles(roles);
@@ -76,22 +82,24 @@ public class UserService {
 
     public User updateUser(String id, UserUpdateRequest request, boolean isAdmin) {
         User user = getUserByIdUser(id);
-
-        if(user==null){
-            throw new AppException(ErrorCode.USER_UNEXISTED);
-        }
-        else if (userRepository.existsByUsernameAndIdNot(request.getUsername(), id)) {
+        
+        if (userRepository.existsByUsernameAndIdNot(request.getUsername(), id)) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }   
         user.setUsername(request.getUsername());
-        if(request.getPassword()!=null){
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
         user.setEmail(request.getEmail());
         user.setPhoneNum(request.getPhoneNum());
         user.setDob(request.getDob());
         if (isAdmin) {
+            if(request.getRoles() == null) {
+                throw new AppException(ErrorCode.ROLE_INVALID);
+            }
             user.setRoles(request.getRoles());
+        }else{
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            if(request.getRoles() != null) {
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
         }
         return userRepository.save(user);
     }
@@ -105,6 +113,9 @@ public class UserService {
     }
 
     public void deleteUser(String id) {
+        if(!userRepository.existsById(id)){
+            throw new AppException(ErrorCode.USER_UNEXISTED);
+        }
         userRepository.deleteById(id);
         // String url="http://localhost:8080/api/submit/delete/user/"+id;
         // restTemplate.delete(url);

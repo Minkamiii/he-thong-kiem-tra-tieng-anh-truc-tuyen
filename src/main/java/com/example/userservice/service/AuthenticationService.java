@@ -8,7 +8,6 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -67,12 +66,12 @@ public class AuthenticationService {
     // @Value("${jwt.refreshable-duration}")
     // protected Long REFRESHABLE_DURATION;
 
-    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
+    public IntrospectResponse introspect(IntrospectRequest request,boolean isRefresh) throws JOSEException, ParseException {
         var token = request.getToken();
         boolean isValid=true;
 
         try {
-            verifyToken(token,false);
+            verifyToken(token,isRefresh);
         } catch (Exception e) {
             throw e;
         }
@@ -102,7 +101,7 @@ public class AuthenticationService {
 
     public void logout (LogoutRequest request) throws ParseException, JOSEException {
         try {
-
+            verifyToken(request.getToken(), false);
             SignedJWT signedJWT = SignedJWT.parse(request.getToken());
             String jit = signedJWT.getJWTClaimsSet().getJWTID();
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();

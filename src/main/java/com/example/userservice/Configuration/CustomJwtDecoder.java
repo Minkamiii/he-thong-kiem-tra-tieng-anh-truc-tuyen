@@ -36,7 +36,7 @@ public class CustomJwtDecoder implements JwtDecoder{
         try {
             IntrospectRequest request = new IntrospectRequest();
             request.setToken(token);
-            var response = authenticationService.introspect(request);
+            var response = authenticationService.introspect(request,true);
             if (!response.isValid()) {
                 throw new JwtException("Invalid JWT token");
             }
@@ -45,7 +45,7 @@ public class CustomJwtDecoder implements JwtDecoder{
         }
 
         if(Objects.isNull(nimbusJwtDecoder)){
-            SecretKeySpec secretKeySpec =new SecretKeySpec(signerKey.getBytes(),"HmacSHA512");
+            SecretKeySpec secretKeySpec =new SecretKeySpec(signerKeyRefresh.getBytes(),"HmacSHA512");
             nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
                 .macAlgorithm(MacAlgorithm.HS512)
                 .build();
