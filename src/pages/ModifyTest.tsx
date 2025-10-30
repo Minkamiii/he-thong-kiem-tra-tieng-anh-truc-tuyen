@@ -23,7 +23,7 @@ export default function ModifyTestPage() {
   const [loading, setLoading] = useState(false);
 
   if (!test) {
-    return <div>Không có dữ liệu để chỉnh sửa (hãy upload file Excel trước).</div>;
+    return <div>No data to edit (please upload Excel file first)!</div>;
   }
 
   // ---- Helpers ----
@@ -86,11 +86,11 @@ export default function ModifyTestPage() {
     try {
       setLoading(true);
       await axios.post("http://[::1]:8000/api/test", test);
-      alert("Lưu thành công!");
+      alert("Save successful!");
       navigate(-1);
     } catch (err) {
       console.error("Lỗi lưu:", err);
-      alert("Có lỗi xảy ra!");
+      alert("An error occurred!");
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,7 @@ export default function ModifyTestPage() {
 
       <TextField
         fullWidth
-        label="Tên đề"
+        label="Testname"
         sx={{ mb: 2 }}
         value={test.testName}
         onChange={(e) => setTest({ ...test, testName: e.target.value })}
@@ -112,7 +112,7 @@ export default function ModifyTestPage() {
 
       <TextField
         fullWidth
-        label="Loại đề"
+        label="Type"
         sx={{ mb: 3 }}
         value={test.type}
         disabled
@@ -121,7 +121,7 @@ export default function ModifyTestPage() {
       <TextField
         select
         fullWidth
-        label="Trạng thái"
+        label="Status"
         sx={{ mb: 3 }}
         value={test.active ? "active" : "inactive"}
         onChange={(e) =>
@@ -135,6 +135,100 @@ export default function ModifyTestPage() {
       {test.tasks.map((task, taskIndex) => (
         <Card key={taskIndex} sx={{ mb: 3 }}>
           <CardContent>
+            {test.type === "reading" && (
+              <TextField
+                fullWidth
+                label="Passage"
+                multiline
+                value={task.passage || ""}
+                onChange={(e) => {
+                  const updated = { ...test };
+                  updated.tasks[taskIndex].passage = e.target.value;
+                  setTest(updated);
+                }}
+                sx={{
+                  mb: 3,
+                  "& .MuiInputBase-root": {
+                    maxHeight: "200px", // 🔥 giới hạn chiều cao
+                    overflow: "auto",   // 🔥 bật thanh cuộn khi quá dài
+                  },
+                }}
+              />
+            )}
+
+            {/* Upload và hiển thị ảnh minh họa */}
+          <Box sx={{ mb: 3 }}>
+
+
+            {/* Hiển thị ảnh hiện tại */}
+            {task.image && (
+              <Box sx={{ mb: 2 }}>
+                <img
+                  src={task.image}
+                  alt="Task illustration"
+                  style={{
+                    width: "100%",
+                    maxHeight: "250px",
+                    objectFit: "contain",
+                    borderRadius: "8px",
+                  }}
+                />
+                {/* <Typography variant="body2" color="text.secondary">
+                  {task.image}
+                </Typography> */}
+              </Box>
+            )}
+
+            {/* Upload ảnh mới */}
+            <Button variant="contained" component="label" disabled={loading}>
+              {loading ? "Loading..." : "Select new image"}
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const formData = new FormData();
+                  formData.append("image", file);
+
+                  try {
+                    setLoading(true);
+                    const res = await axios.post(
+                      "http://localhost:8000/api/test/image", // ✅ dùng localhost thay vì [::1]
+                      formData,
+                      { headers: { "Content-Type": "multipart/form-data" } }
+                    );
+
+                    // ✅ backend trả về { url: "http://..." }
+                    const url = res.data.url;
+                    if (url) {
+                      // ✅ cập nhật test theo cách an toàn (React nhận biết thay đổi)
+                      setTest((prev) => {
+                        if (!prev) return prev;
+                        const updated = { ...prev };
+                        updated.tasks = [...prev.tasks];
+                        updated.tasks[taskIndex] = {
+                          ...updated.tasks[taskIndex],
+                          image: url,
+                        };
+                        return updated;
+                      });
+                    } else {
+                      alert("Could not get URL from server!");
+                    }
+                  } catch (err) {
+                    console.error("Lỗi upload ảnh:", err);
+                    alert("Error uploading image!");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              />
+            </Button>
+          </Box>
+
             {test.type === "listening" && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -157,7 +251,7 @@ export default function ModifyTestPage() {
                 component="label"
                 disabled={loading}
               >
-                {loading ? "Đang tải..." : "Chọn file audio mới"}
+                {loading ? "Loading..." : "Select new audio file"}
                 <input
                   type="file"
                   hidden
@@ -178,18 +272,18 @@ export default function ModifyTestPage() {
                           headers: { "Content-Type": "multipart/form-data" },
                         }
                       );
-
+                      console.log(res);
                       const url = res.data.urls?.[0];
                       if (url) {
                         const updated = { ...test };
                         updated.tasks[taskIndex].audio = url;
                         setTest(updated);
                       } else {
-                        alert("Không nhận được URL từ server!");
+                        alert("Could not get URL from server!");
                       }
                     } catch (err) {
                       console.error("Lỗi upload audio:", err);
-                      alert("Lỗi khi tải audio!");
+                      alert("Error uploading audio!");
                     } finally {
                       setLoading(false);
                     }
@@ -198,23 +292,6 @@ export default function ModifyTestPage() {
               </Button>
             </Box>
           )}
-
-
-
-            {test.type === "reading" && (
-              <TextField
-                fullWidth
-                label="Đoạn văn / Passage"
-                multiline
-                sx={{ mb: 3 }}
-                value={task.passage || ""}
-                onChange={(e) => {
-                  const updated = { ...test };
-                  updated.tasks[taskIndex].passage = e.target.value;
-                  setTest(updated);
-                }}
-              />
-            )}
 
             {task.sections.map((section, sectionIndex) => (
               <Box key={sectionIndex} sx={{ mb: 3 }}>
@@ -230,7 +307,7 @@ export default function ModifyTestPage() {
                       {ques.type !== "fill" || (ques.type === "fill" && ques.question) ? (
                         <TextField
                           fullWidth
-                          label={`Câu hỏi ${qIndex + 1}`}
+                          label={`Question ${qIndex + 1}`}
                           multiline
                           sx={{ mb: 2 }}
                           value={ques.question}
@@ -244,7 +321,7 @@ export default function ModifyTestPage() {
                       {ques.type === "fill" && (
                         <TextField
                           fullWidth
-                          label="Đáp án"
+                          label="Answer"
                           sx={{ mb: 2 }}
                           value={ques.key || ""}
                           onChange={(e) =>
@@ -259,7 +336,7 @@ export default function ModifyTestPage() {
                           <Box key={cIndex} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
                             <TextField
                               fullWidth
-                              label={`Đáp án ${cIndex + 1}`}
+                              label={`Answer ${cIndex + 1}`}
                               value={choice.text}
                               onChange={(e) =>
                                 handleChoiceChange(taskIndex, sectionIndex, qIndex, cIndex, e.target.value)
@@ -272,7 +349,7 @@ export default function ModifyTestPage() {
                                 handleCorrectChoice(taskIndex, sectionIndex, qIndex, cIndex, e.target.checked)
                               }
                             />
-                            <Typography variant="body2">Đúng</Typography>
+                            <Typography variant="body2">Correct</Typography>
                           </Box>
                         ))}
                     </Card>

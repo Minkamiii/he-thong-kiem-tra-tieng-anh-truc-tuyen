@@ -23,6 +23,7 @@ export interface Section {
 export interface Task {
   audio?: string;   // cho listening
   passage?: string; // cho reading
+  image?: string;   // cho writing
   sections: Section[];
 }
 

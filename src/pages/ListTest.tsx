@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Searching from "../components/Searching";
 import TestCard from "../components/TopicCard";
 import UploadFile from "../components/UploadFile";
 import {
@@ -32,16 +31,15 @@ export default function Reading({ type }: { type: string }) {
 
   // 🧩 Fetch tests
   const fetchTests = async (filters?: {
-  query?: string;
+  testName?: string;
   active?: string;
   fromto?: string;
 }) => {
   setFetching(true);
   try {
     let url = `http://localhost:8000/api/test?page=${currentPage}&type=${type}`;
-
-    if (filters?.query)
-      url += `&testName=${encodeURIComponent(filters.query)}`;
+    if (filters?.testName)
+      url += `&testName=${encodeURIComponent(filters.testName)}`;
     if (filters?.active) url += `&active=${filters.active}`;
     if (filters?.fromto)
   url += `&fromto=${filters.fromto}`;
@@ -61,7 +59,6 @@ export default function Reading({ type }: { type: string }) {
 
   useEffect(() => {
     fetchTests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, type]);
 
   // 🧠 Upload file Excel
@@ -80,13 +77,13 @@ export default function Reading({ type }: { type: string }) {
       if (uploadedTests) {
         navigate("/test/modify", { state: { test: uploadedTests } });
       } else {
-        alert("File không có test nào!");
+        alert("File has no test!");
       }
 
       fetchTests();
     } catch (error) {
       console.error(error);
-      alert("Upload thất bại");
+      alert("Upload failed");
     } finally {
       setLoading(false);
       handleCloseDialog();
@@ -102,12 +99,12 @@ export default function Reading({ type }: { type: string }) {
   // 📥 Tải file mẫu
   const handleDownloadTemplate = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/test/download/template");
+      const response = await axios.get("http://localhost:8000/api/test/download/Ntemplate");
 
       console.log("File mẫu đã được tải:", response.data);
     } catch (error) {
       console.error("Lỗi khi tải file mẫu:", error);
-      alert("Không thể tải file mẫu. Vui lòng thử lại!");
+      alert("Cannot download template file. Please try again!");
     }
   };
 
@@ -117,7 +114,7 @@ export default function Reading({ type }: { type: string }) {
         variant="h5"
         sx={{ mb: 2, color: "primary.main", fontWeight: "bold" }}
       >
-        Danh sách đề {type}
+        List {type} test
       </Typography>
 
       {/* 🔍 Thanh tìm kiếm + nút thêm */}
@@ -142,7 +139,7 @@ export default function Reading({ type }: { type: string }) {
           sx={{ backgroundColor: "#004080" }}
           onClick={() => setOpenDialog(true)}
         >
-          Thêm đề mới
+          Add test
         </Button>
       </Box>
 
@@ -153,7 +150,7 @@ export default function Reading({ type }: { type: string }) {
         </Box>
       ) : tests.length === 0 ? (
         <Typography align="center" sx={{ color: "text.secondary", py: 4 }}>
-          Không có đề nào để hiển thị
+          No tests to display
         </Typography>
       ) : (
         <>
@@ -190,7 +187,7 @@ export default function Reading({ type }: { type: string }) {
 
       {/* 📤 Dialog upload file */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Thêm đề mới</DialogTitle>
+        <DialogTitle>Add test</DialogTitle>
         <DialogContent dividers>
           {/* Chọn file */}
           <Box
@@ -210,7 +207,7 @@ export default function Reading({ type }: { type: string }) {
             )}
             {selectedFile && (
               <Button onClick={() => setSelectedFile(null)} color="error" variant="text">
-                Xóa file
+                Delete file
               </Button>
             )}
           </Box>
@@ -218,46 +215,46 @@ export default function Reading({ type }: { type: string }) {
           {/* Hướng dẫn */}
           <Box sx={{ borderTop: "1px solid #ddd", pt: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Hướng dẫn sử dụng bảng tính
+              Instructions for using the spreadsheet
             </Typography>
 
             <Typography>
-              1️⃣ <b>Sử dụng bảng tính mẫu làm mẫu:</b>
+              1️⃣ <b>Use the sample spreadsheet as a template:</b>
             </Typography>
             <Stack direction="row" spacing={2} sx={{ mt: 1, mb: 2 }}>
               <Button variant="outlined" onClick={handleDownloadTemplate}>
-                📥 Tải xuống mẫu
+                📥 Download template
               </Button>
               <Button
                 variant="outlined"
-                href="https://docs.google.com/spreadsheets"
+                href="https://docs.google.com/spreadsheets/d/1s2D5DTY9kXgdVJ3l-5neZb2V1ZwxBqqu-KkIxmcWQeM/edit?gid=968405941#gid=968405941"
                 target="_blank"
               >
-                Mở trong Google Trang tính
+                Open in Google Sheets
               </Button>
             </Stack>
 
             <Typography sx={{ mb: 1 }}>
-              2️⃣ <b>Nhập dữ liệu câu hỏi của bạn vào bảng tính.</b> <br />
-              <i>Vui lòng không thay đổi định dạng.</i>
+              2️⃣ <b>Enter your question data into the spreadsheet.</b> <br />
+              <i>Please do not change the format.</i>
             </Typography>
 
             <Typography>
-              3️⃣ <b>Lưu các thay đổi và tải lên bảng tính.</b>
+              3️⃣ <b>Save your changes and upload the spreadsheet.</b>
             </Typography>
           </Box>
         </DialogContent>
 
         <DialogActions>
           <Button onClick={handleCloseDialog} color="inherit">
-            HỦY
+            Cancel
           </Button>
           <Button
             onClick={handleConfirm}
             variant="contained"
             disabled={!selectedFile || loading}
           >
-            {loading ? "Đang tải..." : "XÁC NHẬN"}
+            {loading ? "Loading..." : "Confirm"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -2,12 +2,20 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./css/Sidebar.css";
 
+import authApi from "../api/AuthApi";
+
 export default function Sidebar() {
   const [openCategory, setOpenCategory] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    try {
+      const res = await authApi.logout({ accessToken: localStorage.getItem("accessToken") || "" });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+    localStorage.clear();
+    alert("Logout successful");
     navigate("/");
   };
 

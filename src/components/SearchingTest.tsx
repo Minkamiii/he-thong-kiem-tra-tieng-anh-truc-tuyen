@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { TextField, Button, MenuItem, Box } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 
 interface SearchFilters {
   testName: string;
@@ -48,25 +47,25 @@ export default function SearchingTest({
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
       <TextField
-        label="Tên đề"
+        label="Testname"
         size="small"
         value={filters.testName}
         onChange={(e) => setFilters({ ...filters, testName: e.target.value })}
       />
       <TextField
-        label="Trạng thái"
+        label="Status"
         select
         size="small"
         value={filters.active}
         onChange={(e) => setFilters({ ...filters, active: e.target.value })}
         sx={{ minWidth: 160 }}
       >
-        <MenuItem value="">Tất cả</MenuItem>
-        <MenuItem value="true">Đang hoạt động</MenuItem>
-        <MenuItem value="false">Đã ẩn</MenuItem>
+        <MenuItem value="">All</MenuItem>
+        <MenuItem value="true">Active</MenuItem>
+        <MenuItem value="false">Inactive</MenuItem>
       </TextField>
       <TextField
-        label="Từ ngày"
+        label="From"
         type="date"
         size="small"
         InputLabelProps={{ shrink: true }}
@@ -74,7 +73,7 @@ export default function SearchingTest({
         onChange={(e) => setFilters({ ...filters, from: e.target.value })}
       />
       <TextField
-        label="Đến ngày"
+        label="To"
         type="date"
         size="small"
         InputLabelProps={{ shrink: true }}

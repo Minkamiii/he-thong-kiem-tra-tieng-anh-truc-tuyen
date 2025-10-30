@@ -36,6 +36,9 @@
   border-radius: 6px;
   margin-bottom: 16px;
   color: #000;
+  max-height: 300px;    
+  overflow-y: auto;  
+  scrollbar-width: thin
 }
 
 .section-container {
@@ -125,3 +128,18 @@
   border-radius: 6px;
   cursor: pointer;
 }
+.task-image {
+  display: flex;
+  flex-direction: column; /* xếp ảnh và URL theo cột */
+  align-items: center;    /* căn giữa theo chiều ngang */
+  margin-bottom: 16px;    /* cách dưới 1 chút cho gọn */
+}
+
+.detail-image {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+

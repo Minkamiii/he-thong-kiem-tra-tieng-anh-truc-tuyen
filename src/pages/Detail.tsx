@@ -19,6 +19,7 @@ export default function Detail() {
         const res = await axios.get(`http://[::1]:8000/api/test/${id}`);
         console.log(id);
         setTest(res.data);
+        console.log(res.data);
       } catch (error) {
         console.error("Lỗi fetch chi tiết test:", error);
       } finally {
@@ -30,16 +31,16 @@ export default function Detail() {
 
   const handleDelete = async () => {
     if (!id) return;
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa bài test này?");
+    const confirmDelete = window.confirm("Are you sure you want to delete this test?");
     if (!confirmDelete) return;
 
     try {
       await axios.delete(`http://[::1]:8000/api/test/${id}`);
-      alert("Xóa thành công!");
+      alert("Delete successful!");
       navigate(-1); // chuyển về trang danh sách hoặc home
     } catch (error) {
       console.error("Lỗi khi xóa test:", error);
-      alert("Có lỗi xảy ra khi xóa!");
+      alert("An error occurred while deleting!");
     }
   };
 
@@ -48,8 +49,8 @@ export default function Detail() {
     navigate(`/test/update/${id}`); // điều hướng sang trang update
   };
 
-  if (loading) return <p className="detail-notfound">Đang tải dữ liệu...</p>;
-  if (!test) return <p className="detail-notfound">Không tìm thấy bài test</p>;
+  if (loading) return <p className="detail-notfound">Loading...</p>;
+  if (!test) return <p className="detail-notfound">Test not found</p>;
 
   return (
     <div className="detail-container">
@@ -64,7 +65,16 @@ export default function Detail() {
               <p className="task-passage">{task.passage}</p>
             </>
           )}
-          {task.audio && (
+          {task.image &&  (
+            <div className="task-image">
+              <img
+                src={task.image}
+                alt="Task illustration"
+                className="detail-image"
+              />
+            </div>
+          )}
+          {task.audio &&  (
             <>
               <h2 className="task-heading">Audio:</h2>
               <audio controls src={task.audio} />

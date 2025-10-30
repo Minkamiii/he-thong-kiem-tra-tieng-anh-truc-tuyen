@@ -24,6 +24,7 @@ export interface Section {
 export interface Task {
   passage?: string;
   audio?: string;
+  image?: string;
   sections: Section[];
 }
 

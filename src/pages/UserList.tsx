@@ -106,23 +106,23 @@ export default function UserList() {
     const newErrors: { [key: string]: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!formData.username) newErrors.username = "Vui lòng nhập username";
-    if (!formData.email) newErrors.email = "Vui lòng nhập email";
+    if (!formData.username) newErrors.username = "Please enter username";
+    if (!formData.email) newErrors.email = "Please enter email";
     else if (!emailRegex.test(formData.email))
-      newErrors.email = "Email không hợp lệ";
+      newErrors.email = "Invalid email format";
 
-    if (!formData.phoneNum) newErrors.phoneNum = "Vui lòng nhập số điện thoại";
-    if (!formData.dob) newErrors.dob = "Vui lòng chọn ngày sinh";
-    if (!formData.roles.length) newErrors.roles = "Vui lòng chọn role";
+    if (!formData.phoneNum) newErrors.phoneNum = "Please enter phone number";
+    if (!formData.dob) newErrors.dob = "Please select date of birth";
+    if (!formData.roles.length) newErrors.roles = "Please select role";
 
-    if (!formData.password) newErrors.password = "Vui lòng nhập mật khẩu";
+    if (!formData.password) newErrors.password = "Please enter password";
     else if (formData.password.length < 8)
-      newErrors.password = "Mật khẩu tối thiểu 8 ký tự";
+      newErrors.password = "Password must be at least 8 characters long";
 
     if (!formData.confirmPassword)
-      newErrors.confirmPassword = "Vui lòng nhập lại mật khẩu";
+      newErrors.confirmPassword = "Please enter confirm password";
     else if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Mật khẩu không khớp";
+      newErrors.confirmPassword = "Passwords do not match";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -142,7 +142,7 @@ export default function UserList() {
 
     try {
       await addUser(newUserData); // giả sử addUser chỉ cần 1 tham số
-      alert("Thêm user thành công.");
+      alert("Add user successfully.");
       handleClose();
       fetchUsers(page, searchQuery); // reload danh sách
     } catch (err: any) {
@@ -180,7 +180,7 @@ export default function UserList() {
               <TableCell>#</TableCell>
               <TableCell>Username</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Thao tác</TableCell>
+              {/* <TableCell>Thao tác</TableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -203,7 +203,7 @@ export default function UserList() {
                       variant="outlined"
                       size="small"
                     >
-                      Xem chi tiết
+                      See details
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -211,7 +211,7 @@ export default function UserList() {
             ) : (
               <TableRow>
                 <TableCell colSpan={4} align="center">
-                  Không tìm thấy user nào
+                  No users found
                 </TableCell>
               </TableRow>
             )}
@@ -324,9 +324,9 @@ export default function UserList() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Đóng</Button>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button variant="contained" onClick={handleSubmit}>
-            Lưu
+            Save
           </Button>
         </DialogActions>
       </Dialog>

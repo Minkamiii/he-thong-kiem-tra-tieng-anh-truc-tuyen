@@ -63,7 +63,7 @@ export default function UserDetail() {
     return (
       <Stack alignItems="center" sx={{ marginTop: "20px" }}>
         <CircularProgress />
-        <Typography>Đang tải...</Typography>
+        <Typography>Loading...</Typography>
       </Stack>
     );
   }
@@ -73,7 +73,7 @@ export default function UserDetail() {
   }
 
   if (!user) {
-    return <Typography variant="h6" sx={{ textAlign: 'center', mt: 2 }}>User không tồn tại</Typography>;
+    return <Typography variant="h6" sx={{ textAlign: 'center', mt: 2 }}>User does not exist</Typography>;
   }
 
   const handleDelete = async () => {
@@ -81,7 +81,7 @@ export default function UserDetail() {
     try {
       await deleteUser(id);
       navigate("/users");
-      alert("Xóa người dùng thành công.");
+      alert("Delete user successfully.");
     } catch (error) {
       console.error("Failed to delete user:", error);
       // Hiển thị thông báo lỗi cho người dùng
@@ -110,7 +110,7 @@ export default function UserDetail() {
       setUser(result);
       setFormData(result);
       setIsEditing(false); // Thoát khỏi chế độ chỉnh sửa
-      alert("Cập nhật người dùng thành công.");
+      alert("Update user successfully.");
       navigate("/users");
     } catch (error:any) {
       setSubmitError(error.response?.data?.message || "Cập nhật người dùng thất bại.");

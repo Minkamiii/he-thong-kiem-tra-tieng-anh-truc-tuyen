@@ -26,7 +26,7 @@ export default function Login() {
       console.log("111");
       navigate("/home");
     } else {
-      setError("Tài khoản hoặc mật khẩu không đúng");
+      setError("Account or password is incorrect");
     }
     } catch (err: any) {
       console.error("Lỗi chi tiết:", err);
