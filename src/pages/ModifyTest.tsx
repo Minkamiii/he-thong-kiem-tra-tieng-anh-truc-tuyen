@@ -21,6 +21,7 @@ export default function ModifyTestPage() {
   const stateTest = (location.state as { test?: Test })?.test;
   const [test, setTest] = useState<Test | null>(stateTest || null);
   const [loading, setLoading] = useState(false);
+  const urls = import.meta.env.VITE_TEST_API_URL;
 
   if (!test) {
     return <div>No data to edit (please upload Excel file first)!</div>;
@@ -85,7 +86,7 @@ export default function ModifyTestPage() {
     if (!test) return;
     try {
       setLoading(true);
-      await axios.post("http://[::1]:8000/api/test", test);
+      await axios.post(`${urls}`, test);
       alert("Save successful!");
       navigate(-1);
     } catch (err) {
@@ -196,7 +197,7 @@ export default function ModifyTestPage() {
                   try {
                     setLoading(true);
                     const res = await axios.post(
-                      "http://localhost:8000/api/test/image", // ✅ dùng localhost thay vì [::1]
+                      `${urls}/image`, // ✅ dùng localhost thay vì [::1]
                       formData,
                       { headers: { "Content-Type": "multipart/form-data" } }
                     );
@@ -266,7 +267,7 @@ export default function ModifyTestPage() {
                     try {
                       setLoading(true);
                       const res = await axios.post(
-                        "http://[::1]:8000/api/test/audio",
+                        `${urls}/audio`,
                         formData,
                         {
                           headers: { "Content-Type": "multipart/form-data" },

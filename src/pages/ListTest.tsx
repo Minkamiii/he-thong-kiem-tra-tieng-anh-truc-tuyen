@@ -26,6 +26,7 @@ export default function Reading({ type }: { type: string }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const urls = import.meta.env.VITE_TEST_API_URL;
 
   const navigate = useNavigate();
 
@@ -37,7 +38,7 @@ export default function Reading({ type }: { type: string }) {
 }) => {
   setFetching(true);
   try {
-    let url = `http://localhost:8000/api/test?page=${currentPage}&type=${type}`;
+    let url = `${urls}?page=${currentPage}&type=${type}`;
     if (filters?.testName)
       url += `&testName=${encodeURIComponent(filters.testName)}`;
     if (filters?.active) url += `&active=${filters.active}`;
@@ -69,7 +70,7 @@ export default function Reading({ type }: { type: string }) {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:8000/api/test/excel", formData, {
+      const res = await axios.post(`${urls}/excel`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -99,7 +100,7 @@ export default function Reading({ type }: { type: string }) {
   // 📥 Tải file mẫu
   const handleDownloadTemplate = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/test/download/Ntemplate");
+      const response = await axios.get(`${urls}/download/Ntemplate`);
 
       console.log("File mẫu đã được tải:", response.data);
     } catch (error) {

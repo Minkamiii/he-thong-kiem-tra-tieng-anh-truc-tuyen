@@ -24,7 +24,7 @@ const authApi = {
       message: string;
       result: LoginResponse;
     } = await axiosClient.post("/api/auth/loginAdmin", data);
-    
+ 
     // Không còn dùng res.data, mà dùng trực tiếp res.result
     const { userId, accessToken, refreshToken, authentication } = res.result;
 

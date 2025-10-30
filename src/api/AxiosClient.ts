@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:8081/userservice", // đổi cho khớp BE
+  baseURL: `${import.meta.env.VITE_USER_API_URL}`, // đổi cho khớp BE
   headers: {
     "Content-Type": "application/json",
   },

@@ -18,10 +18,11 @@ export default function UpdateTestPage() {
   const navigate = useNavigate();
   const [test, setTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(false);
+  const urls = import.meta.env.VITE_TEST_API_URL;
 
   // Fetch test theo id
   useEffect(() => {
-    axios.get(`http://[::1]:8000/api/test/${id}`).then((res) => {
+    axios.get(`${urls}/${id}`).then((res) => {
       setTest(res.data);
     });
   }, [id]);
@@ -85,7 +86,7 @@ export default function UpdateTestPage() {
       // bỏ các field không cần
       const { createdAt, updatedAt, __v, ...cleaned } = test as any;
       console.log("Gửi test:", cleaned);
-      await axios.put(`http://[::1]:8000/api/test/${id}`, cleaned);
+      await axios.put(`${urls}/${id}`, cleaned);
       alert("Update successful!");
       navigate(-1);
     } catch (err) {
@@ -196,7 +197,7 @@ export default function UpdateTestPage() {
                     try {
                       setLoading(true);
                       const res = await axios.post(
-                        "http://localhost:8000/api/test/image", // ✅ dùng localhost thay vì [::1]
+                        `${urls}/image`, // ✅ dùng localhost thay vì [::1]
                         formData,
                         { headers: { "Content-Type": "multipart/form-data" } }
                       );
@@ -265,7 +266,7 @@ export default function UpdateTestPage() {
 
                       try {
                         const res = await axios.post(
-                          "http://[::1]:8000/api/test/audio",
+                          `${urls}/audio`,
                           formData,
                           { headers: { "Content-Type": "multipart/form-data" } }
                         );

@@ -11,12 +11,12 @@ export default function Detail() {
   const [test, setTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+  const url = import.meta.env.VITE_TEST_API_URL;
   useEffect(() => {
     if (!id) return;
     const fetchTest = async () => {
       try {
-        const res = await axios.get(`http://[::1]:8000/api/test/${id}`);
+        const res = await axios.get(`${url}/${id}`);
         console.log(id);
         setTest(res.data);
         console.log(res.data);
@@ -35,7 +35,7 @@ export default function Detail() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://[::1]:8000/api/test/${id}`);
+      await axios.delete(`${url}/${id}`);
       alert("Delete successful!");
       navigate(-1); // chuyển về trang danh sách hoặc home
     } catch (error) {
