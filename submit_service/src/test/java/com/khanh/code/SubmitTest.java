@@ -881,6 +881,8 @@ public class SubmitTest {
         ApiResponse response = submitService.getProgressForAdmin("68ea8345812bd91c7f32e584");
         assertEquals(200, response.getStatus());
         assertInstanceOf(Map.class, response.getData());
+        assertEquals(response.getMessage(), "Get all information of test done for admin successfully");
+        
         Map<String, Object> data = (Map<String, Object>) response.getData();
         assertEquals(data.get("totalUsersDone"), 2);
         assertEquals(data.get("highest"), null);
@@ -894,6 +896,7 @@ public class SubmitTest {
         ApiResponse response = submitService.getProgressForAdmin(testID);
         assertEquals(200, response.getStatus());
         assertInstanceOf(Map.class, response.getData());
+        assertEquals(response.getMessage(), "Get all information of test done for admin successfully");
         Map<String, Object> data = (Map<String, Object>) response.getData();
         assertEquals(data.get("totalUsersDone"), 1);
         assertEquals(data.get("highest"), 1);
@@ -912,6 +915,7 @@ public class SubmitTest {
     void SUBMIT_046_GetTestProgressForAdmin_TestNotExistOrNeverSubmit() {
         ApiResponse response = submitService.getProgressForAdmin("Hello");
         assertEquals(404, response.getStatus());
+        assertEquals(response.getMessage(), "No submits found for test ID: ");
         assertNull(response.getData());
     }
 }
