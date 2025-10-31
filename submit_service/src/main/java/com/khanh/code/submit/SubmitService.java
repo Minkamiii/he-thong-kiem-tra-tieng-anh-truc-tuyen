@@ -246,6 +246,7 @@ public class SubmitService {
                 data.put("lowest", min_listening);
                 List<String> combined = answerService.getQuestionNoCorrectUser(test_id);
                 data.put("100% answered wrong question", combined);
+                data.put("total_questions", combined.size());
 
             }
 
@@ -256,6 +257,7 @@ public class SubmitService {
                 data.put("lowest", min_listening);
                 List<String> combined = answerService.getQuestionNoCorrectUser(test_id);
                 data.put("100%_answered_wrong_question", combined);
+                data.put("total_questions", combined.size());
             }
 
             data.put("totalUsersDone", totalUsersDone);
