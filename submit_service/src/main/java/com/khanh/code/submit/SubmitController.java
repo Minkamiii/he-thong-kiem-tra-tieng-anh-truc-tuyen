@@ -44,7 +44,7 @@ public class SubmitController {
 
     @GetMapping(path="/CheckDone")
     public ResponseEntity<ApiResponse> getAllTestDoneOfUser
-    (   @RequestParam @NotBlank @NotNull String userID, 
+    (   @RequestParam @NotBlank String userID, 
         @RequestParam @NotBlank @NotNull String test_ids)
     {
         ApiResponse response = new ApiResponse();
@@ -58,6 +58,21 @@ public class SubmitController {
         }
     }
 
+    @GetMapping(path="/progressforadmin")
+    public ResponseEntity<ApiResponse> getProgressForAdmin
+    (@RequestParam @NotBlank @NotNull String test_id)
+    {
+        ApiResponse response = new ApiResponse();
+        try {
+           response = submitService.getProgressForAdmin(test_id);
+           return ResponseEntity.status(response.getStatus()).body(response);
+        } catch (Exception e) {
+            response.setStatus(500);
+            response.setMessage("Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
     @GetMapping(path="/user/test")
     public ResponseEntity<ApiResponse> GetByUserAndTestID(
         @RequestParam String userID,
