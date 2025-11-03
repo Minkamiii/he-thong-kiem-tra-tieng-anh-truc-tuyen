@@ -11,6 +11,8 @@ Submit api:
 - xóa submit theo id: http://localhost:8080/api/submit/delete/{submitID}
 - xóa tất cả submit theo user: http://localhost:8080/api/submit/delete/user/{userID}
 - xóa tất cả submit theo test: http://localhost:8080/api/submit/delete/test/{testID}
+- lấy thông tin cho admin của một đề:
+    http://localhost:8080/api/submit/progressforadmin?test_id=68feed2e1a58077bfe55c22d
 
 Answer api:
 
