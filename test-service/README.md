@@ -30,3 +30,4 @@
 - **Upload file audio** (POST) http://[::1]:8000/api/test/audio
 - **Upload file ảnh** (POST) http://[::1]:8000/api/test/image
 - **Upload file excel** (POST) http://[::1]:8000/api/test/excel
+- **Xoá ảnh** (DELETE) http://[::1]:8000/api/test/image (Query: url (url của ảnh trên server))

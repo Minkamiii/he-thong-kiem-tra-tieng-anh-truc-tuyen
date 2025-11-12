@@ -95,6 +95,12 @@ export class TestController{
         return { url: fileURL};
     }
 
+    @Delete('/image')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    deleteImage(@Query('url') url: string){
+        return this.testService.deleteImage(url);
+    }
+
     @Post('/excel')
     @HttpCode(200)
     @UseInterceptors(FileInterceptor('file', {

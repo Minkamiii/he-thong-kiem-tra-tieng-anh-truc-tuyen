@@ -215,24 +215,37 @@ export class TestService {
 
         const deleteQuestionIds: any[] = [];
         const deleteAudioFile: any[] = [];
+        const deleteImageFile: any[] = [];
 
         for(const task of foundTest.tasks){
+          if(task.image) deleteImageFile.push(`.${new URL(task.image).pathname}`)
+          if (foundTest.type === TestType.LISTENING) {
+            deleteAudioFile.push(`.${new URL(task.audio).pathname}`);
+          }
             for(const section of task.sections){
-              if(foundTest.type === TestType.LISTENING){
-                deleteAudioFile.push(section.audio);
-              }
+              if(section.image) deleteImageFile.push(`.${new URL(task.image).pathname}`)
               for (const question of section.questions) {
                 deleteQuestionIds.push(question.question._id);
+                if(question.image) deleteImageFile.push(`.${new URL(task.image).pathname}`)
               }
             }
         }
 
+        console.log(deleteImageFile);
+
         if(foundTest.type === TestType.LISTENING){
           deleteAudioFile.forEach(path => {
-            fs.unlink(path, (err) => {
-              if(err) console.log(err);
-            });
+            if(fs.existsSync(path)){
+              fs.unlinkSync(path)
+            }
           }) 
+        }
+        if(deleteImageFile.length > 0){
+          deleteImageFile.forEach(path => {
+            if(fs.existsSync(path)){
+              fs.unlinkSync(path)
+            }
+          })
         }
         
         await this.questionService.bulkDeleteQuestions(deleteQuestionIds); //Xoá trong collection 'question'
@@ -636,9 +649,12 @@ export class TestService {
         );
   
         //Xoá file vừa thêm vào
-        fs.unlink(file.path, (err) => {
-          if(err) console.log(err);
-        });
+        if(fs.existsSync(file.path)){
+          fs.unlinkSync(file.path);
+        }
+        else{
+          console.error("Cannot find file with path " + file.path)
+        }
   
         return returnData;
     }
@@ -651,6 +667,16 @@ export class TestService {
       }
 
       return fs.createReadStream(filePath);
+    }
+
+    deleteImage(url: string){
+      const path = `.${new URL(url).pathname}`;
+      if(fs.existsSync(path)){
+        fs.unlinkSync(path);
+      }
+      else{
+        throw new HttpException('File do not exists', HttpStatus.NOT_FOUND);
+      }
     }
 
 }
