@@ -23,7 +23,17 @@ const ListeningTest = ({ tasks, activeTask, questionsContainerRef }) => {
         }}>
             {/* Audio Player */}
             <AudioPlayer src={currentTask.audio} />
-
+            {currentTask?.image && <Box 
+                component="img" 
+                src={currentTask?.image}
+                sx={{
+                    width: 120,
+                    height: 120,
+                    objectFit: 'cover',
+                    alignSelf: 'center',
+                    justifySelf: 'center'
+                }}
+            />}
             {/* Questions */}
             <Grid item size={{xs: 12, md: 12}}>
                 <Box 

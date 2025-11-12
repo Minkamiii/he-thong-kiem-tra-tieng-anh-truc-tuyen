@@ -28,6 +28,17 @@ const FillView = ({ question }) => {
       <Typography variant="body1" sx={{ mb: 1 }}>
         {`${question.index + 1}. ${question.question}`}
       </Typography>
+      {question?.image && <Box 
+        component='img'
+        src={question.image}
+        sx={{
+          width: 60,
+          height: 60,
+          objectFit: 'cover',
+          alignSelf: 'center',
+          justifySelf: 'center'
+        }}
+      />}
       <TextField
         fullWidth
         size="small"

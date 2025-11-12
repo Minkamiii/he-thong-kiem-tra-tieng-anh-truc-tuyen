@@ -34,7 +34,8 @@ export default function SubmitDetail() {
       setAnswers(ansRes.data.data || []);
       setTest(testRes.data || null);
     } catch (err) {
-      console.error("Lỗi khi fetch dữ liệu:", err);
+      alert("Can the find the test because it is deleted");
+      navigate(-1);
     }
   };
 
@@ -215,11 +216,15 @@ export default function SubmitDetail() {
               </div>
             )}
 
+            {task.image && <img src={task.image} style={{width: 120, height: 120}}/>}
+
             {visibleSections.map((section: any, secIndex: number) => (
               <div key={secIndex} style={{ marginTop: "16px" }}>
                 <h4 style={{ color: "#1976d2", marginBottom: "10px" }}>
                   {section.title}
                 </h4>
+
+                {section.image && <img src={section.image} style={{width: 120, height: 120}}/>}
 
                 {section.questions.map((q: any, i: number) => {
                   const userAns = getUserAnswer(q.question._id);
@@ -275,8 +280,10 @@ export default function SubmitDetail() {
                     >
                       <p>
                         <b>Q{q.index + 1}:</b>{" "}
-                        {q.question.question || `Index ${q.index + 1}`}
+                        {q.question.question || ``}
                       </p>
+                      
+                      {q.question.image && <img src={q.question.image} style={{width: 120, height: 120}}/>}
 
                       {q.question.type === "choice" && (
                         <ul>

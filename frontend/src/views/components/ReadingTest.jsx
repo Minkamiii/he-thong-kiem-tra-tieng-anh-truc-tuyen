@@ -32,6 +32,17 @@ const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
                     <Typography variant="body1" sx={{mb:2, whiteSpace: 'pre-line'}}>{
                         currentTask?.passage || "No passage available."
                     }</Typography>
+                    {currentTask?.image && 
+                    <Box  
+                        component="img" 
+                        src={currentTask?.image} 
+                        sx={{
+                            width: 240,
+                            height: 240,
+                            objectFit: 'cover',
+                            alignSelf: 'center',
+                        }}
+                    />}
                 </Box>
             </Grid>
             {/* Answer */}

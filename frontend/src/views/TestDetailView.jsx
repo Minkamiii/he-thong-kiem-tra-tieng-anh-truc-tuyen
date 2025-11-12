@@ -167,6 +167,11 @@ const TestDetailView = ( {testId} ) => {
         navigate(`/test/${test._id}/take?${taskParams}${timeParam}${modeParam}`);
     }
 
+    const onTabChange = (event, newValue) => {
+        setTab(newValue);
+        setChecked(test.testTasks.map((_, index) => index));
+    }
+
     return (
         <BaseUI isLoggedIn={isLoggedIn} user={user}>
             <Grid container spacing={1} sx={{alignItems: 'center', justifyContent: 'center', my:2}}>
@@ -192,7 +197,7 @@ const TestDetailView = ( {testId} ) => {
                         
 
                         <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
-                            <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} centered>
+                            <Tabs value={tab} onChange={onTabChange} centered>
                                 <Tab label="Standard" value= {TabOptions.standard} />
                                 <Tab label="Customization" value= {TabOptions.custom} />
                                 <Tab label="History" value= {TabOptions.history} />

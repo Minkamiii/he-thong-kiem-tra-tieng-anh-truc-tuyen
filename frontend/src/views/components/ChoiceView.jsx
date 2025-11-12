@@ -78,7 +78,17 @@ const ChoiceView = ({ question }) => {
       <Typography variant="body1" mb={1}>
         {`${question.index + 1}. ${question.question ?? ""}`}
       </Typography>
-
+      {question?.image && <Box 
+        component='img'
+        src={question.image}
+        sx={{
+          width: 60,
+          height: 60,
+          objectFit: 'cover',
+          alignSelf: 'center',
+          justifySelf: 'center'
+        }}
+      />}
       <FormControl component="fieldset">
         <FormGroup>
           {choices.map((choice, idx) => (

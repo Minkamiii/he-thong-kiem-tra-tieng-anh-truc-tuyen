@@ -27,14 +27,16 @@ const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
         handleClose();
 
         const data = {
-            token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN),
+            token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN),
         }
 
         axios.post(`${import.meta.env.VITE_BASE_AUTH_SERVICE_LINK}/logout`, data)
             .then(response => {
                 localStorage.clear();
+                console.log('a')
 
                 navigate('/home');
+                window.location.reload();
             })
             .catch(error => {
                 console.log(error);

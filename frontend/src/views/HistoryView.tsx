@@ -127,7 +127,7 @@ function HistoryTable({
           <TableHead>
             <TableRow>
               <TableCell>Submit day</TableCell>
-              <TableCell>Test name</TableCell>
+              {!testID && <TableCell>Test name</TableCell>}
               <TableCell>Kind</TableCell>
               <TableCell>Tasks</TableCell>
               <TableCell>Result</TableCell>
@@ -139,9 +139,9 @@ function HistoryTable({
             {submits.map((submit) => (
               <TableRow key={submit.id}>
                 <TableCell>{submit.submit_day}</TableCell>
-                <TableCell>{submit.testName}</TableCell>
-                <TableCell>{submit.kind}</TableCell>  {/* ✅ */}
-                <TableCell>{submit.tasks.map((t) => `${t + 1}`).join(", ")}</TableCell> {/* ✅ */}
+                {!testID && <TableCell>{submit.testName}</TableCell>}
+                <TableCell>{submit.kind}</TableCell>
+                <TableCell>{submit.tasks.map((t) => `${t + 1}`).join(", ")}</TableCell>
                 <TableCell>
                   {
                     submit.type.toLowerCase() === TestType.WRITING ?

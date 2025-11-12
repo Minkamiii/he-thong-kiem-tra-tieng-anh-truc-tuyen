@@ -29,6 +29,17 @@ const WritingTest = ({ tasks, activeTask, questionsContainerRef}) => {
                     <Typography>
                         {currentTask.sections[0].questions[0].question.question}
                     </Typography>
+                    {currentTask?.image && <Box 
+                        component="img" 
+                        src={currentTask?.image}
+                        sx={{
+                            width: 120,
+                            height: 120,
+                            objectFit: 'cover',
+                            alignSelf: 'center',
+                            justifySelf: 'center'
+                        }}
+                    />}
                 </Box>
             </Grid>
 

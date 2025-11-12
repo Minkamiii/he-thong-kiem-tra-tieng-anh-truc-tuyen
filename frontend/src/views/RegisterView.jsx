@@ -50,7 +50,6 @@ const RegisterView = () => {
             email: email,
             phoneNum: phoneNumber,
             dob: dateOfBirth,
-            roles: []
         }
 
         axios
@@ -61,20 +60,7 @@ const RegisterView = () => {
             })
             .catch((error) => {
                 const data = error.response.data;
-                switch(data.code){
-                    case 1001:
-                        setuserValid({
-                            ok: false,
-                            message: data.message,
-                        });
-                        break;
-                    case 1002:
-                        setPasswordValid({
-                            ok: false,
-                            message: data.message,
-                        });
-                        break;
-                }
+                alert(data.message);
             })
     };
 

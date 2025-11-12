@@ -14,12 +14,12 @@ const theme = createTheme({
 });
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
         <AppRoutes />
       </Router>
-    </ThemeProvider>
-  </StrictMode>,
+    </ThemeProvider>,
+  {/* </StrictMode>, */}
 )
