@@ -13,7 +13,7 @@ export default function Detail() {
   const [progressData, setProgressData] = useState<any>(null);
   const navigate = useNavigate();
   const url = import.meta.env.VITE_TEST_API_URL;
-  const progressUrl = "http://26.78.195.142:8080/api/submit/progressforadmin";
+  const progressUrl = "http://localhost:8080/api/submit/progressforadmi";
 
   useEffect(() => {
     if (!id) return;
@@ -30,7 +30,7 @@ export default function Detail() {
                 console.warn("Không có dữ liệu progress (404).");
                 return null; // ✅ Không ném lỗi, chỉ trả về null
               }
-              throw err; // Các lỗi khác vẫn ném ra
+              // throw err; // Các lỗi khác vẫn ném ra
             }),
         ]);
 
@@ -86,7 +86,7 @@ export default function Detail() {
       <p className="detail-type">Type: {test.type}</p>
 
       {/* --- THÔNG TIN TIẾN ĐỘ --- */}
-      {progressData && (
+      {progressData && test.type !== "writing" && (
         <div className="progress-info">
           <h2>Submit report</h2>
           {/* <p><strong>Total users done:</strong> {progressData.totalUsersDone}</p>
@@ -154,6 +154,17 @@ export default function Detail() {
                       <br />
                       {ques.question}
                     </p>
+
+                      {ques.image && (
+                        <div className="question-image">
+                          <img
+                            src={ques.image}
+                            alt="Question illustration"
+                            className="detail-image"
+                          />
+                        </div>
+                      )}
+
 
                     {ques.type === "choice" && ques.choices && (
                       <ul className="choice-list">

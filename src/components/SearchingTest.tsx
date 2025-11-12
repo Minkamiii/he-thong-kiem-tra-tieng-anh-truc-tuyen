@@ -83,7 +83,8 @@ export default function SearchingTest({
       <Button variant="contained" onClick={handleSearchClick}>
         Search
       </Button>
-      <Button variant="outlined" color="inherit" onClick={handleReset}>
+      {/* <Button variant="outlined" color="inherit" onClick={handleReset}> */}
+      <Button variant="contained" onClick={handleReset}>
         Reset
       </Button>
     </Box>

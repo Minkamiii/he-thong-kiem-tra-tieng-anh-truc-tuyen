@@ -8,6 +8,7 @@ export interface Question {
   question: string;
   type: "choice" | "fill" | "essay";
   choices?: Choice[];
+  image?: string;
   keys?: number[]; // cho choice
   key?: string; // cho fill
 }

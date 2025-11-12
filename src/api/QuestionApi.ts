@@ -6,6 +6,7 @@ export interface Choice {
 export interface Question {
   _id: string;
   question: string;
+  image?: string;
   type: "choice" | "fill" | "essay";
   choices?: Choice[];
   keys?: number[];
