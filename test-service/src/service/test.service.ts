@@ -16,6 +16,8 @@ import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadshee
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import axios, { Axios } from 'axios';
+import { ConfigService } from '@nestjs/config';
 
 dayjs.extend(timezone);
 dayjs.extend(utc);
@@ -26,7 +28,7 @@ export class TestService {
     constructor(
         @InjectModel(Test.name) private testModel: Model<TestDocument>,
         private readonly questionService: QuestionService,
-        private readonly cacheService: CacheService,
+        private readonly configService: ConfigService,
     ) {}
 
     private readonly PAGINATION_LIMIT_NUMBER_OF_ITEM = 12; //Tối đa 1 trang có 12 item
@@ -236,17 +238,23 @@ export class TestService {
         if(foundTest.type === TestType.LISTENING){
           deleteAudioFile.forEach(path => {
             if(fs.existsSync(path)){
-              fs.unlinkSync(path)
+              fs.unlinkSync(path);
             }
           }) 
         }
         if(deleteImageFile.length > 0){
           deleteImageFile.forEach(path => {
             if(fs.existsSync(path)){
-              fs.unlinkSync(path)
+              fs.unlinkSync(path);
             }
           })
         }
+        
+        axios.delete(`${this.configService.get<string>('BASE_COMMENT_SERVICE_LINK')}/test/${id}`)
+        .then()
+        .catch(err => {
+          throw new HttpException(err.response.data, err.response.status);
+        })
         
         await this.questionService.bulkDeleteQuestions(deleteQuestionIds); //Xoá trong collection 'question'
 
