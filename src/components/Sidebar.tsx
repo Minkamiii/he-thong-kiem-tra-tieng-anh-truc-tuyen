@@ -10,7 +10,7 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      const res = await authApi.logout({ accessToken: localStorage.getItem("accessToken") || "" });
+      await authApi.logout({ accessToken: localStorage.getItem("accessToken") || "" });
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -28,7 +28,7 @@ export default function Sidebar() {
       </NavLink>
 
       <NavLink to="/users" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-        Customer
+        User
       </NavLink>
 
       <button className="sidebar-link dropdown-btn" onClick={() => setOpenCategory(!openCategory)}>

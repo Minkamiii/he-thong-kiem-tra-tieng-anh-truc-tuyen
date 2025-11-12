@@ -4,13 +4,14 @@
 }
 
 .detail-title {
+  color: #000;
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 16px;
 }
 
 .detail-type {
-  color: #555;
+  color: #000000;
   margin-bottom: 24px;
 }
 
@@ -136,10 +137,47 @@
 }
 
 .detail-image {
-  max-width: 100%;
-  max-height: 400px;
+  width: 800px;
+  height: 600px;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+.section-image {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.section-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.progress-info {
+  color: #007bff;
+  background-color: #f0f7ff;
+  border-left: 5px solid #007bff;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.progress-info h2 {
+  margin-top: 0;
+  color: #007bff;
+}
+
+.question-box.warning {
+  background-color: #fbe6a3;
+  border: 1px solid #ffcc00;
+  border-radius: 8px;
+}
+
+.warning-label {
+  color: #b58900;
+  font-weight: bold;
+  margin-left: 0px;
+}

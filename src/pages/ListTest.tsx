@@ -49,6 +49,7 @@ export default function Reading({ type }: { type: string }) {
     const data = res.data;
 
     setTests(data.data || []);
+    console.log("Fetched Tests:", data.data || []);
     setTotalPages(data.totalPages || 1);
   } catch (error) {
     console.error("Lỗi khi fetch tests:", error);
@@ -62,7 +63,6 @@ export default function Reading({ type }: { type: string }) {
     fetchTests();
   }, [currentPage, type]);
 
-  // 🧠 Upload file Excel
   const handleConfirm = async () => {
     if (!selectedFile) return;
     const formData = new FormData();
@@ -97,16 +97,35 @@ export default function Reading({ type }: { type: string }) {
     setSelectedFile(null);
   };
 
-  // 📥 Tải file mẫu
   const handleDownloadTemplate = async () => {
     try {
-      const response = await axios.get(`${urls}/download/Ntemplate`);
+      const response = await axios.get(`${urls}/download/template`, {
+        responseType: "blob",
+      });
 
-      console.log("File mẫu đã được tải:", response.data);
-    } catch (error) {
-      console.error("Lỗi khi tải file mẫu:", error);
-      alert("Cannot download template file. Please try again!");
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+
+      const contentDisposition = response.headers["content-disposition"];
+      const match = contentDisposition?.match(/filename="(.+)"/);
+      link.download = match ? match[1] : "template.xlsx";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Lỗi tải file:", err);
+      alert("Can not download file!");
     }
+
   };
 
   return (
@@ -220,11 +239,11 @@ export default function Reading({ type }: { type: string }) {
             </Typography>
 
             <Typography>
-              1️⃣ <b>Use the sample spreadsheet as a template:</b>
+              <b>1. Use the sample spreadsheet as a template:</b>
             </Typography>
             <Stack direction="row" spacing={2} sx={{ mt: 1, mb: 2 }}>
               <Button variant="outlined" onClick={handleDownloadTemplate}>
-                📥 Download template
+                Download template
               </Button>
               <Button
                 variant="outlined"
@@ -236,12 +255,12 @@ export default function Reading({ type }: { type: string }) {
             </Stack>
 
             <Typography sx={{ mb: 1 }}>
-              2️⃣ <b>Enter your question data into the spreadsheet.</b> <br />
+              <b>2. Enter your question data into the spreadsheet.</b> <br />
               <i>Please do not change the format.</i>
             </Typography>
 
             <Typography>
-              3️⃣ <b>Save your changes and upload the spreadsheet.</b>
+              <b>3. Save your changes and upload the spreadsheet.</b>
             </Typography>
           </Box>
         </DialogContent>

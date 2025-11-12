@@ -8,7 +8,7 @@ export type User = {
   email: string;
   phoneNum: string;
   dob: string;
-  roles: string[] | null;
+  roles: string[];
 }
 
 // Kiểu dữ liệu khi thêm user (không có id)

@@ -14,6 +14,7 @@ export interface Question {
 
 export interface Section {
   title: string;
+  image?: string;
   questions: {
     index: number;
     question: string | Question; // khi fetch thô thì là id (string), khi populate thì là object Question

@@ -179,6 +179,7 @@ export default function UserList() {
             <TableRow>
               <TableCell>#</TableCell>
               <TableCell>Username</TableCell>
+              <TableCell>Role</TableCell>
               <TableCell>Email</TableCell>
               {/* <TableCell>Thao tác</TableCell> */}
             </TableRow>
@@ -195,6 +196,7 @@ export default function UserList() {
                 <TableRow key={u.id}>
                   <TableCell>{index + 1 + page * pageSize}</TableCell>
                   <TableCell>{u.username}</TableCell>
+                  <TableCell>{u.roles}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
                     <Button

@@ -81,7 +81,7 @@ export default function SearchingTest({
         onChange={(e) => setFilters({ ...filters, to: e.target.value })}
       />
       <Button variant="contained" onClick={handleSearchClick}>
-        Tìm kiếm
+        Search
       </Button>
       <Button variant="outlined" color="inherit" onClick={handleReset}>
         Reset

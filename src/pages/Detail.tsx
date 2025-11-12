@@ -10,24 +10,49 @@ export default function Detail() {
   const { id } = useParams();
   const [test, setTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(true);
+  const [progressData, setProgressData] = useState<any>(null);
   const navigate = useNavigate();
   const url = import.meta.env.VITE_TEST_API_URL;
+  const progressUrl = "http://26.78.195.142:8080/api/submit/progressforadmin";
+
   useEffect(() => {
     if (!id) return;
-    const fetchTest = async () => {
+
+    const fetchAll = async () => {
       try {
-        const res = await axios.get(`${url}/${id}`);
-        console.log(id);
-        setTest(res.data);
-        console.log(res.data);
+        // Gọi song song 2 API
+        const [testRes, progressRes] = await Promise.all([
+          axios.get(`${url}/${id}`),
+          axios
+            .get(`${progressUrl}?test_id=${id}`)
+            .catch((err) => {
+              if (err.response && err.response.status === 404) {
+                console.warn("Không có dữ liệu progress (404).");
+                return null; // ✅ Không ném lỗi, chỉ trả về null
+              }
+              throw err; // Các lỗi khác vẫn ném ra
+            }),
+        ]);
+
+        setTest(testRes.data);
+        console.log("Test Data:", testRes.data);
+
+        if (progressRes && progressRes.data) {
+          setProgressData(progressRes.data.data);
+          console.log("Progress Data:", progressRes.data);
+        } else {
+          setProgressData(null); // ✅ Không hiển thị phần Submit report
+        }
       } catch (error) {
-        console.error("Lỗi fetch chi tiết test:", error);
+        console.error("Lỗi khi fetch dữ liệu:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchTest();
+
+    fetchAll();
   }, [id]);
+
 
   const handleDelete = async () => {
     if (!id) return;
@@ -37,7 +62,7 @@ export default function Detail() {
     try {
       await axios.delete(`${url}/${id}`);
       alert("Delete successful!");
-      navigate(-1); // chuyển về trang danh sách hoặc home
+      navigate(-1);
     } catch (error) {
       console.error("Lỗi khi xóa test:", error);
       alert("An error occurred while deleting!");
@@ -46,16 +71,34 @@ export default function Detail() {
 
   const handleUpdate = () => {
     if (!id) return;
-    navigate(`/test/update/${id}`); // điều hướng sang trang update
+    navigate(`/test/update/${id}`);
   };
 
   if (loading) return <p className="detail-notfound">Loading...</p>;
   if (!test) return <p className="detail-notfound">Test not found</p>;
 
+  const wrongIds = progressData?.["100%_answered_wrong_question"] || [];
+
   return (
     <div className="detail-container">
+      {/* --- THÔNG TIN TEST --- */}
       <h1 className="detail-title">{test.testName}</h1>
       <p className="detail-type">Type: {test.type}</p>
+
+      {/* --- THÔNG TIN TIẾN ĐỘ --- */}
+      {progressData && (
+        <div className="progress-info">
+          <h2>Submit report</h2>
+          {/* <p><strong>Total users done:</strong> {progressData.totalUsersDone}</p>
+          <p><strong>Total questions:</strong> {progressData.total_questions}</p> */}
+          <p><strong>The highest number of correct answers:</strong> {progressData.highest}</p>
+          <p><strong>The lowest number of correct answers:</strong> {progressData.lowest}</p>
+          <p>
+            <strong>Number of 100% wrong questions:</strong>{" "}
+            {progressData.total_questions}
+          </p>
+        </div>
+      )}
 
       {test.tasks.map((task, tIndex) => (
         <div key={tIndex} className="task-container">
@@ -65,16 +108,12 @@ export default function Detail() {
               <p className="task-passage">{task.passage}</p>
             </>
           )}
-          {task.image &&  (
+          {task.image && (
             <div className="task-image">
-              <img
-                src={task.image}
-                alt="Task illustration"
-                className="detail-image"
-              />
+              <img src={task.image} alt="Task illustration" className="detail-image" />
             </div>
           )}
-          {task.audio &&  (
+          {task.audio && (
             <>
               <h2 className="task-heading">Audio:</h2>
               <audio controls src={task.audio} />
@@ -84,15 +123,37 @@ export default function Detail() {
           {task.sections.map((section, sIndex) => (
             <div key={sIndex} className="section-container">
               <h3 className="section-title">
-                  <ReactMarkdown remarkPlugins={[remarkBreaks]}>
-                    {(section.title??"").replace(/\r\n/g, "\n")}
-                  </ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkBreaks]}>
+                  {(section.title ?? "").replace(/\r\n/g, "\n")}
+                </ReactMarkdown>
               </h3>
+
+              {section.image && (
+                <div className="section-image">
+                  <img
+                    src={section.image}
+                    alt="Section illustration"
+                    className="detail-image"
+                  />
+                </div>
+              )}
+
               {section.questions.map((q, qIndex) => {
                 const ques = q.question;
+                const isFullyWrong = wrongIds.includes(ques._id);
+
                 return (
-                  <div key={qIndex} className="question-box">
-                    <p className="question-text">{ques.question}</p>
+                  <div
+                    key={qIndex}
+                    className={`question-box ${isFullyWrong ? "warning" : ""}`}
+                  >
+                    <p className="question-text">
+                      {isFullyWrong && (
+                        <span className="warning-label">100% answered wrong</span>
+                      )}
+                      <br />
+                      {ques.question}
+                    </p>
 
                     {ques.type === "choice" && ques.choices && (
                       <ul className="choice-list">
@@ -115,10 +176,6 @@ export default function Detail() {
                         Đáp án: <span>{ques.key}</span>
                       </p>
                     )}
-                    {ques.type === "essay" && (
-                    <div className="essay-answer">
-                    </div>
-                  )}
                   </div>
                 );
               })}
@@ -127,10 +184,14 @@ export default function Detail() {
         </div>
       ))}
 
-      {/* Thêm 2 nút ở cuối trang */}
+      {/* --- NÚT HÀNH ĐỘNG --- */}
       <div className="detail-actions">
-        <button className="btn-update" onClick={handleUpdate}>Update</button>
-        <button className="btn-delete" onClick={handleDelete}>Delete</button>
+        <button className="btn-update" onClick={handleUpdate}>
+          Update
+        </button>
+        <button className="btn-delete" onClick={handleDelete}>
+          Delete
+        </button>
       </div>
     </div>
   );

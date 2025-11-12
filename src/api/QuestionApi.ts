@@ -15,6 +15,7 @@ export interface Question {
 
 export interface Section {
   title: string | "";
+  image?: string;
   questions: {
     index: number;
     question: Question;  // luôn là Question, không phải string

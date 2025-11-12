@@ -99,7 +99,7 @@ export default function ModifyTestPage() {
 
   return (
     <Container sx={{ mt: 3 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" color="black" gutterBottom>
         Modify Test
       </Typography>
 
@@ -174,9 +174,44 @@ export default function ModifyTestPage() {
                     borderRadius: "8px",
                   }}
                 />
-                {/* <Typography variant="body2" color="text.secondary">
-                  {task.image}
-                </Typography> */}
+                <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    disabled={loading}
+                    onClick={async () => {
+                      try {
+                        setLoading(true);
+                        // ✅ Gọi API delete qua query param
+                        await axios.delete(`${urls}/image`, {
+                          params: { url: task.image },
+                        });
+
+                        // ✅ Cập nhật lại state
+                        setTest((prev) => {
+                          if (!prev) return prev;
+                          const updated = { ...prev };
+                          updated.tasks = [...prev.tasks];
+                          updated.tasks[taskIndex] = {
+                            ...updated.tasks[taskIndex],
+                            image: undefined,
+                          };
+                          return updated;
+                        });
+
+                        alert("🗑️ Image deleted successfully!");
+                      } catch (err) {
+                        console.error("Lỗi xóa ảnh:", err);
+                        alert("❌ Error deleting image!");
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                  >
+                    Delete image
+                  </Button>
+                </Box>
+
               </Box>
             )}
 
@@ -299,6 +334,112 @@ export default function ModifyTestPage() {
                 <Typography variant="h6" sx={{ mb: 1 }}>
                   {section.title}
                 </Typography>
+
+                {/* --- Upload và hiển thị ảnh cho SECTION --- */}
+                <Box sx={{ mb: 3 }}>
+                  {/* Hiển thị ảnh hiện tại nếu có */}
+                  {section.image && (
+                    <Box sx={{ mb: 2 }}>
+                      <img
+                        src={section.image}
+                        alt="Section illustration"
+                        style={{
+                          width: "100%",
+                          maxHeight: "250px",
+                          objectFit: "contain",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          disabled={loading}
+                          onClick={async () => {
+                            try {
+                              setLoading(true);
+                              await axios.delete(`${urls}/image`, {
+                                params: { url: section.image },
+                              });
+
+                              setTest((prev) => {
+                                if (!prev) return prev;
+                                const updated = { ...prev };
+                                updated.tasks = [...prev.tasks];
+                                updated.tasks[taskIndex].sections = [
+                                  ...updated.tasks[taskIndex].sections,
+                                ];
+                                updated.tasks[taskIndex].sections[sectionIndex] = {
+                                  ...updated.tasks[taskIndex].sections[sectionIndex],
+                                  image: undefined,
+                                };
+                                return updated;
+                              });
+
+                              alert("🗑️ Section image deleted successfully!");
+                            } catch (err) {
+                              console.error("Lỗi xóa ảnh section:", err);
+                              alert("❌ Error deleting section image!");
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                        >
+                          Delete image
+                        </Button>
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* Nút upload ảnh mới */}
+                  <Button variant="contained" component="label" disabled={loading}>
+                    {loading ? "Loading..." : section.image ? "Replace section image" : "Select new image"}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        const formData = new FormData();
+                        formData.append("image", file);
+
+                        try {
+                          setLoading(true);
+                          const res = await axios.post(`${urls}/image`, formData, {
+                            headers: { "Content-Type": "multipart/form-data" },
+                          });
+                          const url = res.data.url;
+
+                          if (url) {
+                            setTest((prev) => {
+                              if (!prev) return prev;
+                              const updated = { ...prev };
+                              updated.tasks = [...prev.tasks];
+                              updated.tasks[taskIndex].sections = [
+                                ...updated.tasks[taskIndex].sections,
+                              ];
+                              updated.tasks[taskIndex].sections[sectionIndex] = {
+                                ...updated.tasks[taskIndex].sections[sectionIndex],
+                                image: url,
+                              };
+                              return updated;
+                            });
+                          } else {
+                            alert("Could not get URL from server!");
+                          }
+                        } catch (err) {
+                          console.error("Lỗi upload ảnh section:", err);
+                          alert("Error uploading section image!");
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                    />
+                  </Button>
+                </Box>
+    {/* --- Hết phần upload ảnh cho SECTION --- */}
 
                 {section.questions.map((q, qIndex) => {
                   const ques = q.question as Question;
