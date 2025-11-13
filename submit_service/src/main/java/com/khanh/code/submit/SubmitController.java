@@ -18,7 +18,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "http://localhost:5174"
+})
+
 @RequestMapping(path = "/api/submit")
 @Validated
 public class SubmitController {
@@ -44,10 +48,11 @@ public class SubmitController {
 
     @GetMapping(path="/CheckDone")
     public ResponseEntity<ApiResponse> getAllTestDoneOfUser
-    (   @RequestParam @NotBlank String userID, 
+    (   @RequestParam(required = false) String userID, 
         @RequestParam @NotBlank @NotNull String test_ids)
     {
         ApiResponse response = new ApiResponse();
+        System.out.println("userID: " + userID + ", test_ids: " + test_ids);
         try {
            response = submitService.getTestDoneInformation(userID, test_ids);
            return ResponseEntity.status(response.getStatus()).body(response);
