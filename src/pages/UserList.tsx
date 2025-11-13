@@ -105,6 +105,7 @@ export default function UserList() {
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^(0\d{9}|\+84\d{9})$/;
 
     if (!formData.username) newErrors.username = "Please enter username";
     if (!formData.email) newErrors.email = "Please enter email";
@@ -112,6 +113,7 @@ export default function UserList() {
       newErrors.email = "Invalid email format";
 
     if (!formData.phoneNum) newErrors.phoneNum = "Please enter phone number";
+    else if (!phoneRegex.test(formData.phoneNum)) newErrors.phoneNum = "Number phone invalid";
     if (!formData.dob) newErrors.dob = "Please select date of birth";
     if (!formData.roles.length) newErrors.roles = "Please select role";
 
@@ -293,7 +295,6 @@ export default function UserList() {
             error={!!errors.roles}
             helperText={errors.roles}
           >
-            <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
             <MenuItem value="ADMIN">Admin</MenuItem>
             <MenuItem value="USER">User</MenuItem>
           </TextField>

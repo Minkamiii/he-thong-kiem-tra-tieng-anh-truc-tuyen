@@ -7,9 +7,9 @@ import {
   Stack,
   TextField,
   CircularProgress,
-  Select,      // This was also missing in your previous version
-  MenuItem,    // This was also missing
-  InputLabel,  // This was also missing
+  Select,
+  MenuItem,
+  InputLabel,
   FormControl,
   Box,
 } from "@mui/material";
@@ -28,7 +28,10 @@ export default function UserDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<User | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  const currentUser = localStorage.getItem("userId");
+  const isSelf = currentUser === id;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -40,7 +43,6 @@ export default function UserDetail() {
 
       try {
         setLoading(true);
-        // Thay đổi cách gọi hàm getUsers để truyền id trực tiếp (đã sửa ở câu trả lời trước)
         const userData = await getUsers({ id: id as string });
         if (userData) {
           setUser(userData);
@@ -69,12 +71,40 @@ export default function UserDetail() {
   }
 
   if (error) {
-    return <Typography variant="h6" color="error" sx={{ textAlign: 'center', mt: 2 }}>{error}</Typography>;
+    return (
+      <Typography variant="h6" color="error" sx={{ textAlign: "center", mt: 2 }}>
+        {error}
+      </Typography>
+    );
   }
 
   if (!user) {
-    return <Typography variant="h6" sx={{ textAlign: 'center', mt: 2 }}>User does not exist</Typography>;
+    return (
+      <Typography variant="h6" sx={{ textAlign: "center", mt: 2 }}>
+        User does not exist
+      </Typography>
+    );
   }
+
+  // ✅ Hàm kiểm tra form
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^(0\d{9}|\+84\d{9})$/;
+
+    if (!formData?.username?.trim()) newErrors.username = "Please enter username";
+    if (!formData?.email?.trim()) newErrors.email = "Please enter email";
+    else if (!emailRegex.test(formData.email))
+      newErrors.email = "Email invalid";
+    if (!formData?.phoneNum?.trim()) newErrors.phoneNum = "Please enter number phone";
+  else if (!phoneRegex.test(formData.phoneNum))
+    newErrors.phoneNum = "Number phone invalid";
+    if (!formData?.dob?.trim()) newErrors.dob = "Please choose date of birth";
+    if (!formData?.roles?.length) newErrors.roles = "Please choose role";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleDelete = async () => {
     if (!id) return;
@@ -84,37 +114,39 @@ export default function UserDetail() {
       alert("Delete user successfully.");
     } catch (error) {
       console.error("Failed to delete user:", error);
-      // Hiển thị thông báo lỗi cho người dùng
-      setError("Xóa người dùng thất bại.");
+      // setError("Xóa người dùng thất bại.");
+      console.log("Delete user failed")
+      navigate(-1)
     }
   };
 
   const handleUpdate = async () => {
     if (!formData || !id) return;
-    
-    // Tạo đối tượng AddUserRequest từ formData để truyền vào API
+    if (!validateForm()) return;
+
+    const rolesToUpdate = isSelf ? user.roles : formData.roles;
+
     const updatedUser: AddUserRequest = {
-        username: formData.username,
-        password: formData.password, // Cẩn thận với trường password
-        email: formData.email,
-        phoneNum: formData.phoneNum,
-        dob: formData.dob,
-        roles: formData.roles,
+      username: formData.username,
+      password: formData.password || "", // giữ nguyên hoặc bỏ qua nếu backend không cần
+      email: formData.email,
+      phoneNum: formData.phoneNum,
+      dob: formData.dob,
+      roles: rolesToUpdate,
     };
 
     try {
-      // Gọi hàm updateUser từ API
       const result = await updateUser(id, updatedUser);
-      
-      // Cập nhật lại state user và formData với dữ liệu mới từ server
       setUser(result);
       setFormData(result);
-      setIsEditing(false); // Thoát khỏi chế độ chỉnh sửa
+      setIsEditing(false);
       alert("Update user successfully.");
       navigate("/users");
-    } catch (error:any) {
-      setSubmitError(error.response?.data?.message || "Cập nhật người dùng thất bại.");
-      
+    } catch (error: any) {
+      setSubmitError(
+        error.response?.data?.message || "Cập nhật người dùng thất bại."
+      );
+      navigate(-1)
     }
   };
 
@@ -162,6 +194,8 @@ export default function UserDetail() {
               onChange={(e) =>
                 setFormData((prev) => prev && { ...prev, username: e.target.value })
               }
+              error={!!errors.username}
+              helperText={errors.username}
             />
             <TextField
               label="Email"
@@ -169,48 +203,58 @@ export default function UserDetail() {
               onChange={(e) =>
                 setFormData((prev) => prev && { ...prev, email: e.target.value })
               }
+              error={!!errors.email}
+              helperText={errors.email}
             />
             <TextField
               label="Phone Number"
               value={formData?.phoneNum || ""}
               onChange={(e) =>
-                setFormData(
-                  (prev) => prev && { ...prev, phoneNum: e.target.value }
-                )
+                setFormData((prev) => prev && { ...prev, phoneNum: e.target.value })
               }
+              error={!!errors.phoneNum}
+              helperText={errors.phoneNum}
             />
             <TextField
               label="Date of Birth"
               type="date"
               value={formData?.dob || ""}
               onChange={(e) =>
-                setFormData(
-                  (prev) => prev && { ...prev, dob: e.target.value }
-                )
+                setFormData((prev) => prev && { ...prev, dob: e.target.value })
               }
               InputLabelProps={{ shrink: true }}
+              error={!!errors.dob}
+              helperText={errors.dob}
             />
-            <FormControl fullWidth>
+
+            <FormControl fullWidth error={!!errors.roles}>
               <InputLabel id="roles-label">Roles</InputLabel>
               <Select
                 labelId="roles-label"
                 id="roles-select"
-                value={formData?.roles?.[0] || ""} // chỉ lấy 1 role
+                value={formData?.roles?.[0] || ""}
                 onChange={(e) => {
                   const value = e.target.value as string;
-                  setFormData((prev) => prev && { ...prev, roles: [value] }); // ép thành mảng 1 phần tử
+                  setFormData((prev) => prev && { ...prev, roles: [value] });
                 }}
                 label="Roles"
+                disabled={isSelf}
               >
-                <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
+                {isSelf && <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>}
                 <MenuItem value="ADMIN">Admin</MenuItem>
                 <MenuItem value="USER">User</MenuItem>
               </Select>
+              {errors.roles && (
+                <Typography color="error" fontSize={13} sx={{ mt: 0.5 }}>
+                  {errors.roles}
+                </Typography>
+              )}
             </FormControl>
+
             {submitError && (
               <Box mt={1} color="red">
-                  {submitError}
-                </Box>
+                {submitError}
+              </Box>
             )}
             <Stack direction="row" spacing={2} justifyContent="center">
               <Button variant="contained" color="primary" onClick={handleUpdate}>
@@ -220,16 +264,14 @@ export default function UserDetail() {
                 variant="outlined"
                 color="secondary"
                 onClick={() => {
-                    setIsEditing(false);
-                    // Reset formData về user ban đầu nếu thoát mà không lưu
-                    if(user) setFormData(user);
+                  setIsEditing(false);
+                  if (user) setFormData(user);
                 }}
               >
                 Back
               </Button>
             </Stack>
           </Stack>
-          
         )}
 
         {!isEditing && (
@@ -242,14 +284,16 @@ export default function UserDetail() {
             >
               Update
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              fullWidth
-              onClick={handleDelete}
-            >
-              Delete
-            </Button>
+            {!isSelf && (
+              <Button
+                variant="contained"
+                color="error"
+                fullWidth
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
+            )}
             <Button
               variant="outlined"
               color="secondary"
