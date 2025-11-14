@@ -3,7 +3,6 @@ import { Grid, Box, Typography } from '@mui/material';
 import Section from './Section';
 
 const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
-    console.log('ReadingTest tasks:', tasks);
     
     const currentTask = tasks && tasks[activeTask] ? tasks[activeTask] : null;
 
@@ -23,7 +22,7 @@ const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
             {/* Passage */}
             <Grid item size={{xs: 12, md: 6}}>
                 <Box sx={{
-                    overflowY: 'scroll',
+                    overflowY: 'auto',
                     height: '100vh',
                     p: 2,
                     width: '100%',
@@ -33,6 +32,17 @@ const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
                     <Typography variant="body1" sx={{mb:2, whiteSpace: 'pre-line'}}>{
                         currentTask?.passage || "No passage available."
                     }</Typography>
+                    {currentTask?.image && 
+                    <Box  
+                        component="img" 
+                        src={currentTask?.image} 
+                        sx={{
+                            width: 240,
+                            height: 240,
+                            objectFit: 'cover',
+                            alignSelf: 'center',
+                        }}
+                    />}
                 </Box>
             </Grid>
             {/* Answer */}

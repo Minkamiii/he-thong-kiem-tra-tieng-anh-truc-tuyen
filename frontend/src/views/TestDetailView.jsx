@@ -1,22 +1,32 @@
 import { Checkbox, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Grid, Box, Divider, Button, Select, MenuItem, Tabs, Tab } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BaseUI from './BaseUI';
+import BaseUI from './components/BaseUI.jsx';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
+import authApi from '../api/AuthApi.jsx';
+import { setTest, setTaskAndAnswers } from './states/TestSlice.jsx';
+import Comment from './components/Comments.jsx';
+import HistoryView from './HistoryView.js';
 
-import { setTest } from '../states/TestSlice.jsx';
+const TabOptions = {
+    custom: "practice",
+    standard: "exam",
+    comment: "comment",
+    history: "history"
+}
 
-
-const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
+const TestDetailView = ( {testId} ) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [tab, setTab] = useState('standard');
+    const [tab, setTab] = useState(TabOptions.standard);
     const [checked, setChecked] = useState([]);
     const [loading, setLoading] = useState(false);
     const [timeLimit, setTimeLimit] = useState(0);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
 
     const test = useSelector((state) => state.test);
 
@@ -24,16 +34,42 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
         switch (testType?.toLowerCase()) {
             case 'reading': return 60;
             case 'writing': return 60;
-            case 'listening': return 32;
+            case 'listening': return 45;
             default: return 0;
         }
     }
+
+
+    useEffect(() => {
+
+        if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+            authApi.post('/introspect', {
+                token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
+            }).then(res => {
+                if(!user){
+                    axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
+                    .then(res => {
+                        setUser(res.data.result);
+                        setIsLoggedIn(true);
+                    })
+                    .catch(err => {
+                        alert("Login session expired. Please login again.");
+                        navigate("/home");
+                    })
+                }
+            }).catch(err => {
+                alert("Login session expired. Please login again.");
+                navigate("/home");
+            })
+        }
+        
+    }, [])
+
     useEffect(() => {
         // Fetch test details from API using testId
         setLoading(true);
         axios.get(`http://[::1]:8000/api/test/${testId}`)
             .then((response) => {
-                console.log('API Response:', response.data);
                 dispatch(setTest({
                     _id: response.data._id,
                     testName: response.data.testName,
@@ -53,11 +89,6 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
             })
             .finally(() => setLoading(false));
     }, [dispatch, testId]);
-
-    // Add a separate useEffect to log Redux state changes
-    useEffect(() => {
-        console.log('Redux state updated:', test);
-    }, [test]);
 
     if (loading) {
         return (
@@ -112,14 +143,40 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
         // Logic to start the test based on current settings (standard or custom)
         const taskParams = checked.map(idx => `task=${idx}`).join('&');
         const timeParam = timeLimit > 0 ? `&time=${timeLimit}` : '';
-        navigate(`/test/${test._id}/take?${taskParams}${timeParam}`);
+        const modeParam = `&mode=${tab}`
+
+        const payload = {
+            testTasks: checked.map(index => test.testTasks[index]),
+            answers: {}
+        }
+
+        payload.testTasks?.forEach((task) => {
+            task.sections?.forEach((section) => {
+                section.questions?.forEach(({ question }) => {
+                    if (question.type === 'choice') {
+                        payload.answers[question._id] = []; // multiple choice as array
+                    } else {
+                        payload.answers[question._id] = ''; // fill-in as string
+                    }
+                });
+            });
+        });
+
+        dispatch(setTaskAndAnswers(payload));
+
+        navigate(`/test/${test._id}/take?${taskParams}${timeParam}${modeParam}`);
+    }
+
+    const onTabChange = (event, newValue) => {
+        setTab(newValue);
+        setChecked(test.testTasks.map((_, index) => index));
     }
 
     return (
         <BaseUI isLoggedIn={isLoggedIn} user={user}>
             <Grid container spacing={1} sx={{alignItems: 'center', justifyContent: 'center', my:2}}>
                 {/* Test Detail */}
-                <Grid item xs={12} md={12}>
+                <Grid item xs={12} md={12} sx={{width: "80%"}}>
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -139,14 +196,16 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                         <Divider sx={{width: '100%', mt: 2}}/>
                         
 
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%', my: 2 }}>
-                            <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)} centered>
-                                <Tab label="Standard" value="standard" />
-                                <Tab label="Customization" value="custom" />
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
+                            <Tabs value={tab} onChange={onTabChange} centered>
+                                <Tab label="Standard" value= {TabOptions.standard} />
+                                <Tab label="Customization" value= {TabOptions.custom} />
+                                <Tab label="History" value= {TabOptions.history} />
+                                <Tab label="Discussion" value = {TabOptions.comment} />
                             </Tabs>
                         </Box>
 
-                        {tab === 'standard' && (
+                        {tab === TabOptions.standard && (
                             <Box sx={{ p: 2, width: '100%', textAlign: 'center' }}>
                                 <Typography variant="h6">Standard IELTS Practice</Typography>
                                 <Typography sx={{ my: 2 }}>
@@ -155,7 +214,7 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                             </Box>
                         )}
 
-                        {tab === 'custom' && (
+                        {tab === TabOptions.custom && (
                             <Box sx={{ p: 2, width: '100%' }}>
                                 {/* Show câu hỏi */}
                                 <Typography sx={{mb: 1, fontWeight: 'bold'}}>Select tasks to practice:</Typography>
@@ -190,7 +249,7 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                                 <Select
                                     value={timeLimit}
                                     onChange={(e) => setTimeLimit(e.target.value)}
-                                    sx={{ mb:3, minWidth: 150 }}
+                                    sx={{ mb:3, minWidth: 150, width: '100%' }}
                                 >
                                     {getTimeOptions().map((minutes) => (
                                         <MenuItem key={minutes} value={minutes}>
@@ -200,21 +259,26 @@ const TestDetailView = ( {testId, isLoggedIn = false, user = null} ) => {
                                 </Select>
                             </Box>
                         )}
+
+                        {tab === TabOptions.history && (
+                            <HistoryView testID={test._id}/>
+                        )}
+
+                        {tab == TabOptions.comment && (
+                            <Comment testId={test._id} />
+                        )}
                         
                         {/* Start Test Button */}
-                        <Button 
-                            variant='contained' 
-                            color='primary' 
-                            onClick={handleStartTest}
-                            disabled={checked.length === 0}
-                        >Start Test</Button>
-
+                        {(tab !== TabOptions.comment && tab!== TabOptions.history) && (
+                            <Button 
+                                variant='contained' 
+                                color='primary' 
+                                onClick={handleStartTest}
+                                disabled={checked.length === 0}
+                            >Start Test</Button>
+                        )}
 
                     </Box>
-                </Grid>
-                {/* Comment */}
-                <Grid item xs={12} md={12}>
-
                 </Grid>
             </Grid>
         </BaseUI>

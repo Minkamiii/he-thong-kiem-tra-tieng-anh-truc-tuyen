@@ -1,37 +1,51 @@
 // import './css/LoginView.css';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Typography, Paper, TextField, Button, Link } from '@mui/material';
+import { Box, Grid, Typography, Paper, TextField, Button, Link, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 const LoginView = () => {
 
     const navigate = useNavigate();
+    const [usernameValid, setUsernameValid] = useState({
+        ok: true,
+        message: "",
+    });
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
-    const handleLogin = (event) => {
+    const handleLogin = async (event) => {
         event.preventDefault();
         // Perform login logic here
         // Hardcoded for demonstration purposes
         const username = event.target.username.value;
         const password = event.target.password.value;
-        // Hardcoded users for demonstration purposes
-        if (username === 'admin' && password === 'admin') {
-            alert('Admin login successful!');
-            navigate('/admin');
-            return;
+
+        const data = {
+            username: username,
+            password: password
         }
-        else if (username === 'teacher' && password === 'teacher') {
-            alert('Teacher login successful!');
-            navigate('/home', {isLoggedIn: true, user: { id: '1', avatar: 'https://i.pravatar.cc/300' }});
-            return;
-        }
-        else if (username === 'student' && password === 'student') {
-            alert('Student login successful!');
-            navigate('/home', {isLoggedIn: true, user: { id: '2', avatar: 'https://i.pravatar.cc/300' }});
-            return;
-        }
-        alert('Login failed! Incorrect username or password.');
-        // On successful login, navigate to the desired route
-        //navigate('/dashboard');
+
+        axios.post(`${import.meta.env.VITE_BASE_AUTH_SERVICE_LINK}/login`, data)
+            .then(response => {
+                const result = response.data.result;
+                
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN, result.accessToken);
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_REFRESH_TOKEN, result.refreshToken);
+                localStorage.setItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID, result.userId);
+
+                alert('Login successfully!');
+                navigate('/home');
+            })
+            .catch(error => {
+                const data = error.response.data;
+                setUsernameValid({
+                    ok: false,
+                    message: data.message
+                })
+            })
+
     };
 
     return (
@@ -100,6 +114,8 @@ const LoginView = () => {
                                     autoComplete="username"
                                     autoFocus
                                     sx={{mb:1}}
+                                    error={!usernameValid.ok}
+                                    helperText={!usernameValid.ok && usernameValid.message}
                                 />
                                 <TextField
                                     margin="normal"
@@ -107,10 +123,22 @@ const LoginView = () => {
                                     fullWidth
                                     name="password"
                                     label="Password"
-                                    type="password"
+                                    type={passwordVisible ? "text" : "password"}
                                     id="password"
                                     autoComplete="current-password"
                                     sx={{mb:3}}
+                                    slotProps={{
+                                        input:{
+                                            endAdornment: <InputAdornment>
+                                                <IconButton>
+                                                    {passwordVisible ? 
+                                                        <VisibilityOff onClick={() => setPasswordVisible(false)} /> : 
+                                                        <Visibility onClick={() => setPasswordVisible(true)} />
+                                                    }
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                    }}
                                 />
                                 <Button
                                     type="submit"

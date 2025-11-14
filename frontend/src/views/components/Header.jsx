@@ -1,36 +1,46 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, Avatar, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, Avatar, IconButton, Menu, MenuItem, Tooltip, ListItemIcon } from '@mui/material';
+import Logout from '@mui/icons-material/Logout';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
     const navigate = useNavigate();
-    const [anchorElements, setAnchorElements] = useState(null);
-    const isMenuOpen = Boolean(anchorElements);
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const open = Boolean(anchorEl);
 
-    const handleAvatarClick = (event) => {
-        setAnchorElements(event.currentTarget);
+    const handleClose = () => {
+        setAnchorEl(null);
     };
 
-    const handleMenuClose = () => {
-        setAnchorElements(null);
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
     };
 
     const handleGoProfile = () => {
-        handleMenuClose();
+        handleClose();
         navigate('/profile');
     };
 
     const handleLogout = () => {
-        handleMenuClose();
-        // if (typeof onLogout === 'function') {
-        //     onLogout();
-        // } else {
-        //     if (typeof localStorage !== 'undefined') {
-        //         localStorage.removeItem('token');
-        //     }
-        navigate('/login');
-        // }
+        handleClose();
+
+        const data = {
+            token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN),
+        }
+
+        axios.post(`${import.meta.env.VITE_BASE_AUTH_SERVICE_LINK}/logout`, data)
+            .then(response => {
+                localStorage.clear();
+                console.log('a')
+
+                navigate('/home');
+                window.location.reload();
+            })
+            .catch(error => {
+                console.log(error);
+            })
     };
 
     return (
@@ -53,25 +63,60 @@ const Header = ({ isLoggedIn = false, user = null, /*onLogout*/ }) => {
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Button color="inherit" cursor="pointer" onClick={() => navigate('/test/?page=1')}>Test</Button>
                     {isLoggedIn ? (
                         <>
+                            <Button color="inherit" cursor="pointer" onClick={() => navigate('/test/?page=1')}>Test</Button>
                             <Button color="inherit" cursor="pointer" onClick={() => navigate('/history')}>History</Button>
-                            <Tooltip title={user?.fullName || 'Account'}>
-                                <IconButton onClick={handleAvatarClick} size="small" sx={{ ml: 1 }} aria-controls={isMenuOpen ? 'account-menu' : undefined} aria-haspopup="true" aria-expanded={isMenuOpen ? 'true' : undefined}>
-                                    <Avatar src={user?.avatar} alt={user?.fullName || 'User'} />
+                            <Tooltip title={user?.username || 'Account'}>
+                                <IconButton 
+                                    onClick={handleClick} 
+                                    size="small" 
+                                    sx={{ ml: 1 }} 
+                                    aria-controls={open ? 'account-menu' : undefined} 
+                                    aria-haspopup="true" 
+                                    aria-expanded={open ? 'true' : undefined}
+                                >
+                                    <Avatar>
+                                        <Typography fontSize={18}>
+                                            {user?.username.charAt(0).toUpperCase()}
+                                        </Typography>
+                                    </Avatar>
                                 </IconButton>
                             </Tooltip>
                             <Menu
-                                anchorElements={anchorElements}
+                                anchorEl={anchorEl}
                                 id="account-menu"
-                                open={isMenuOpen}
-                                onClose={handleMenuClose}
+                                open={open}
+                                onClose={handleClose}
+                                onClick={handleClose}
+                                slotProps={{
+                                    paper: {
+                                        elevation: 0,
+                                        sx: {
+                                            overflow: 'visible',
+                                            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                            mt: 0,
+                                            '& .MuiAvatar-root': {
+                                                width: 32,
+                                                height: 32,
+                                                ml: -0.5,
+                                                mr: 1.5,
+                                            },
+                                        },
+                                    },
+                                }}
                                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                             >
-                                <MenuItem onClick={handleGoProfile}>Profile</MenuItem>
-                                <MenuItem onClick={handleLogout}>Log Out</MenuItem>
+                                <MenuItem onClick={handleGoProfile}>
+                                    <Avatar /> Profile
+                                </MenuItem>
+                                <MenuItem onClick={handleLogout}>
+                                    <ListItemIcon>
+                                        <Logout fontSize="small" />
+                                    </ListItemIcon>
+                                    Logout
+                                </MenuItem>
                             </Menu>
                         </>
                     ) : (

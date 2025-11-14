@@ -1,29 +1,86 @@
 // import './css/RegisterView.css';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Typography, Paper, TextField, Button, Link } from '@mui/material';
+import { Box, Grid, Typography, Paper, TextField, Button, Link, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useState } from 'react';
-
+import axios from 'axios';
+import dayjs from 'dayjs';
 
 const RegisterView = () => {
     const navigate = useNavigate();
     const [dateOfBirth, setDateOfBirth] = useState(null);
+    const [samePassword, setSamePassword] = useState(true);
+    const [userValid, setuserValid] = useState({
+        ok: true,
+        message: "",
+    });
+    const [passwordValid, setPasswordValid] = useState({
+        ok: true,
+        message: "",
+    });
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [confirmVisible, setConfirmVisible] = useState(false);
 
-    const handleRegister = (event) => {
+    const handleRegister = async (event) => {
         event.preventDefault();
+        const controller = new AbortController();
         // Perform registration logic here
         // Hardcoded for demonstration purposes
         const username = event.target.username.value;
         const password = event.target.password.value;
+        const confirm = event.target.confirm.value;
         const email = event.target.email.value;
         const phoneNumber = event.target.phoneNumber.value;
-        const dateOfBirth = event.target.dateOfBirth.value;
-        console.log('Registering with', { username, password, email, phoneNumber, dateOfBirth });
-        // On successful registration, navigate to the desired route
-        navigate('/login');
+        const dateOfBirth = dayjs(event.target.dateOfBirth.value, 'DD/MM/YYYY').format('YYYY-MM-DD');
+
+        if(password!==confirm){
+            setSamePassword(false);
+            return;
+        }
+        else{
+            setSamePassword(true);
+        }
+
+        const data = {
+            username: username,
+            password: password,
+            email: email,
+            phoneNum: phoneNumber,
+            dob: dateOfBirth,
+        }
+
+        axios
+            .post(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/register`, data, {signal: controller.signal})
+            .then((response) => {
+                navigate('/login');
+                alert("Register successfully!");
+            })
+            .catch((error) => {
+                const data = error.response.data;
+                alert(data.message);
+            })
     };
+
+    const handleConfirmChange = () => {
+        if(!samePassword) setSamePassword(true);
+    }
+
+    const handlePasswordChange = () => {
+        if(!passwordValid.ok) setPasswordValid({
+            ok: true,
+            message: "",
+        })
+    }
+
+    const handleUsernameChange = () => {
+        if(!userValid.ok) setuserValid({
+            ok: true,
+            message: "",
+        })
+    }
 
     return (
         <Grid container component="main" sx={{height: '100vh'}}>
@@ -49,13 +106,14 @@ const RegisterView = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    py: { xs: 4, md: 4 },
+                    py: { xs: 2, md: 2 },
                 }}
             >
                 <Paper 
                     elevation={3} 
                     sx={{
-                        p: 4,
+                        px: 4,
+                        py: 2,
                         width: '100%',
                         maxWidth: '500px',
                         borderRadius: 2,
@@ -68,13 +126,16 @@ const RegisterView = () => {
                             alignItems:'center',
                         }}
                     >
-                        <Typography component="h1" variant="h5" fontWeight={700}>Đăng ký</Typography>
+                        <Typography component="h1" variant="h5" fontWeight={700}>Register User</Typography>
                         <Box component="form" noValidate onSubmit={handleRegister} sx={{mt:1}}>
                             <TextField
                                 margin="normal"
                                 required
                                 fullWidth
                                 id="username"
+                                error={!userValid.ok}
+                                helperText={!userValid.ok && userValid.message}
+                                onChange={handleUsernameChange}
                                 label="Username"
                                 name="username"
                                 autoFocus
@@ -84,9 +145,48 @@ const RegisterView = () => {
                                 required
                                 fullWidth
                                 name="password"
+                                error={!passwordValid.ok}
+                                helperText={!passwordValid.ok && passwordValid.message}
+                                onChange={handlePasswordChange}
                                 label="Password"
                                 id="password"
-                                type="password"
+                                type={passwordVisible ? 'text' : 'password'}
+                                slotProps={{
+                                    input: {
+                                        endAdornment: <InputAdornment position='end'>
+                                            <IconButton>
+                                                {passwordVisible ? 
+                                                    <VisibilityOff onClick={() => setPasswordVisible(false)} /> : 
+                                                    <Visibility onClick={() => setPasswordVisible(true)} />
+                                                }
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                }}
+                            />
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                name="confirm"
+                                label="Confirm Password"
+                                error={!samePassword}
+                                helperText={!samePassword ? 'Passwords do not match' : ''}
+                                onChange={handleConfirmChange}
+                                id="confirm"
+                                type={confirmVisible ? 'text' : 'password'}
+                                slotProps={{
+                                    input: {
+                                        endAdornment: <InputAdornment position='end'>
+                                            <IconButton>
+                                                {confirmVisible ? 
+                                                    <VisibilityOff onClick={() => setConfirmVisible(false)} /> : 
+                                                    <Visibility onClick={() => setConfirmVisible(true)} />
+                                                }
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                }}
                             />
                             <TextField
                                 margin="normal"
@@ -117,18 +217,23 @@ const RegisterView = () => {
                                     />
                                 </LocalizationProvider>
                             </Box>
-                            <Button
-                                type="submit"
-                                fullWidth
-                                variant="contained"
-                                sx={{mt:1, mb:2, py:1.5, fontWeight:600}}
-                            >Đăng ký</Button>
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                sx={{mb:2, py:1.5}}
-                                onClick={() => navigate('/login')}
-                            >Back</Button>
+                            <Grid container spacing={2} sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center"
+                            }}>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    sx={{mb:2, py:1.5, fontWeight:600, width: "40%"}}
+                                >Register</Button>
+                                <Button
+                                    variant="outlined"
+                                    sx={{mb:2, py:1.5, width: "40%"}}
+                                    onClick={() => navigate('/login')}
+                                >Back</Button>
+                            </Grid>
                         </Box>
                     </Box>
                 </Paper>

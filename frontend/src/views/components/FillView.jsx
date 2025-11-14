@@ -1,46 +1,60 @@
 import { Box, Typography, TextField } from "@mui/material";
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { saveAnswer } from "../states/TestSlice";
 
-const FillView = ({ question, onAnswerChange }) => {
-    const [answer, setAnswer] = useState("");
+const FillView = ({ question }) => {
+  const dispatch = useDispatch();
+  const storedAnswer = useSelector(
+    (state) => state.test.answers[question._id] || ""
+  );
 
-    useEffect(() => {
-        if (question?.index !== undefined) {
-            onAnswerChange(question.index, answer);
-        }
-    }, [question.index, onAnswerChange, answer]);
+  const [answer, setAnswer] = useState(storedAnswer);
 
-    const handleChange = (event) => {
-        const newAnswer = event.target.value;
-        setAnswer(newAnswer);
-    }
+  
+  useEffect(() => {
+    if (storedAnswer !== answer) setAnswer(storedAnswer);
+  }, [storedAnswer]);
 
-    const handleBlur = () => {
-        if (question?.index !== undefined) {
-            onAnswerChange(question.index, answer);
-            console.log('Answer saved on blur:', answer);
-        }
-    }
+  
+  const handleChange = (event) => {
+    const value = event.target.value;
+    setAnswer(value);
+    dispatch(saveAnswer({ id_question: question._id, answer: value }));
+  };
 
-    return (
-        <Box sx={{mb:2, display: 'flex', flexDirection: 'row'}}>
-            <Typography variant="body1" mb={1} mr={2}>
-                {`${question.index + 1}. ${question.question}`}
-            </Typography>
-            <TextField
-                fullWidth
-                size="small"
-                value={answer}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                variant="outlined"
-                sx={{
-                    maxWidth: '300px',
-                    '& .MuiOutlinedInput-root': { borderRadius: '8px', backgroundColor: '#f5f5f5' },
-                }}
-            />
-        </Box>
-    );
-}
+  return (
+    <Box sx={{ mb: 2, textAlign: "left", width: "100%" }}>
+      <Typography variant="body1" sx={{ mb: 1 }}>
+        {`${question.index + 1}. ${question.question}`}
+      </Typography>
+      {question?.image && <Box 
+        component='img'
+        src={question.image}
+        sx={{
+          width: 60,
+          height: 60,
+          objectFit: 'cover',
+          alignSelf: 'center',
+          justifySelf: 'center'
+        }}
+      />}
+      <TextField
+        fullWidth
+        size="small"
+        value={answer}
+        onChange={handleChange}
+        variant="outlined"
+        sx={{
+          maxWidth: "400px",
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "8px",
+            backgroundColor: "#f5f5f5",
+          },
+        }}
+      />
+    </Box>
+  );
+};
 
 export default FillView;

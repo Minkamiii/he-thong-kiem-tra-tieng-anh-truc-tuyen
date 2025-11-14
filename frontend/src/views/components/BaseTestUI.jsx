@@ -2,20 +2,19 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Button, Container, Grid, Link, Typography, Paper, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 //import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useSelector, useDispatch } from "react-redux";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { data, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-
-import { setTest } from '../states/TestSlice.jsx';
-
+import authApi from "../../api/AuthApi.jsx";
+import { setTest, resetTest, resetAnswer } from '../states/TestSlice.jsx';
 import Header from "./Header";
 import ReadingTest from "./ReadingTest";
 import ListeningTest from "./ListeningTest";
 import WritingTest from "./WritingTest";
 
-const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
+const BaseTestUI = ({ testId, tasks }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const location = useLocation();
+    const location = useLocation(); 
 
     const [activeTask, setActiveTask] = useState(0);
     const [, setLoading] = useState(false);
@@ -23,33 +22,107 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
     const [timeElapsed, setTimeElapsed] = useState(0);
     const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
     const [answers, setAnswers] = useState({}); // Store user answers here
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(null);
 
     const questionsContainerRef = useRef(null);
     const isCountUp = useRef(false);
 
+    //Khánh
+    const startTime = useRef(Date.now());
+
     const [searchParams] = useSearchParams();
+    //Khánh
+    const mode = searchParams.get("mode");
+    
     const selectedTaskIndices = searchParams.getAll('task').map(Number); // [0, 2] etc.
 
     const test = useSelector((state) => state.test);
-    const filteredTasks = Array.isArray(test?.testTasks)
-        ? selectedTaskIndices.map(idx => test.testTasks[idx]).filter(Boolean)
-        : [];
+
+    useEffect(() => {
+    
+        if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+            authApi.post('/introspect', {
+                token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
+            }).then(res => {
+                if(!user){
+                    axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
+                    .then(res => {
+                        setUser(res.data.result);
+                        setIsLoggedIn(true);
+                    })
+                    .catch(err => {
+                        alert("Login session expired. Please login again.");
+                        navigate("/home");
+                    })
+                }
+            }).catch(err => {
+                alert("Login session expired. Please login again.");
+                navigate("/home");
+            })
+        }
+        
+    }, [])
 
     const handleOpenSubmitDialog = () => setOpenSubmitDialog(true);
     const handleCloseSubmitDialog = () => setOpenSubmitDialog(false);
+
     const handleConfirmSubmit = () => {
         handleCloseSubmitDialog();
         handleSubmit();
     }
 
-    const handleSubmit = () => {
-        // Handle test submission logic here
-        alert("Test submitted!");
-    }
+    //submit test
+    const handleSubmit = async () => {
+        try {
+            const user = JSON.parse(localStorage.getItem("user"));
+            const userId = localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID);
+    
+            if (!userId) {
+                alert("User not found. Please log in again.");
+                return;
+            }
+    
+            // Calculate actual time taken
+            const timeTakenSeconds = Math.floor((Date.now() - startTime.current) / 1000);
+    
+            // Build answers array
+            const answersArray = Object.entries(test.answers).map(
+                ([id_question, answer]) => ({ id_question, answer })
+            );
+    
+            // Build submit payload
+            const data = {
+                user_id: userId,
+                test_id: test._id,
+                tasks: tasks.map(item => parseInt(item)),
+                time_to_complete: timeTakenSeconds,
+                kind: mode, // keep kind from state
+                answers: answersArray,
+            };
+    
+            // Send to backend
+            const response = await axios.post(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/newSubmit`, data);
+    
+            if (response.status === 200) {
+                dispatch(resetTest()); // Clear answers after submit
+                alert("Test submitted successfully!");
+                navigate("/home");
+            } else {
+                alert("Submission failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Submit error:", error);
+            alert("Error submitting test. Please try again.");
+        }
+    };
+    
 
     const handleReset = () => {
-        // Handle test reset logic here
-        alert("Test reset!");
+        if (window.confirm("Do you want to clear your current answers?")) {
+            dispatch(resetAnswer());
+            alert("Test reset successfully.");
+          }
     }
 
     // Add answer handler
@@ -58,7 +131,6 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
             ...prev,
             [questionIndex]: answer
         }));
-        console.log('Answer updated:', { questionIndex, answer });
     };
 
     // Scroll handler function
@@ -95,7 +167,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
         switch (test?.testType.toLowerCase()) {
             case 'reading':
                 return <ReadingTest 
-                    tasks={filteredTasks} 
+                    tasks={test.testTasks} 
                     activeTask={activeTask} 
                     questionsContainerRef={questionsContainerRef}
                     answers={answers}
@@ -103,7 +175,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                 />
             case 'listening':
                 return <ListeningTest 
-                    tasks={filteredTasks} 
+                    tasks={test.testTasks} 
                     activeTask={activeTask} 
                     questionsContainerRef={questionsContainerRef}
                     answers={answers}
@@ -111,7 +183,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                 />
             case 'writing':
                 return <WritingTest
-                    tasks={filteredTasks} 
+                    tasks={test.testTasks} 
                     activeTask={activeTask} 
                     questionsContainerRef={questionsContainerRef}
                     answers={answers}
@@ -150,7 +222,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
     // Setup timer
     useEffect(() => {
         let timer;
-
+        
         if (isCountUp.current) {
             // Count up timer
             timer = setInterval(() => {
@@ -182,20 +254,19 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
 
     // Fetch data
     useEffect(() => {
-        // Fetch test details from API using testId
         setLoading(true);
         axios.get(`http://[::1]:8000/api/test/${testId}`)
             .then((response) => {
+                const testData = response.data;
                 dispatch(setTest({
-                    _id: response.data._id,
-                    testName: response.data.testName,
-                    testType: response.data.type, // Map 'type' from response to 'testType'
-                    testTasks: response.data.tasks
+                    _id: testData._id,
+                    testName: testData.testName,
+                    testType: testData.type,
+                    testTasks: tasks.map(item => testData.tasks[parseInt(item)]),
+                    kind: mode
                 }));
             })
-            .catch((error) => {
-                console.error("Failed to fetch test details:", error);
-            })
+            .catch((error) => console.error("Failed to fetch test details:", error))
             .finally(() => setLoading(false));
     }, [dispatch, testId]);
 
@@ -205,7 +276,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
             <Header isLoggedIn={isLoggedIn} user={user} />
 
             {/* Main Content */}
-            <Container maxWidth="xl" sx={{ flex: 1, py: 6 }}>
+            <Container maxWidth="xl" sx={{ flex: 1, py: 2}}>
                 {/* Title and back button */}
                 <Grid
                     display="flex"
@@ -223,13 +294,13 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                     <Grid item size={{xs:12, md:10}} sx={{
                         order: {xs:2, md:1},
                     }}>
-                        <Box sx={{p:2, borderRadius: 2, border: '1px solid #ccc' }}>
+                        <Box sx={{p:2, borderRadius: 0, border: '1px solid #ccc' }}>
                             
                             {/* Highlight task buttons */}
-                            <Box sx={{display: 'flex', gap: 2, mb:3}}>
-                                {Array.isArray(tasks) && tasks.map((task, index) => (
+                            <Box sx={{display: 'flex', gap: 2}}>
+                                {test.testTasks.map((task, index) => (
                                     <Button
-                                        key={index}
+                                        key={parseInt(tasks[index])}
                                         variant={activeTask === index ? 'contained' : 'outlined'}
                                         color={activeTask === index ? 'primary' : 'inherit'}
                                         sx={{
@@ -238,7 +309,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                                         }}
                                         onClick={() => setActiveTask(index)}
                                     >
-                                        {`Task ${parseInt(task) + 1}`}
+                                        {`Task ${parseInt(tasks[index]) + 1}`}
                                     </Button>
                                 ))}
                             </Box>
@@ -268,7 +339,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                             <Link onClick={handleReset} sx={{ display: 'block', mt: 2, cursor: 'pointer'}}>Restore/Save answers</Link>
 
                             {/* Tasks and Questions Navigation */}
-                            {filteredTasks.map((task, taskIndex) => (
+                            {test.testTasks.map((task, taskIndex) => (
                                 <Box key={taskIndex} sx={{mt:2}}>
                                     <Typography fontWeight='bold' sx={{mb:1}}>
                                         {`Task ${selectedTaskIndices[taskIndex] + 1}:`}
@@ -300,10 +371,6 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
 
                                 </Box>
                             ))}
-                            
-                            
-                            
-
                         </Paper>
                     </Grid>
                 </Grid>
@@ -316,7 +383,7 @@ const BaseTestUI = ({ testId, tasks, isLoggedIn = false, user = null }) => {
                 aria-labelledby="submit-dialog-title"
                 aria-describedby="submit-dialog-description"
             >
-                <DialogTitle id="submit-dialog-title">{"Xác nhận nộp bài"}</DialogTitle>
+                <DialogTitle id="submit-dialog-title">{"Confirm Submission"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="submit-dialog-description">
                         Are you sure you want to submit your answers?

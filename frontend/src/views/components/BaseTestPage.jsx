@@ -5,13 +5,13 @@ import { Provider } from 'react-redux';
 import { TestStore } from '../states/TestStore.jsx';
 import BaseTestUI from './BaseTestUI.jsx';
 
-const BaseTestPage = ({ isLoggedIn = false, user = null }) => {
+const BaseTestPage = () => {
     const { testId } = useParams();
     const [searchParams] = useSearchParams();
     const tasks = searchParams.getAll('task'); // returns array of selected tasks
     return (
         <Provider store={TestStore}>
-            <BaseTestUI testId={testId} tasks={tasks} isLoggedIn={isLoggedIn} user={user} />
+            <BaseTestUI testId={testId} tasks={tasks} />
         </Provider>
     );
 }
