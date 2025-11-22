@@ -14,8 +14,9 @@ import WritingTest from "./WritingTest";
 const BaseTestUI = ({ testId, tasks }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const location = useLocation(); 
-
+    const location = useLocation();
+    const hasSubmitted = useRef(false);
+ 
     const [activeTask, setActiveTask] = useState(0);
     const [, setLoading] = useState(false);
     const [timeLeft, setTimeLeft] = useState(null);
@@ -40,12 +41,14 @@ const BaseTestUI = ({ testId, tasks }) => {
     const test = useSelector((state) => state.test);
 
     useEffect(() => {
-    
+   
         if(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)){
+            console.log(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN))
             authApi.post('/introspect', {
                 token: localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_ACCESS_TOKEN)
             }).then(res => {
                 if(!user){
+                    console.log(localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID))
                     axios.get(`${import.meta.env.VITE_BASE_USER_SERVICE_LINK}/${localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID)}`)
                     .then(res => {
                         setUser(res.data.result);
@@ -74,6 +77,8 @@ const BaseTestUI = ({ testId, tasks }) => {
 
     //submit test
     const handleSubmit = async () => {
+        if (hasSubmitted.current) return;
+        hasSubmitted.current = true;
         try {
             const user = JSON.parse(localStorage.getItem("user"));
             const userId = localStorage.getItem(import.meta.env.VITE_LOCAL_STORAGE_USER_ID);
@@ -100,12 +105,14 @@ const BaseTestUI = ({ testId, tasks }) => {
                 kind: mode, // keep kind from state
                 answers: answersArray,
             };
+            console.log(data)
     
             // Send to backend
             const response = await axios.post(`${import.meta.env.VITE_BASE_SUBMIT_SERVICE_LINK}/newSubmit`, data);
-    
+            console.log(response)
             if (response.status === 200) {
-                dispatch(resetTest()); // Clear answers after submit
+                
+                dispatch(resetTest());
                 alert("Test submitted successfully!");
                 navigate("/home");
             } else {
@@ -201,8 +208,9 @@ const BaseTestUI = ({ testId, tasks }) => {
                 );
         }
     }
+    
+    const duration = useRef(0); // total time in seconds
 
-    // Setup time counter
     useEffect(() => {
         const timeParam = new URLSearchParams(location.search).get('time');
         const minutes = parseInt(timeParam);
@@ -211,39 +219,37 @@ const BaseTestUI = ({ testId, tasks }) => {
             isCountUp.current = true;
             setTimeElapsed(0);
             setTimeLeft(null);
-        }
-        else {
+        } else {
             isCountUp.current = false;
             setTimeElapsed(0);
-            setTimeLeft(minutes * 60) // convert minute to second
+            setTimeLeft(minutes * 60); // seconds
+            duration.current = minutes * 60;
+            startTime.current = Date.now(); // record start
         }
     }, [location]);
 
-    // Setup timer
     useEffect(() => {
         let timer;
-        
         if (isCountUp.current) {
-            // Count up timer
+            // count-up: correct version
             timer = setInterval(() => {
-                setTimeElapsed(prev => prev + 1);
+                setTimeElapsed(Math.floor((Date.now() - startTime.current) / 1000));
+            }, 1000);
+        } else if (timeLeft !== null) {
+            timer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime.current) / 1000);
+                const remaining = duration.current - elapsed;
+                setTimeLeft(remaining);
+    
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    handleSubmit();
+                }
             }, 1000);
         }
-        else if (timeLeft !== null) {
-            // Count down timer
-            if (timeLeft <= 0) {
-                handleSubmit();
-                return;
-            }
-            timer = setInterval(() => {
-                setTimeLeft(prev => prev - 1);
-            }, 1000);
-        }
-
         return () => clearInterval(timer);
-
-    }, [timeLeft/*, isCountUp.current */]);
-
+    }, [timeLeft]);
+    
     // Time formatter
     const formatTime = (seconds) => {
         if (seconds === null) return "--:--";
