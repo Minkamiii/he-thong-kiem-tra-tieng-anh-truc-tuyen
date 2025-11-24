@@ -92,6 +92,8 @@ const TestView = () => {
             axios
                 .get(testViewUrl, { signal: controller.signal })
                 .then(getTestResponse => {
+                    console.log(getTestResponse.data
+                    )
                     if (requestedPage !== page) return;
                     const gotTestId = getTestResponse.data.data.map(test => test._id).join(",");
     

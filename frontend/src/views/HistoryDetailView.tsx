@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Typography } from "@mui/material";
+import ReactMarkdown from "react-markdown";
 
 enum TestType {
   READING = "reading",
@@ -32,6 +33,7 @@ export default function SubmitDetail() {
         }),
       ]);
       setAnswers(ansRes.data.data || []);
+      console.log("answers", ansRes.data.data);
       setTest(testRes.data || null);
     } catch (err) {
       alert("Can the find the test because it is deleted");
@@ -297,17 +299,54 @@ export default function SubmitDetail() {
                           })}
                         </ul>
                       )}
+ 
+                  { test.type === TestType.WRITING ? (
+                    <div style={{ display: "flex", gap: "16px" }}>
+                      {/* Your Answer */}
+                      <div
+                        style={{
+                          flex: 1,
+                          border: "1px solid #ccc",
+                          borderRadius: "8px",
+                          padding: "12px",
+                          backgroundColor: "#f5f5f5",
+                          height: "750px",       // chiều cao cố định
+                          overflowY: "auto",     // scroll nếu nội dung dài
+                        }}
+                      >
+                        <p style={{ fontWeight: "bold", marginBottom: "6px" }}>Your Answer:</p>
+                        <Typography sx={{ whiteSpace: "pre-wrap", color: "#525151" }}>
+                          {userAnswerText}
+                        </Typography>
+                      </div>
 
-                      {/* ✅ Logic hiển thị */}
-                      { test.type === TestType.WRITING ? (
-                        <>
-                          <p style={{ color: "grey", fontWeight: "bold"}}>
-                            Your Answer: 
-                            <Typography sx={{color: "#525151", fontWeight: "inherit", whiteSpace: "pre-wrap"}}>
-                              {userAnswerText}
-                            </Typography>
+                      {/* AI Recommendation */}
+                      {userAns?.ai_recommend && (
+                        <div
+                          style={{
+                            flex: 1,
+                            border: "1px solid #1976d2",
+                            borderRadius: "8px",
+                            padding: "12px",
+                            backgroundColor: "#e3f2fd",
+                            height: "750px",       // cùng chiều cao với Your Answer
+                            overflowY: "auto",     // scroll nếu dài
+                          }}
+                        >
+                          <p style={{ fontWeight: "bold", marginBottom: "6px", color: "#1976d2" }}>
+                            AI Recommended:
                           </p>
-                        </>
+                          <ReactMarkdown
+                            children={userAns.ai_recommend}
+                            components={{
+                              a: ({ node, ...props }) => (
+                                <a {...props} target="_blank" rel="noopener noreferrer" />
+                              ),
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                       ) : unanswered ? (
                         <>
                           <p style={{ color: "grey", fontWeight: "bold" }}>
@@ -329,7 +368,7 @@ export default function SubmitDetail() {
                             Your Answer: {userAnswerText}
                           </p>
                           <p style={{ color: "green", fontWeight: "bold" }}>
-                            Đáp án đúng: {correctAnswerText}
+                            Correct Answer: {correctAnswerText}
                           </p>
                         </>
                       )}
