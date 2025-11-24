@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IELTS Grading Service"
     GOOGLE_API_KEY: str 
-    DATABASE_URL: str  # <--- ADD THIS LINE
+    # DATABASE_URL: str  
 
     class Config:
         env_file = ".env"

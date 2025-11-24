@@ -1,19 +1,22 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
-# YOUR SPECIFICATION: Input Data
 class EssayInput(BaseModel):
-    text: str = Field(..., min_length=50, description="The student's essay")
-    prompt: str = Field(..., description="The IELTS writing topic")
-    target_band: Optional[float] = 6.5
+    # We keep this without min_length so the router can handle the error manually
+    answer: str = Field(..., description="The student's essay")
 
-# YOUR SPECIFICATION: Output Data
 class MistakeDetail(BaseModel):
     original_text: str
     correction: str
-    error_type: str # e.g., "spelling", "collocation"
+    error_type: str
     explanation: str
+    full_sentence: Optional[str] = Field(None, description="The original sentence containing the error")
 
 class GradingResponse(BaseModel):
     mistakes: List[MistakeDetail]
     overall_comment: str
+
+# UPDATED: Standardized response structure
+class GradingStringResponse(BaseModel):
+    status: int = Field(..., description="HTTP status code")
+    response: str = Field(..., description="The formatted grading result or error message")

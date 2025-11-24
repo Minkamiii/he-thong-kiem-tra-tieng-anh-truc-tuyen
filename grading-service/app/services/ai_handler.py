@@ -10,30 +10,33 @@ class AIHandler:
         self.client = genai.Client(api_key=settings.GOOGLE_API_KEY)
         self.model_id = "gemini-2.5-flash" 
 
-    async def analyze_essay(self, essay_text: str, prompt_text: str) -> GradingResponse:
+    async def analyze_essay(self, essay_text: str) -> GradingResponse:
         
         system_instruction = """
-        You are an expert IELTS Writing Examiner. Analyze the provided student essay.
+        You are an expert English Proofreader. Analyze the provided text.
         
         YOUR TASKS:
         1. Detect mistakes in spelling, grammar, punctuation, and word collocation.
-        2. Detect if the essay is off-topic based on the Prompt.
+        2. Ignore "Task Response" or "Coherence" scoring, BUT:
+           - If the text is very short (under 150 words), mention in the 'overall_comment' that it is too short for a standard IELTS Task 1/2, but proceed with grammar checking anyway.
         
         OUTPUT FORMAT:
-        Return a JSON object matching this structure:
+        Return a JSON object with this exact structure:
         {
             "mistakes": [
                 {
-                    "original_text": "substring from essay",
+                    "original_text": "substring from text",
                     "correction": "suggested fix",
-                    "error_type": "grammar/spelling/collocation/off_topic",
-                    "explanation": "brief reason"
+                    "error_type": "grammar/spelling/collocation",
+                    "explanation": "brief reason",
+                    "full_sentence": "The complete sentence where the error was found."
                 }
             ],
-            "overall_comment": "A 2-sentence summary of the essay quality."
+            "overall_comment": "A 2-sentence summary. Mention word count issues if relevant."
         }
         """
-        full_prompt = f"{system_instruction}\n\nPROMPT: {prompt_text}\nESSAY: {essay_text}"
+        
+        full_prompt = f"{system_instruction}\n\nESSAY: {essay_text}"
 
         # --- RETRY LOGIC STARTS HERE ---
         max_retries = 3

@@ -19,8 +19,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 6. Expose Port (Documentation only, practically handled by Compose)
-EXPOSE 8000
+EXPOSE 8003
 
 # 7. Run Command
 # Uses uvicorn to run the app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003", "--reload"]
