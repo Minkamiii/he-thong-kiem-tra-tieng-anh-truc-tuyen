@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import type { Test, Question } from "../api/TestApi";
+import ImageManager from "../components/ImageUpload";
 
 export default function UpdateTestPage() {
   const { id } = useParams();
@@ -19,6 +20,69 @@ export default function UpdateTestPage() {
   const [test, setTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(false);
   const urls = import.meta.env.VITE_TEST_API_URL;
+  const [errors, setErrors] = useState<any>({});
+
+  const validateTest = () => {
+  const newErrors: any = {};
+
+  // Kiểm tra test name
+  if (!test?.testName?.trim()) {
+    newErrors.testName = "Test name can not be empty";
+  }
+
+  test?.tasks.forEach((task, taskIndex) => {
+    // Reading: kiểm tra passage
+    if (test.type === "reading" && !task.passage?.trim()) {
+      newErrors[`task_${taskIndex}_passage`] = "Passage can not be empty";
+    }
+
+    // Kiểm tra trong sections
+
+    task.sections.forEach((section, sectionIndex) => {
+      if (!section.title?.trim()) {
+        newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
+          "Section title can not be empty";
+      }
+
+      // Kiểm tra câu hỏi
+      section.questions.forEach((q, qIndex) => {
+        const ques = q.question;
+
+        if (!ques.question?.trim()) {
+          newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
+            "Question can not be empty";
+        }
+
+        // Fill → kiểm tra answer
+        if (ques.type === "fill" && !ques.key?.trim()) {
+          newErrors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`] =
+            "Answer can not be empty";
+        }
+
+        // Choice → kiểm tra đáp án + phải có ít nhất 1 đáp án đúng
+        if (ques.type === "choice") {
+          ques.choices?.forEach((c, cIndex) => {
+            if (!c.text?.trim()) {
+              newErrors[
+                `choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`
+              ] = "Choice can not be empty";
+            }
+          });
+
+          if (!ques.keys || ques.keys.length === 0) {
+            newErrors[
+              `choice_key_${taskIndex}_${sectionIndex}_${qIndex}`
+            ] = "Must choose at least one correct answer";
+          }
+        }
+      });
+    });
+  });
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
 
   // Fetch test theo id
   useEffect(() => {
@@ -82,10 +146,14 @@ export default function UpdateTestPage() {
   // Gửi update
   const handleAccept = async () => {
     if (!test) return;
+    if (!validateTest()) {
+    alert("Please fill in all fields completely!");
+    return;
+  }
     try {
       // bỏ các field không cần
       const { createdAt, updatedAt, __v, ...cleaned } = test as any;
-      console.log("Gửi test:", cleaned);
+      // console.log("Gửi test:", cleaned);
       await axios.put(`${urls}/${id}`, cleaned);
       alert("Update successful!");
       navigate(-1);
@@ -108,6 +176,8 @@ export default function UpdateTestPage() {
         label="Test Name"
         sx={{ mb: 2 }}
         value={test.testName}
+        error={!!errors.testName}
+        helperText={errors.testName}
         onChange={(e) => setTest({ ...test, testName: e.target.value })}
       />
 
@@ -145,6 +215,8 @@ export default function UpdateTestPage() {
                 label="Passage"
                 multiline
                 value={task.passage || ""}
+                error={!!errors[`task_${taskIndex}_passage`]}
+                helperText={errors[`task_${taskIndex}_passage`]}
                 onChange={(e) => {
                   const updated = { ...test };
                   updated.tasks[taskIndex].passage = e.target.value;
@@ -161,111 +233,46 @@ export default function UpdateTestPage() {
             )}
 
             {test.type !== "writing" && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Task Image
-                </Typography>
-                {task.image && (
-                  <Box sx={{ mb: 2 }}>
-                    <img
-                      src={task.image}
-                      alt="Task illustration"
-                      style={{
-                        width: "100%",
-                        maxHeight: "250px",
-                        objectFit: "contain",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        disabled={loading}
-                        onClick={async () => {
-                          try {
-                            setLoading(true);
-                            // ✅ Gọi API delete qua query param
-                            await axios.delete(`${urls}/image`, {
-                              params: { url: task.image },
-                            });
+              <ImageManager
+                label="Task Image"
+                image={task.image}
+                loading={loading}
+                onDelete={async () => {
+                  setLoading(true);
+                  await axios.delete(`${urls}/image`, { params: { url: task.image } });
 
-                            // ✅ Cập nhật lại state
-                            setTest((prev) => {
-                              if (!prev) return prev;
-                              const updated = { ...prev };
-                              updated.tasks = [...prev.tasks];
-                              updated.tasks[taskIndex] = {
-                                ...updated.tasks[taskIndex],
-                                image: undefined,
-                              };
-                              return updated;
-                            });
+                  setTest((prev) => {
+                    if (!prev) return prev;
+                    const updated = { ...prev };
+                    updated.tasks = [...prev.tasks];
+                    updated.tasks[taskIndex].image = undefined;
+                    return updated;
+                  });
 
-                            alert("🗑️ Image deleted successfully!");
-                          } catch (err) {
-                            console.error("Lỗi xóa ảnh:", err);
-                            alert("❌ Error deleting image!");
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                      >
-                        Delete image
-                      </Button>
-                    </Box>
-                  </Box>
-                )}
+                  setLoading(false);
+                }}
+                onUpload={async (file) => {
+                  setLoading(true);
+                  const formData = new FormData();
+                  formData.append("image", file);
 
-                {/* Upload ảnh mới */}
-                <Button variant="contained" component="label" disabled={loading}>
-                  {loading ? "Loading..." : "Select new image"}
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
+                  const res = await axios.post(`${urls}/image`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                  });
 
-                      const formData = new FormData();
-                      formData.append("image", file);
+                  const url = res.data.url;
 
-                      try {
-                        setLoading(true);
-                        const res = await axios.post(
-                          `${urls}/image`, // ✅ dùng localhost thay vì [::1]
-                          formData,
-                          { headers: { "Content-Type": "multipart/form-data" } }
-                        );
+                  setTest((prev) => {
+                    if (!prev) return prev;
+                    const updated = { ...prev };
+                    updated.tasks = [...prev.tasks];
+                    updated.tasks[taskIndex].image = url;
+                    return updated;
+                  });
 
-                        // ✅ backend trả về { url: "http://..." }
-                        const url = res.data.url;
-                        if (url) {
-                          // ✅ cập nhật test theo cách an toàn (React nhận biết thay đổi)
-                          setTest((prev) => {
-                            if (!prev) return prev;
-                            const updated = { ...prev };
-                            updated.tasks = [...prev.tasks];
-                            updated.tasks[taskIndex] = {
-                              ...updated.tasks[taskIndex],
-                              image: url,
-                            };
-                            return updated;
-                          });
-                        } else {
-                          alert("Could not get URL from server!");
-                        }
-                      } catch (err) {
-                        console.error("Lỗi upload ảnh:", err);
-                        alert("Error uploading image!");
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                  />
-                </Button>
-              </Box>
+                  setLoading(false);
+                }}
+              />
             )}
 
             {test.type === "listening" && (
@@ -333,115 +340,72 @@ export default function UpdateTestPage() {
             {/* Writing: bỏ qua passage + audio, chỉ hiển thị sections */}
             {task.sections.map((section, sectionIndex) => (
               <Box key={sectionIndex} sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  {section.title}
-                </Typography>
+                <TextField
+                  fullWidth
+                  label="Section Title"
+                  sx={{ mb: 2 }}
+                  value={section.title}
+                  error={!!errors[`section_${taskIndex}_${sectionIndex}_title`]}
+                  helperText={errors[`section_${taskIndex}_${sectionIndex}_title`]}
+                  onChange={(e) => {
+                    const updated = { ...test };
+                    updated.tasks[taskIndex].sections[sectionIndex].title = e.target.value;
+                    setTest(updated);
+                  }}
+                />
+
 
                 {/* --- Thêm phần upload ảnh cho section --- */}
                 {test.type !== "writing" && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                      Section Image
-                    </Typography>
+                  <ImageManager
+                    label="Section Image"
+                    image={section.image}
+                    loading={loading}
+                    onDelete={async () => {
+                      setLoading(true);
+                      await axios.delete(`${urls}/image`, {
+                        params: { url: section.image },
+                      });
 
-                    {/* Nếu section có ảnh, hiển thị ảnh và nút xóa */}
-                    {section.image && (
-                      <Box sx={{ mb: 2 }}>
-                        <img
-                          src={section.image}
-                          alt="Section illustration"
-                          style={{
-                            width: "100%",
-                            maxHeight: "250px",
-                            objectFit: "contain",
-                            borderRadius: "8px",
-                          }}
-                        />
-                        <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            disabled={loading}
-                            onClick={async () => {
-                              try {
-                                setLoading(true);
-                                await axios.delete(`${urls}/image`, {
-                                  params: { url: section.image },
-                                });
-                                // Cập nhật lại state test
-                                setTest((prev) => {
-                                  if (!prev) return prev;
-                                  const updated = { ...prev };
-                                  updated.tasks = [...prev.tasks];
-                                  updated.tasks[taskIndex].sections = [
-                                    ...prev.tasks[taskIndex].sections,
-                                  ];
-                                  updated.tasks[taskIndex].sections[sectionIndex] = {
-                                    ...updated.tasks[taskIndex].sections[sectionIndex],
-                                    image: undefined,
-                                  };
-                                  return updated;
-                                });
-                                alert("🗑️ Section image deleted!");
-                              } catch (err) {
-                                console.error("Lỗi xóa ảnh section:", err);
-                                alert("❌ Error deleting section image!");
-                              } finally {
-                                setLoading(false);
-                              }
-                            }}
-                          >
-                            Delete Image
-                          </Button>
-                        </Box>
-                      </Box>
-                    )}
+                      setTest((prev) => {
+                        if (!prev) return prev;
+                        const updated = { ...prev };
 
+                        updated.tasks = [...prev.tasks];
+                        updated.tasks[taskIndex].sections = [...prev.tasks[taskIndex].sections];
 
-                    {/* Upload ảnh mới */}
-                    <Button variant="contained" component="label" disabled={loading}>
-                      {loading ? "Loading..." : "Select new image"}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          const formData = new FormData();
-                          formData.append("image", file);
-                          try {
-                            setLoading(true);
-                            const res = await axios.post(`${urls}/image`, formData, {
-                              headers: { "Content-Type": "multipart/form-data" },
-                            });
-                            const url = res.data.url;
-                            if (url) {
-                              setTest((prev) => {
-                                if (!prev) return prev;
-                                const updated = { ...prev };
-                                updated.tasks = [...prev.tasks];
-                                updated.tasks[taskIndex].sections = [
-                                  ...prev.tasks[taskIndex].sections,
-                                ];
-                                updated.tasks[taskIndex].sections[sectionIndex] = {
-                                  ...updated.tasks[taskIndex].sections[sectionIndex],
-                                  image: url,
-                                };
-                                return updated;
-                              });
-                              // alert("✅ Section image uploaded successfully!");
-                            }
-                          } catch (err) {
-                            console.error("Lỗi upload ảnh section:", err);
-                            alert("❌ Error uploading section image!");
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                      />
-                    </Button>
-                  </Box>)}
+                        updated.tasks[taskIndex].sections[sectionIndex].image = undefined;
+                        return updated;
+                      });
+
+                      setLoading(false);
+                    }}
+                    onUpload={async (file) => {
+                      setLoading(true);
+                      const formData = new FormData();
+                      formData.append("image", file);
+
+                      const res = await axios.post(`${urls}/image`, formData, {
+                        headers: { "Content-Type": "multipart/form-data" },
+                      });
+
+                      const url = res.data.url;
+
+                      setTest((prev) => {
+                        if (!prev) return prev;
+                        const updated = { ...prev };
+
+                        updated.tasks = [...prev.tasks];
+                        updated.tasks[taskIndex].sections = [...prev.tasks[taskIndex].sections];
+
+                        updated.tasks[taskIndex].sections[sectionIndex].image = url;
+                        return updated;
+                      });
+
+                      setLoading(false);
+                    }}
+                  />
+                  )}
 
 
                 {section.questions.map((q, qIndex) => {
@@ -456,6 +420,8 @@ export default function UpdateTestPage() {
                           multiline
                           sx={{ mb: 2 }}
                           value={ques.question}
+                          error={!!errors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`]}
+                          helperText={errors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`]}
                           onChange={(e) =>
                             handleChange(
                               taskIndex,
@@ -470,104 +436,67 @@ export default function UpdateTestPage() {
 
                       {/* Writing: cho phép thêm ảnh cho từng câu hỏi */}
                       {test.type === "writing" && (
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                            Question Image
-                          </Typography>
+                        <ImageManager
+                          label="Question Image"
+                          image={typeof ques === "object" ? ques.image : undefined}
+                          loading={loading}
+                          onDelete={async () => {
+                            if (typeof ques !== "object") return; // tránh lỗi runtime
 
-                          {/* Nếu câu hỏi có ảnh, hiển thị ảnh + nút xóa */}
-                          {ques.image && (
-                            <Box sx={{ mb: 2 }}>
-                              <img
-                                src={ques.image}
-                                alt="Question illustration"
-                                style={{
-                                  width: "100%",
-                                  maxHeight: "250px",
-                                  objectFit: "contain",
-                                  borderRadius: "8px",
-                                }}
-                              />
-                              <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
-                                <Button
-                                  variant="outlined"
-                                  color="error"
-                                  disabled={loading}
-                                  onClick={async () => {
-                                    try {
-                                      setLoading(true);
-                                      await axios.delete(`${urls}/image`, {
-                                        params: { url: ques.image },
-                                      });
+                            setLoading(true);
+                            await axios.delete(`${urls}/image`, {
+                              params: { url: ques.image },
+                            });
 
-                                      // ✅ Cập nhật state sau khi xóa
-                                      setTest((prev) => {
-                                        if (!prev) return prev;
-                                        const updated = { ...prev };
-                                        const qCopy =
-                                          updated.tasks[taskIndex].sections[sectionIndex]
-                                            .questions[qIndex].question as Question;
-                                        qCopy.image = undefined;
-                                        return updated;
-                                      });
-                                      alert("🗑️ Question image deleted!");
-                                    } catch (err) {
-                                      console.error("Lỗi xóa ảnh question:", err);
-                                      alert("❌ Error deleting question image!");
-                                    } finally {
-                                      setLoading(false);
-                                    }
-                                  }}
-                                >
-                                  Delete Image
-                                </Button>
-                              </Box>
-                            </Box>
-                          )}
+                            setTest((prev) => {
+                              if (!prev) return prev;
+                              const updated = { ...prev };
 
-                          {/* Upload ảnh mới */}
-                          <Button variant="contained" component="label" disabled={loading}>
-                            {loading ? "Loading..." : "Select new image"}
-                            <input
-                              type="file"
-                              hidden
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
+                              const qCopy =
+                                updated.tasks[taskIndex]
+                                  .sections[sectionIndex]
+                                  .questions[qIndex]
+                                  .question as Question;
 
-                                const formData = new FormData();
-                                formData.append("image", file);
+                              qCopy.image = undefined;
 
-                                try {
-                                  setLoading(true);
-                                  const res = await axios.post(`${urls}/image`, formData, {
-                                    headers: { "Content-Type": "multipart/form-data" },
-                                  });
-                                  const url = res.data.url;
-                                  if (url) {
-                                    setTest((prev) => {
-                                      if (!prev) return prev;
-                                      const updated = { ...prev };
-                                      const qCopy =
-                                        updated.tasks[taskIndex].sections[sectionIndex]
-                                          .questions[qIndex].question as Question;
-                                      qCopy.image = url;
-                                      return updated;
-                                    });
-                                  } else {
-                                    alert("Could not get URL from server!");
-                                  }
-                                } catch (err) {
-                                  console.error("Lỗi upload ảnh question:", err);
-                                  alert("❌ Error uploading question image!");
-                                } finally {
-                                  setLoading(false);
-                                }
-                              }}
-                            />
-                          </Button>
-                        </Box>
+                              return updated;
+                            });
+
+                            setLoading(false);
+                          }}
+                          onUpload={async (file) => {
+                            if (typeof ques !== "object") return; // tránh lỗi runtime
+
+                            setLoading(true);
+
+                            const formData = new FormData();
+                            formData.append("image", file);
+
+                            const res = await axios.post(`${urls}/image`, formData, {
+                              headers: { "Content-Type": "multipart/form-data" },
+                            });
+
+                            const url = res.data.url;
+
+                            setTest((prev) => {
+                              if (!prev) return prev;
+                              const updated = { ...prev };
+
+                              const qCopy =
+                                updated.tasks[taskIndex]
+                                  .sections[sectionIndex]
+                                  .questions[qIndex]
+                                  .question as Question;
+
+                              qCopy.image = url;
+
+                              return updated;
+                            });
+
+                            setLoading(false);
+                          }}
+                        />
                       )}
 
 
@@ -578,6 +507,8 @@ export default function UpdateTestPage() {
                           label="Answer"
                           sx={{ mb: 2 }}
                           value={ques.key || ""}
+                          error={!!errors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`]}
+                          helperText={errors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`]}
                           onChange={(e) =>
                             handleChange(
                               taskIndex,
@@ -606,6 +537,8 @@ export default function UpdateTestPage() {
                               fullWidth
                               label={`Answer ${cIndex + 1}`}
                               value={choice.text}
+                                error={!!errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
+                                helperText={errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
                               onChange={(e) =>
                                 handleChoiceChange(
                                   taskIndex,
@@ -635,6 +568,11 @@ export default function UpdateTestPage() {
                               }}
                             />
                             <Typography variant="body2">Đúng</Typography>
+                            {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`] && (
+                              <Typography color="red">
+                                {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`]}
+                              </Typography>
+                            )}
                           </Box>
                         ))}
 

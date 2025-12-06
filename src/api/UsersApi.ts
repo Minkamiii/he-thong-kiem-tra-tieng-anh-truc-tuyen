@@ -36,7 +36,7 @@ export async function getAllUsers(page = 0,keyword=""): Promise<listUsersRespons
       message: string;
       result: listUsersResponse ;
     }= await axiosClient.get(`api/user/getAll?page=${page}${keyword ? `&keyword=${keyword}` : ""}`);
-  console.log("API raw response:", res);
+  // console.log("API raw response:", res);
   return res.result;
 }
 
@@ -46,16 +46,16 @@ export async function getAllUsers(page = 0,keyword=""): Promise<listUsersRespons
       message: string;
       result: User | null;
     } = await axiosClient.get(`/api/user/${data.id}`);
-    console.log("API raw response:", res);
-    console.log("res.results:", res.result);
+    // console.log("API raw response:", res);
+    // console.log("res.results:", res.result);
     return res.result;
   };
 
 // Add user chỉ nhận AddUserRequest, không cần id
   export const addUser = async (user: AddUserRequest): Promise<User> => {
-    console.log("Adding user:", user);
+    // console.log("Adding user:", user);
     const res = await axiosClient.post<User>("/api/user/adduser", user);
-    console.log("Added user response:", res);
+    // console.log("Added user response:", res);
     return res.data;
   };
 
@@ -63,7 +63,7 @@ export async function getAllUsers(page = 0,keyword=""): Promise<listUsersRespons
     const {  ...payload } = user;
     try {
       const res = await axiosClient.put<User>(`/api/user/updateAdmin/${id}`, payload);
-      console.log("Updated user response:", res);
+      // console.log("Updated user response:", res);
       return res.data;
     } catch (error) {
       console.error("Failed to update user:", error);

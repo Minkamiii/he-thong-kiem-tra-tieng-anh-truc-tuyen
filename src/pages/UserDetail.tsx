@@ -93,6 +93,7 @@ export default function UserDetail() {
     const phoneRegex = /^(0\d{9}|\+84\d{9})$/;
 
     if (!formData?.username?.trim()) newErrors.username = "Please enter username";
+    if(formData?.username && formData.username.length < 6) newErrors.username = "Username must be at least 6 characters long";
     if (!formData?.email?.trim()) newErrors.email = "Please enter email";
     else if (!emailRegex.test(formData.email))
       newErrors.email = "Email invalid";
@@ -115,7 +116,7 @@ export default function UserDetail() {
     } catch (error) {
       console.error("Failed to delete user:", error);
       // setError("Xóa người dùng thất bại.");
-      console.log("Delete user failed")
+      // console.log("Delete user failed")
       navigate(-1)
     }
   };
@@ -144,7 +145,8 @@ export default function UserDetail() {
       navigate("/users");
     } catch (error: any) {
       setSubmitError(
-        error.response?.data?.message || "Cập nhật người dùng thất bại."
+        "Only super admin can update user"
+        // error.response?.data?.message || "Cập nhật người dùng thất bại."
       );
       navigate(-1)
     }

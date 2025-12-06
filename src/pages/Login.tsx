@@ -23,7 +23,7 @@ export default function Login() {
       localStorage.setItem("userId", res.userId);
       localStorage.setItem("accessToken", res.accessToken);
       localStorage.setItem("refreshToken", res.refreshToken);
-      console.log("111");
+      // console.log("111");
       navigate("/home");
     } else {
       setError("Account or password is incorrect");

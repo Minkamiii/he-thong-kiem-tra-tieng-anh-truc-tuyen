@@ -49,7 +49,7 @@ export default function Reading({ type }: { type: string }) {
     const data = res.data;
 
     setTests(data.data || []);
-    console.log("Fetched Tests:", data.data || []);
+    // console.log("Fetched Tests:", data.data || []);
     setTotalPages(data.totalPages || 1);
   } catch (error) {
     console.error("Lỗi khi fetch tests:", error);
@@ -82,9 +82,14 @@ export default function Reading({ type }: { type: string }) {
       }
 
       fetchTests();
-    } catch (error) {
-      console.error(error);
-      alert("Upload failed");
+    } catch (error: any) {
+        console.error(error);
+
+        const backendMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Upload failed";
+        alert("Upload failed: " + backendMessage);
     } finally {
       setLoading(false);
       handleCloseDialog();

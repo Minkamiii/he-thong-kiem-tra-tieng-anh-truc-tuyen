@@ -108,6 +108,7 @@ export default function UserList() {
     const phoneRegex = /^(0\d{9}|\+84\d{9})$/;
 
     if (!formData.username) newErrors.username = "Please enter username";
+    if(formData.username.length < 6) newErrors.username = "Username must be at least 6 characters long";
     if (!formData.email) newErrors.email = "Please enter email";
     else if (!emailRegex.test(formData.email))
       newErrors.email = "Invalid email format";
@@ -150,7 +151,8 @@ export default function UserList() {
     } catch (err: any) {
       console.error("Lỗi khi thêm user:", err);
       setSubmitError(
-        err.response?.data?.message || "Không thể thêm user, vui lòng thử lại"
+        "Only super admin can add user"
+        // err.response?.data?.message || "Failed to add user"
       );
     }
   };

@@ -13,7 +13,7 @@ export default function Detail() {
   const [progressData, setProgressData] = useState<any>(null);
   const navigate = useNavigate();
   const url = import.meta.env.VITE_TEST_API_URL;
-  const progressUrl = "http://localhost:8080/api/submit/progressforadmi";
+  const progressUrl = "http://localhost:8080/api/submit/progressforadmin";
 
   useEffect(() => {
     if (!id) return;
@@ -35,13 +35,13 @@ export default function Detail() {
         ]);
 
         setTest(testRes.data);
-        console.log("Test Data:", testRes.data);
+        // console.log("Test Data:", testRes.data);
 
         if (progressRes && progressRes.data) {
           setProgressData(progressRes.data.data);
-          console.log("Progress Data:", progressRes.data);
+          // console.log("Progress Data:", progressRes.data);
         } else {
-          setProgressData(null); // ✅ Không hiển thị phần Submit report
+          setProgressData(null); // Không hiển thị phần Submit report
         }
       } catch (error) {
         console.error("Lỗi khi fetch dữ liệu:", error);
@@ -58,7 +58,8 @@ export default function Detail() {
     if (!id) return;
     const confirmDelete = window.confirm("Are you sure you want to delete this test?");
     if (!confirmDelete) return;
-
+    console.log("Deleting test with ID:", id);
+    console.log("DELETE URL:", `${url}/${id}`);   
     try {
       await axios.delete(`${url}/${id}`);
       alert("Delete successful!");
@@ -77,7 +78,7 @@ export default function Detail() {
   if (loading) return <p className="detail-notfound">Loading...</p>;
   if (!test) return <p className="detail-notfound">Test not found</p>;
 
-  const wrongIds = progressData?.["100%_answered_wrong_question"] || [];
+  const wrongIds = progressData?.["100% answered wrong question"] || [];
 
   return (
     <div className="detail-container">
@@ -141,7 +142,7 @@ export default function Detail() {
               {section.questions.map((q, qIndex) => {
                 const ques = q.question;
                 const isFullyWrong = wrongIds.includes(ques._id);
-
+// console.log("" QID:", ques._id, "wrong?", isFullyWrong, "wrongIds:", wrongIds);
                 return (
                   <div
                     key={qIndex}
