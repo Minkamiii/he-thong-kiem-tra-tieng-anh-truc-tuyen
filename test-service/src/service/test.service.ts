@@ -22,6 +22,13 @@ import { ConfigService } from '@nestjs/config';
 dayjs.extend(timezone);
 dayjs.extend(utc);
 
+enum TestUploadSheets{
+  TESTINFORMATION = "test information",
+  TASK = "task",
+  SECTION = "section",
+  QUESTION = "question"
+}
+
 @Injectable()
 export class TestService {
 
@@ -32,9 +39,9 @@ export class TestService {
     ) {}
 
     private readonly PAGINATION_LIMIT_NUMBER_OF_ITEM = 12; //Tối đa 1 trang có 12 item
-    private readonly EXCEL_TASK_MAX_COLUMN = 3;
+    private readonly EXCEL_TASK_MAX_COLUMN = 2;
     private readonly EXCEL_TASK_MAX_ROW = 7;
-    private readonly EXCEL_SECTION_MAX_COLUMN = 4;
+    private readonly EXCEL_SECTION_MAX_COLUMN = 3;
     private readonly EXCEL_SECTION_MAX_ROW = 27;
     private readonly EXCEL_QUESTION_MAX_COLUMN = 17;
     private readonly EXCEL_QUESTION_MAX_ROW = 52;
@@ -267,58 +274,76 @@ export class TestService {
 
     async findByIdAndUpdate(id: string, updateTestDTO: UpdateTestDTO): Promise<TestDocument | null> {
 
-        const foundTest = await this.testModel.findById(id).exec();
-        if(!foundTest){
-            throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND)
+      const foundTest = await this.testModel.findById(id).exec();
+      if (!foundTest) {
+        throw new HttpException(`Test with id ${id} not found`, HttpStatus.NOT_FOUND)
+      }
+
+      const questionUpdates: UpdateQuestionDTO[] = [];
+
+      for (const task of updateTestDTO.tasks) {
+        if(updateTestDTO.type === TestType.READING && task.passage?.length === 0){
+          throw new HttpException(`Reading test must have passage`, HttpStatus.BAD_REQUEST);
         }
+        for (const section of task.sections) {
+          for (const question of section.questions) {
 
-        const questionUpdates: UpdateQuestionDTO[] = [];
-        
-        for(const task of updateTestDTO.tasks){
-            for(const section of task.sections){
-                for(const question of section.questions){
+            if (updateTestDTO.type === TestType.WRITING && question.question.type !== QuestionType.ESSAY)
+              throw new HttpException('Writing test must have essay question', HttpStatus.BAD_REQUEST)
 
-                    if(updateTestDTO.type === TestType.WRITING && question.question.type !== QuestionType.ESSAY)
-                        throw new HttpException('Writing test must have essay question', HttpStatus.BAD_REQUEST)
+            if (updateTestDTO.type !== TestType.WRITING && question.question.type === QuestionType.ESSAY)
+              throw new HttpException(`${updateTestDTO.type} test can't have essay question`, HttpStatus.BAD_REQUEST)
 
-                    if(updateTestDTO.type !== TestType.WRITING && question.question.type === QuestionType.ESSAY)
-                        throw new HttpException(`${updateTestDTO.type} test can't have essay question`, HttpStatus.BAD_REQUEST)
-
-                    questionUpdates.push(question.question)
-                }
-            }
-        }
-
-        const updatedQuestion = await this.questionService.bulkUpdateQuestions(questionUpdates);
-
-        const updatedTasks: any[] = updateTestDTO.tasks.map((task) => {
-            const updatedSections = task.sections.map((section) => {
-                const updatedQuestions = section.questions.map((question) => {
-                    return {
-                        index: question.index,
-                        question: this.objectId(question.question._id)   
-                    }
+            switch(question.question.type){
+              case QuestionType.CHOICE:
+                question.question.choices?.map((item, index) => {
+                  if(item.text.length === 0){
+                    throw new HttpException(`Choice keys must not empty`, HttpStatus.BAD_REQUEST);
+                  }
                 })
+                break;
+              case QuestionType.FILL:
+                if(question.question.key?.length === 0){
+                  throw new HttpException(`Fill key must not empty`, HttpStatus.BAD_REQUEST);
+                }
+                break;
+            }
 
-                return { ...section, questions: updatedQuestions }
-            })
+            questionUpdates.push(question.question)
+          }
+        }
+      }
 
-            return { ...task, sections: updatedSections }
+      const updatedQuestion = await this.questionService.bulkUpdateQuestions(questionUpdates);
+
+      const updatedTasks: any[] = updateTestDTO.tasks.map((task) => {
+        const updatedSections = task.sections.map((section) => {
+          const updatedQuestions = section.questions.map((question) => {
+            return {
+              index: question.index,
+              question: this.objectId(question.question._id)
+            }
+          })
+
+          return { ...section, questions: updatedQuestions }
         })
 
-        foundTest.set({
-            type: updateTestDTO.type,
-            tasks: updatedTasks,
-            testName: updateTestDTO.testName,
-            active: updateTestDTO.active
-        })
+        return { ...task, sections: updatedSections }
+      })
 
-        // await this.cacheService.del(`test:${id}`); //Xóa cache cũ
-        // await this.cacheService.del(`test:type:${updateTestDTO.type}`); //Xóa cache cũ
-        // await this.cacheService.del('test:all') //Xoá cache cũ
+      foundTest.set({
+        type: updateTestDTO.type,
+        tasks: updatedTasks,
+        testName: updateTestDTO.testName,
+        active: updateTestDTO.active
+      })
 
-        return await foundTest.save();
-        
+      // await this.cacheService.del(`test:${id}`); //Xóa cache cũ
+      // await this.cacheService.del(`test:type:${updateTestDTO.type}`); //Xóa cache cũ
+      // await this.cacheService.del('test:all') //Xoá cache cũ
+
+      return await foundTest.save();
+
     }
 
     async findQuestionsByTestId(testId: string, tasks: string){
@@ -400,7 +425,7 @@ export class TestService {
               }
     
               switch(col){
-                case 1:
+                case 0:
                   switch(testType){
                     case TestType.LISTENING:
                       taskData.audio = "";
@@ -414,10 +439,10 @@ export class TestService {
                   if(!taskData.passage) delete taskData.passage;
     
                   break;
-                case 2:
+                case 1:
                   if(cellValue){
                     if(testType === TestType.WRITING)
-                      throw new HttpException(`Task ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST)
+                      throw new HttpException(`Task ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST);
                     taskData.image = cellValue as string;
                   }
 
@@ -430,6 +455,7 @@ export class TestService {
           }
     
           let hasSection: boolean = true;
+          let totalSectionCount: number = 0;
           for(let row = sectionSheetStartRow + 1; row < maxSectionRowCount; row++){
             if(!hasSection) break;
             let taskPosition: number = -1;
@@ -445,22 +471,22 @@ export class TestService {
               }
     
               switch(col){
-                case 1:
-                  if(!cellValue)
-                    throw new HttpException(`Section ${row} field "Task No" is must have`, HttpStatus.BAD_REQUEST)
+                case 0:
+                  if(!cellValue || !Number.isInteger(Number(cellValue)) || cellValue < 0 || cellValue > returnData.tasks.length)
+                    throw new HttpException(`Invalid "Task No" field at Section row ${row}`, HttpStatus.BAD_REQUEST);
                   taskPosition = cellValue as any;
                   break;
-                case 2:
+                case 1:
                   if(testType !== TestType.WRITING && !cellValue)
-                    throw new HttpException(`Section ${row} field "Title" is must have`, HttpStatus.BAD_REQUEST)
+                    throw new HttpException(`Section ${row-1} field "Title" is must have`, HttpStatus.BAD_REQUEST);
                   if(testType !== TestType.WRITING)
                     sectionData.title = cellValue as any;
 
                   break;
-                case 3:
+                case 2:
                   if(cellValue){
                     if(testType === TestType.WRITING)
-                      throw new HttpException(`Section ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST);
+                      throw new HttpException(`Section ${row-1} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST);
                     sectionData.image = cellValue as string;
                   }
 
@@ -472,6 +498,7 @@ export class TestService {
                     taskIndex: taskPosition,
                     sectionIndex: returnData.tasks[taskPosition - 1].sections.length
                   })
+                  totalSectionCount++;
                   break;
               }
             }
@@ -495,21 +522,23 @@ export class TestService {
               }
     
               switch(col){
-                // case 0:
-                //   if(!cellValue)
-                //     throw new HttpException(`Question ${row-1} field "STT" is must have`, HttpStatus.BAD_REQUEST);
-                //   stt = cellValue as number;
                 case 1:
-                  if(!cellValue)
-                    throw new HttpException(`Question ${row} field "STT Section" is must have`, HttpStatus.BAD_REQUEST);
+                  if(!cellValue || !Number.isInteger(Number(cellValue)) || cellValue < 1 || cellValue > totalSectionCount)
+                    throw new HttpException(`Invalid "Section No" in sheet Question at row ${row}`, HttpStatus.BAD_REQUEST);
                   sectionPosition = taskSectionIndexes[cellValue as number-1].sectionIndex-1;
                   taskPosition = taskSectionIndexes[cellValue as number-1].taskIndex-1;
                   break;
                 case 2:
                   if(!cellValue)
                     throw new HttpException(`Question ${row} field "Question type" is must have`, HttpStatus.BAD_REQUEST);
+                  if(![QuestionType.CHOICE, QuestionType.ESSAY, QuestionType.FILL].includes(cellValue))
+                    throw new HttpException(`Invalid question type at row ${row}`, HttpStatus.BAD_REQUEST)
                   questionType = cellValue;
                   question.type = questionType;
+                  if(testType !== TestType.WRITING && questionType === QuestionType.ESSAY)
+                    throw new HttpException(`Reading and Listening test can not have Essay question`, HttpStatus.BAD_REQUEST);
+                  if(testType === TestType.WRITING && questionType !== QuestionType.ESSAY)
+                    throw new HttpException(`Writing test can only have Essay question`, HttpStatus.BAD_REQUEST);
                   switch(questionType){
                     case QuestionType.FILL:
                       break;
@@ -523,7 +552,7 @@ export class TestService {
                 case 3:
                   question.question = !cellValue ? "" : cellValue.toString();
                   break;
-                case 4: //TO-DO
+                case 4:
                   if(cellValue) question.image = cellValue as string;
                   break;
                 case maxQuestionColumnCount-1:
@@ -533,8 +562,6 @@ export class TestService {
                       if(!cellValue)
                         throw new HttpException(`Fill question ${row} must have key`, HttpStatus.BAD_REQUEST);
                       const key = cellValue as string;
-                      if(choiceTypeQuestionRegex.test(key))
-                        throw new HttpException(``, HttpStatus.BAD_REQUEST);
                       question.key = key;
                       break;
                     case QuestionType.CHOICE:
@@ -547,7 +574,15 @@ export class TestService {
                           HttpStatus.BAD_REQUEST);
                       const choiceKeys = value.toString().split(',');
                       const keys: number[] = [];
-                      choiceKeys.map(key => keys.push(parseInt(key)-1));
+                      choiceKeys.map(key => {
+                        if(!Number.isInteger(Number(cellValue)) || parseInt(key) > numberOfChoices || parseInt(key) < 1){
+                          throw new HttpException(
+                            `Invalid key number for choice question. The key number can not exceed number of choices`, 
+                            HttpStatus.BAD_REQUEST
+                          );
+                        }
+                        keys.push(parseInt(key)-1)
+                      });
                       question.keys = keys;
                       break;
                     case QuestionType.ESSAY:
@@ -597,7 +632,7 @@ export class TestService {
           return returnData;
     }
     
-    readExcel(file: Express.Multer.File){
+    async readExcel(file: Express.Multer.File){
         //Đọc file
         const fileData = xlsx.readFile(file.path);
   
@@ -607,64 +642,89 @@ export class TestService {
         const sectionSheet = fileData.SheetNames[2];
         const questionSheet = fileData.SheetNames[3];
 
+        if(informationSheet.toLowerCase() !== TestUploadSheets.TESTINFORMATION) 
+          throw new HttpException("First sheet must be Test Information", HttpStatus.BAD_REQUEST);
         const informationSheetData = fileData.Sheets[informationSheet];
         const informationSheetRange = xlsx.utils.decode_range(informationSheetData['!ref'] as string);
         let testName: string = "";
         let testType: string = "";
-        for(let row = informationSheetRange.s.r+1; row <= informationSheetRange.e.r; row++){
+        for(let row = informationSheetRange.s.r+2; row <= informationSheetRange.e.r; row++){
           for(let col = informationSheetRange.s.c; col <= informationSheetRange.e.c; col++){
             const cellValue = informationSheetData[xlsx.utils.encode_cell({r: row, c: col})]?.w;
             switch(col){
               case 0:
+                if(!cellValue){
+                  this.deleteExcel(file);
+                  throw new HttpException("Test name must not empty", HttpStatus.BAD_REQUEST);
+                }
                 testName = cellValue as string;
                 break;
               case 1:
-                testType = cellValue.toString().trim().toLowerCase() as TestType;
+                if(!cellValue){
+                  this.deleteExcel(file);
+                  throw new HttpException("Invalid test type", HttpStatus.BAD_REQUEST);
+                }
+                testType = cellValue.toString().trim().toLowerCase();
+                if(![TestType.LISTENING, TestType.READING, TestType.WRITING].includes(testType as TestType)){
+                  this.deleteExcel(file);
+                  throw new HttpException("Wrong test type", HttpStatus.BAD_REQUEST);
+                }
                 break;
             }
           }
         }
 
         //Xử lý ở sheet task
+        if(taskSheet.toLowerCase() !== TestUploadSheets.TASK){
+          this.deleteExcel(file);
+          throw new HttpException("Second sheet must be Task", HttpStatus.BAD_REQUEST);
+        }
         const taskSheetData = fileData.Sheets[taskSheet];
         const taskSheetRange = xlsx.utils.decode_range(taskSheetData['!ref'] as string);
   
+        if(sectionSheet.toLowerCase() !== TestUploadSheets.SECTION) {
+          this.deleteExcel(file);
+          throw new HttpException("Third sheet must be Section", HttpStatus.BAD_REQUEST);
+        }
         const sectionSheetData = fileData.Sheets[sectionSheet];
         const sectionSheetRange = xlsx.utils.decode_range(sectionSheetData['!ref'] as string);
   
+        if(questionSheet.toLowerCase() !== TestUploadSheets.QUESTION) {
+          this.deleteExcel(file);
+          throw new HttpException("Fourth sheet must be Question", HttpStatus.BAD_REQUEST);
+        }
         const questionSheetData = fileData.Sheets[questionSheet];
         const questionSheetRange = xlsx.utils.decode_range(questionSheetData['!ref'] as string);
   
-        const returnData = this.convertToCreateTestDTO(
-          fileData,
-          testName,
-          testType,
-          taskSheetData,
-          sectionSheetData,
-          questionSheetData,
-          this.EXCEL_TASK_MAX_ROW,
-          this.EXCEL_TASK_MAX_COLUMN,
-          this.EXCEL_SECTION_MAX_ROW,
-          this.EXCEL_SECTION_MAX_COLUMN,
-          this.EXCEL_QUESTION_MAX_ROW,
-          this.EXCEL_QUESTION_MAX_COLUMN,
-          taskSheetRange.s.r+1,
-          taskSheetRange.s.c,
-          sectionSheetRange.s.r+1,
-          sectionSheetRange.s.c,
-          questionSheetRange.s.r+1,
-          questionSheetRange.s.c
-        );
-  
-        //Xoá file vừa thêm vào
-        if(fs.existsSync(file.path)){
-          fs.unlinkSync(file.path);
+        try{
+            const returnData = this.convertToCreateTestDTO(
+            fileData,
+            testName,
+            testType,
+            taskSheetData,
+            sectionSheetData,
+            questionSheetData,
+            this.EXCEL_TASK_MAX_ROW,
+            this.EXCEL_TASK_MAX_COLUMN,
+            this.EXCEL_SECTION_MAX_ROW,
+            this.EXCEL_SECTION_MAX_COLUMN,
+            this.EXCEL_QUESTION_MAX_ROW,
+            this.EXCEL_QUESTION_MAX_COLUMN,
+            taskSheetRange.s.r+1,
+            taskSheetRange.s.c,
+            sectionSheetRange.s.r+1,
+            sectionSheetRange.s.c,
+            questionSheetRange.s.r+1,
+            questionSheetRange.s.c
+          );
+          
+          this.deleteExcel(file);
+    
+          return returnData;
         }
-        else{
-          console.error("Cannot find file with path " + file.path)
+        finally{
+          this.deleteExcel(file);
         }
-  
-        return returnData;
     }
 
     getTestUploadTemplateFileStream(){
@@ -675,6 +735,16 @@ export class TestService {
       }
 
       return fs.createReadStream(filePath);
+    }
+
+    deleteExcel(file: Express.Multer.File){
+        //Xoá file vừa thêm vào
+        if(fs.existsSync(file.path)){
+          fs.unlinkSync(file.path);
+        }
+        else{
+          console.error("Cannot find file with path " + file.path)
+        }
     }
 
     deleteImage(url: string){
