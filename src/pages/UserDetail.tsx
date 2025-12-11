@@ -115,6 +115,7 @@ export default function UserDetail() {
       alert("Delete user successfully.");
     } catch (error) {
       console.error("Failed to delete user:", error);
+      alert("Only super admin can delete user");
       // setError("Xóa người dùng thất bại.");
       // console.log("Delete user failed")
       navigate(-1)
@@ -148,6 +149,7 @@ export default function UserDetail() {
         "Only super admin can update user"
         // error.response?.data?.message || "Cập nhật người dùng thất bại."
       );
+      alert("Only super admin can update user");
       navigate(-1)
     }
   };

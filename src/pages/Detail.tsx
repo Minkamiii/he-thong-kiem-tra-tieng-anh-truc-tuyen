@@ -35,7 +35,7 @@ export default function Detail() {
         ]);
 
         setTest(testRes.data);
-        // console.log("Test Data:", testRes.data);
+        console.log("Test Data:", testRes.data);
 
         if (progressRes && progressRes.data) {
           setProgressData(progressRes.data.data);

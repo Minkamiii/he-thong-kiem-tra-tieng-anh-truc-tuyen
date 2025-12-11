@@ -39,7 +39,7 @@ export default function UpdateTestPage() {
     // Kiểm tra trong sections
 
     task.sections.forEach((section, sectionIndex) => {
-      if (!section.title?.trim()) {
+      if (!section.title?.trim()&& test.type !== "writing") {
         newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
           "Section title can not be empty";
       }
@@ -48,7 +48,7 @@ export default function UpdateTestPage() {
       section.questions.forEach((q, qIndex) => {
         const ques = q.question;
 
-        if (!ques.question?.trim()) {
+        if (!ques.question?.trim()&& ques.type !== "fill") {
           newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
             "Question can not be empty";
         }
@@ -80,6 +80,7 @@ export default function UpdateTestPage() {
   });
 
   setErrors(newErrors);
+  console.log("Validation errors:", newErrors);
   return Object.keys(newErrors).length === 0;
 };
 
@@ -145,6 +146,7 @@ export default function UpdateTestPage() {
 
   // Gửi update
   const handleAccept = async () => {
+    console.log("Validating test before update:", test);
     if (!test) return;
     if (!validateTest()) {
     alert("Please fill in all fields completely!");
@@ -340,7 +342,8 @@ export default function UpdateTestPage() {
             {/* Writing: bỏ qua passage + audio, chỉ hiển thị sections */}
             {task.sections.map((section, sectionIndex) => (
               <Box key={sectionIndex} sx={{ mb: 3 }}>
-                <TextField
+                {test.type !== "writing" && (
+                  <TextField
                   fullWidth
                   label="Section Title"
                   sx={{ mb: 2 }}
@@ -353,6 +356,7 @@ export default function UpdateTestPage() {
                     setTest(updated);
                   }}
                 />
+                )}
 
 
                 {/* --- Thêm phần upload ảnh cho section --- */}
