@@ -414,6 +414,7 @@ export class TestService {
           for(let row = taskSheetStartRow + 1; row < maxTaskRowCount; row++){
             if(!haveTask) break;
             const taskData = new TestTaskDTO;
+            let taskPosition = 0;
             taskData.sections = [];
             for(let col = taskSheetStartColumn; col < maxTaskColumnCount; col++){
               const cellValue = data instanceof GoogleSpreadsheet ? 
@@ -426,6 +427,9 @@ export class TestService {
     
               switch(col){
                 case 0:
+                  if(!cellValue) haveTask = false
+                  else taskPosition = cellValue;
+                case 1:
                   switch(testType){
                     case TestType.LISTENING:
                       taskData.audio = "";
@@ -439,7 +443,7 @@ export class TestService {
                   if(!taskData.passage) delete taskData.passage;
     
                   break;
-                case 1:
+                case 2:
                   if(cellValue){
                     if(testType === TestType.WRITING)
                       throw new HttpException(`Task ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST);
@@ -473,7 +477,7 @@ export class TestService {
               switch(col){
                 case 0:
                   if(!cellValue || !Number.isInteger(Number(cellValue)) || cellValue < 0 || cellValue > returnData.tasks.length)
-                    throw new HttpException(`Invalid "Task No" field at Section row ${row}`, HttpStatus.BAD_REQUEST);
+                    throw new HttpException(`Invalid "Task No" field at Section row ${row+1}`, HttpStatus.BAD_REQUEST);
                   taskPosition = cellValue as any;
                   break;
                 case 1:
@@ -481,7 +485,6 @@ export class TestService {
                     throw new HttpException(`Section ${row-1} field "Title" is must have`, HttpStatus.BAD_REQUEST);
                   if(testType !== TestType.WRITING)
                     sectionData.title = cellValue as any;
-
                   break;
                 case 2:
                   if(cellValue){
@@ -532,7 +535,7 @@ export class TestService {
                   if(!cellValue)
                     throw new HttpException(`Question ${row} field "Question type" is must have`, HttpStatus.BAD_REQUEST);
                   if(![QuestionType.CHOICE, QuestionType.ESSAY, QuestionType.FILL].includes(cellValue))
-                    throw new HttpException(`Invalid question type at row ${row}`, HttpStatus.BAD_REQUEST)
+                    throw new HttpException(`Invalid question type at row ${row+1}`, HttpStatus.BAD_REQUEST)
                   questionType = cellValue;
                   question.type = questionType;
                   if(testType !== TestType.WRITING && questionType === QuestionType.ESSAY)
@@ -560,24 +563,24 @@ export class TestService {
                   switch(questionType){
                     case QuestionType.FILL:
                       if(!cellValue)
-                        throw new HttpException(`Fill question ${row} must have key`, HttpStatus.BAD_REQUEST);
+                        throw new HttpException(`Fill question at row ${row+1} must have key`, HttpStatus.BAD_REQUEST);
                       const key = cellValue as string;
                       question.key = key;
                       break;
                     case QuestionType.CHOICE:
                       if(!cellValue) 
-                        throw new HttpException(`Choice question ${row} must have keys`, HttpStatus.BAD_REQUEST);
+                        throw new HttpException(`Choice question at row ${row+1} must have keys`, HttpStatus.BAD_REQUEST);
                       const value = cellValue;
                       if(!choiceTypeQuestionRegex.test(value))
                         throw new HttpException(
-                          `Choice question ${row} must have at most 11 keys, separated by comma, each keys must in range 0 to 10`, 
+                          `Choice question at row ${row+1} must have at most 11 keys, separated by comma, each keys must in range 1 to 11`, 
                           HttpStatus.BAD_REQUEST);
                       const choiceKeys = value.toString().split(',');
                       const keys: number[] = [];
                       choiceKeys.map(key => {
                         if(!Number.isInteger(Number(cellValue)) || parseInt(key) > numberOfChoices || parseInt(key) < 1){
                           throw new HttpException(
-                            `Invalid key number for choice question. The key number can not exceed number of choices`, 
+                            `Invalid key number for choice question at row ${row+1}`,
                             HttpStatus.BAD_REQUEST
                           );
                         }
@@ -587,7 +590,7 @@ export class TestService {
                       break;
                     case QuestionType.ESSAY:
                       if(cellValue)
-                        throw new HttpException(`Essay question ${row} must not have key`, HttpStatus.BAD_REQUEST);
+                        throw new HttpException(`Essay question at row ${row+1} must not have key`, HttpStatus.BAD_REQUEST);
                       break;
                   }
     

@@ -78,7 +78,10 @@ export class QuestionService {
 
             const payload: any = {
                 question: question.question,
+                image: question.image
             };
+
+            if(!payload.image) delete payload.image;
 
             switch(question.type){
                 case QuestionType.CHOICE:
