@@ -38,14 +38,16 @@ export default function ModifyTestPage() {
     // Reading → passage
     if (test.type === "reading" && !task.passage?.trim()) {
       newErrors[`task_${taskIndex}_passage`] = "Passage cannot be empty";
+      console.log("a")
     }
 
     task.sections.forEach((section, sectionIndex) => {
 
       // Section title
-      if (!section.title?.trim()) {
+      if (!section.title?.trim() && test.type !== "writing") {
         newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
           "Section title cannot be empty";
+          console.log("b")
       }
 
       // Questions
@@ -56,12 +58,15 @@ export default function ModifyTestPage() {
         if (!ques.question?.trim()) {
           newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
             "Question cannot be empty";
+            console.log("c")
         }
 
+        if(test.type === "writing" ) {
         // Fill → answer required
-        if (ques.type === "fill" && !ques.key?.trim()) {
+        if (ques.type === "fill" ) {
           newErrors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`] =
             "Answer cannot be empty";
+            console.log("d")
         }
 
         // Choice → text + at least 1 correct
@@ -71,14 +76,18 @@ export default function ModifyTestPage() {
               newErrors[
                 `choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`
               ] = "Choice cannot be empty";
+              console.log("e")
             }
           });
-
+        }
+          if (ques.type === "choice") {
           if (!ques.keys || ques.keys.length === 0) {
             newErrors[
               `choice_key_${taskIndex}_${sectionIndex}_${qIndex}`
             ] = "Must choose at least one correct answer";
+            console.log("f")
           }
+        }
         }
       });
     });
@@ -246,6 +255,7 @@ const deleteImage = async (url: string) => {
             )}
 
             {/* Upload và hiển thị ảnh minh họa */}
+            {test.type !== "writing" && (
             <ImageManager
               label="Task Image"
               image={task.image}
@@ -279,6 +289,7 @@ const deleteImage = async (url: string) => {
                 setLoading(false);
               }}
             />
+            )}
 
             {test.type === "listening" && (
               <Box sx={{ mb: 3 }}>
@@ -346,6 +357,7 @@ const deleteImage = async (url: string) => {
 
             {task.sections.map((section, sectionIndex) => (
               <Box key={sectionIndex} sx={{ mb: 3 }}>
+                {(test.type !== "writing") && (
                 <TextField
                   fullWidth
                   label="Section Title"
@@ -359,10 +371,12 @@ const deleteImage = async (url: string) => {
                     setTest(updated);
                   }}
                 />
+                )}
 
                 {/* --- Upload và hiển thị ảnh cho SECTION --- */}
                 <Box sx={{ mb: 3 }}>
                   {/* Hiển thị ảnh hiện tại nếu có */}
+                  {(test.type !== "writing") && (
                   <ImageManager
                     label="Section Image"
                     image={section.image}
@@ -396,6 +410,7 @@ const deleteImage = async (url: string) => {
                       setLoading(false);
                     }}
                   />
+                  )}
                 </Box>
                 {/* --- Hết phần upload ảnh cho SECTION --- */}
 
@@ -420,6 +435,8 @@ const deleteImage = async (url: string) => {
                       ) : null}
 
                       {/* Fill có đáp án */}
+                      {test.type !== "writing" && (
+                        <>
                       {ques.type === "fill" && (
                         <TextField
                           fullWidth
@@ -433,11 +450,13 @@ const deleteImage = async (url: string) => {
                           }
                         />
                       )}
+                      </>
+                    )}
                       {/* 🖼️ Upload ảnh cho question dạng writing */}
                       {test.type === "writing" && (
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                            Image for Writing Question
+                            Image for Question
                           </Typography>
 
                           {/* Hiển thị ảnh hiện tại nếu có */}
@@ -500,6 +519,8 @@ const deleteImage = async (url: string) => {
                       )}
 
                       {/* Choice có nhiều đáp án */}
+                      {test.type !== "writing" && (
+                        <>
                       {ques.type === "choice" &&
                         ques.choices?.map((choice, cIndex) => (
                           <Box key={cIndex} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
@@ -528,6 +549,8 @@ const deleteImage = async (url: string) => {
                             )}
                           </Box>
                         ))}
+                        </>
+                      )}
                     </Card>
                   );
                 })}
