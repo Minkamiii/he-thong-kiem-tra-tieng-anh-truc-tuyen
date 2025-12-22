@@ -7,10 +7,10 @@ export default function Searching({ onSearch }: { onSearch: (query: string) => v
 
   return (
     <div className="search-box">
-      <span className="search-icon">🔍</span>
+      {/* <span className="search-icon">🔍</span> */}
       <input
         type="text"
-        placeholder="What do you want"
+        placeholder="Enter username"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />

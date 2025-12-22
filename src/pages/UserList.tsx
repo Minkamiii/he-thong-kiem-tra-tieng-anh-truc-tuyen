@@ -165,7 +165,7 @@ export default function UserList() {
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <Typography variant="h5">List User</Typography>
+        <Typography variant="h5" sx={{ mb: 2, color: "primary.main", fontWeight: "bold" }}>List User</Typography>
         <Button variant="contained" startIcon={<Add />} onClick={handleOpen}>
           Add User
         </Button>
@@ -239,7 +239,7 @@ export default function UserList() {
 
       {/* Form thêm user */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Thêm User</DialogTitle>
+        <DialogTitle>Add User</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"

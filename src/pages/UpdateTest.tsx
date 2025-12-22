@@ -571,7 +571,7 @@ export default function UpdateTestPage() {
                                 setTest(updated);
                               }}
                             />
-                            <Typography variant="body2">Đúng</Typography>
+                            <Typography variant="body2">Correct</Typography>
                             {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`] && (
                               <Typography color="red">
                                 {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`]}
