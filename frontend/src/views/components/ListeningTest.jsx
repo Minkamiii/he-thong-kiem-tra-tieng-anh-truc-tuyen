@@ -27,11 +27,11 @@ const ListeningTest = ({ tasks, activeTask, questionsContainerRef }) => {
                 component="img" 
                 src={currentTask?.image}
                 sx={{
-                    width: 120,
-                    height: 120,
-                    objectFit: 'cover',
-                    alignSelf: 'center',
-                    justifySelf: 'center'
+                    width: '100%',
+                    maxWidth: 550,
+                    objectFit: 'contain',
+                    display: 'block',
+                    margin: '16px auto'
                 }}
             />}
             {/* Questions */}
