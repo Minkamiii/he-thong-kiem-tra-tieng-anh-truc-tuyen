@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-// import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import com.example.userservice.dto.reponse.UserListResponse;
 import com.example.userservice.dto.request.UserCreationRequest;
@@ -27,7 +27,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // private final RestTemplate restTemplate=new RestTemplate();
+    private final RestTemplate restTemplate=new RestTemplate();
 
     public User registerUser(UserCreationRequest request,boolean isAdmin) {
         if(userRepository.existsByUsername(request.getUsername())){
@@ -117,7 +117,12 @@ public class UserService {
             throw new AppException(ErrorCode.USER_UNEXISTED);
         }
         userRepository.deleteById(id);
-        // String url="http://localhost:8080/api/submit/delete/user/"+id;
-        // restTemplate.delete(url);
+        try {
+            String url="http://localhost:8080/api/submit/delete/user/"+id;
+        restTemplate.delete(url);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
     }
 }

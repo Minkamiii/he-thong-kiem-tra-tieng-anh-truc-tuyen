@@ -72,7 +72,7 @@ class UserTest {
         req.setUsername("user2");
         req.setPassword("user1234");
         req.setEmail("user2@mail.com");
-        req.setPhoneNum("0123456789");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2000, 10, 10));
 
         User user = userService.registerUser(req, false);
@@ -149,7 +149,7 @@ class UserTest {
         req.setUsername("admin");
         req.setPassword("admin1234");
         req.setEmail("admin@mail.com");
-        req.setPhoneNum("0123456789");
+        req.setPhoneNum("0987654321");
         req.setRoles(Set.of("ADMIN"));
         req.setDob(LocalDate.of(2000, 10, 10));
 
@@ -270,8 +270,8 @@ class UserTest {
         UserUpdateRequest req = new UserUpdateRequest();
         req.setUsername("updatedUser");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("0292736481");
-        req.setDob(LocalDate.of(2001, 1, 1));
+        req.setPhoneNum("0987654321");
+        req.setDob(LocalDate.of(2001, 10, 10));
         req.setRoles(Set.of("ADMIN"));
 
         User updated = userService.updateUser(user1.getId(), req, true);
@@ -288,7 +288,7 @@ class UserTest {
         req.setUsername("updatedUser");
         req.setPassword("user123");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("011223344");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2001, 1, 1));
 
         AppException exception = assertThrows(AppException.class, () -> userService.updateUser("123", req, true));
@@ -301,7 +301,7 @@ class UserTest {
         req.setUsername("user3");
         req.setPassword("user123");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("011223344");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2001, 1, 1));
         req.setRoles(Set.of("ADMIN"));
 
@@ -340,7 +340,7 @@ class UserTest {
         UserUpdateRequest req = new UserUpdateRequest();
         req.setUsername("user2");
         req.setPassword("user123");
-        req.setEmail("");
+        req.setEmail("update");
         req.setPhoneNum("011223344");
         req.setDob(LocalDate.of(2001, 1, 1));
 
@@ -354,7 +354,7 @@ class UserTest {
         req.setUsername("user2");
         req.setPassword("user123");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("");
+        req.setPhoneNum("0987");
         req.setDob(LocalDate.of(2001, 1, 1));
 
         var violations = validator.validate(req);
@@ -367,7 +367,7 @@ class UserTest {
         req.setUsername("user2");
         req.setPassword("user123");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2001, 1, 1));
         req.setRoles(Set.of("ADMIN"));
 
@@ -381,7 +381,7 @@ class UserTest {
         req.setUsername("user2");
         req.setPassword("user123");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2001, 1, 1));
         req.setRoles(null);
 
@@ -400,7 +400,7 @@ class UserTest {
 
     @Test
     void USER_028_getListUser_By_InvalidId() {
-        List<UserListResponse> res = userService.getListUserById(List.of("hsfdjv","jjbfdshj"));
+        List<UserListResponse> res = userService.getListUserById(List.of("123","456"));
         assertEquals(0, res.size());
 
     }
@@ -413,7 +413,7 @@ class UserTest {
 
     @Test
     void USER_030_deleteUser_By_Invalid_Id() {
-        AppException exception = assertThrows(AppException.class, () -> userService.deleteUser("uysgdfus"));
+        AppException exception = assertThrows(AppException.class, () -> userService.deleteUser("123"));
         assertEquals(2, userRepository.count());
         assertEquals(ErrorCode.USER_UNEXISTED, exception.getErrorCode());
     }
@@ -422,9 +422,9 @@ class UserTest {
     void USER_031_registerUserByUser_Success() {
         UserCreationRequest req = new UserCreationRequest();
         req.setUsername("user2");
-        req.setPassword("user1234");
+        req.setPassword("user123");
         req.setEmail("user2@mail.com");
-        req.setPhoneNum("0123456789");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2000, 10, 10));
         req.setRoles(Set.of("ADMIN"));
 
@@ -436,16 +436,15 @@ class UserTest {
     void USER_032_updateUserByUser_Success() {
         UserUpdateRequest req = new UserUpdateRequest();
         req.setUsername("updatedUser");
-        req.setPassword("user1234");
+        req.setPassword("user123");
         req.setEmail("update@mail.com");
-        req.setPhoneNum("011223344");
-        req.setPassword("user1234");
+        req.setPhoneNum("0987654321");
         req.setDob(LocalDate.of(2001, 1, 1));
 
         User updated = userService.updateUser(user1.getId(), req, false);
 
         assertEquals("updatedUser", updated.getUsername());
-        assertTrue(passwordEncoder.matches("user1234", updated.getPassword()));
+        assertTrue(passwordEncoder.matches("user123", updated.getPassword()));
     }
 }
 

@@ -134,7 +134,7 @@ public class AuthenticationTest {
     }
 
     @Test 
-    void AUTH_006_Logout_By_Invalid_Token() throws ParseException, JOSEException{
+    void AUTH_007_Logout_By_Invalid_Token() throws ParseException, JOSEException{
         AuthenticationRequest req = new AuthenticationRequest();
         req.setUsername("user1");
         req.setPassword("user1234");
@@ -150,7 +150,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    void AUTH_007_introspect_valid_token() throws Exception {
+    void AUTH_008_introspect_valid_token() throws Exception {
         AuthenticationRequest req = new AuthenticationRequest();
         req.setUsername("user1");
         req.setPassword("user1234");
@@ -168,7 +168,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    void AUTH_007_introspect_invalid_token() throws Exception {
+    void AUTH_009_introspect_invalid_token() throws Exception {
         AuthenticationRequest req = new AuthenticationRequest();
         req.setUsername("user1");
         req.setPassword("user1234");
@@ -185,7 +185,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    void AUTH_008_introspect_tokenIsLogout() throws Exception {
+    void AUTH_010_introspect_tokenIsLogout() throws Exception {
         AuthenticationRequest req = new AuthenticationRequest();
         req.setUsername("user1");
         req.setPassword("user1234");
@@ -206,7 +206,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    void AUTH_009_introspect_Expired_token() throws Exception {
+    void AUTH_011_introspect_Expired_token() throws Exception {
         AuthenticationRequest req = new AuthenticationRequest();
         req.setUsername("user1");
         req.setPassword("user1234");
@@ -223,7 +223,7 @@ public class AuthenticationTest {
     }
 
     @Test
-    void AUTH_010_RefreshToken_Success() throws Exception {
+    void AUTH_012_RefreshToken_Success() throws Exception {
         AuthenticationRequest req = new AuthenticationRequest();
         req.setUsername("user1");
         req.setPassword("user1234");
@@ -255,73 +255,4 @@ public class AuthenticationTest {
         assertEquals(ErrorCode.INVALID_TOKEN, exception.getErrorCode());
     }
 
-
-
-
-    // // ✅ 4. Test generate & introspect token
-    // @Test
-    // void AUTH_004_introspect_valid_token() throws Exception {
-    //     AuthenticationRequest req = new AuthenticationRequest();
-    //     req.setUsername("testuser");
-    //     req.setPassword("password123");
-
-    //     ApiResponse response = authenticationService.authenticate(req, false);
-    //     String token = response.getResult().toString();
-    //     String accessToken = token.split("accessToken=")[1].split(",")[0].trim();
-
-    //     IntrospectRequest introspectRequest = new IntrospectRequest();
-    //     introspectRequest.setToken(accessToken);
-
-    //     var result = authenticationService.introspect(introspectRequest);
-    //     Assertions.assertTrue(result.isValid());
-    // }
-
-    // // ✅ 5. Test refresh token
-    // @Test
-    // void AUTH_005_refresh_token_success() throws Exception {
-    //     AuthenticationRequest req = new AuthenticationRequest();
-    //     req.setUsername("testuser");
-    //     req.setPassword("password123");
-
-    //     ApiResponse response = authenticationService.authenticate(req, false);
-    //     String tokenStr = response.getResult().toString();
-    //     String refreshToken = tokenStr.split("refreshToken=")[1].split(",")[0].trim();
-
-    //     RefreshTokenRequest refresh = new RefreshTokenRequest();
-    //     refresh.setRefreshToken(refreshToken);
-
-    //     ApiResponse newToken = authenticationService.refreshToken(refresh);
-    //     Assertions.assertNotNull(newToken);
-    // }
-
-    // // ✅ 6. Test logout
-    // @Test
-    // void AUTH_006_logout_token() throws Exception {
-    //     AuthenticationRequest req = new AuthenticationRequest();
-    //     req.setUsername("testuser");
-    //     req.setPassword("password123");
-
-    //     ApiResponse response = authenticationService.authenticate(req, false);
-    //     String tokenStr = response.getResult().toString();
-    //     String accessToken = tokenStr.split("accessToken=")[1].split(",")[0].trim();
-
-    //     LogoutRequest logout = new LogoutRequest();
-    //     logout.setToken(accessToken);
-
-    //     authenticationService.logout(logout);
-
-    //     Assertions.assertTrue(invalidatedTokenRepository.findAll().size() > 0);
-    // }
-
-    // // ❌ 7. Test introspect token hết hạn (tuỳ chỉnh test case)
-    // @Test
-    // void AUTH_007_introspect_expired_token() throws JOSEException, ParseException {
-    //     // Tạo token giả sai để test
-    //     IntrospectRequest request = new IntrospectRequest();
-    //     request.setToken("invalid.token.value");
-
-    //     Assertions.assertThrows(Exception.class, () -> {
-    //         authenticationService.introspect(request);
-    //     });
-    // }
 }
