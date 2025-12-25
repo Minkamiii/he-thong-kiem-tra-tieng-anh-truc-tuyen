@@ -12,7 +12,6 @@ import * as xlsx from "xlsx";
 import * as fs from "fs";
 import { ChoiceItem } from 'src/model/question/choiceQuestion.schema';
 import { CreateQuestionDTO } from 'src/dto/question/create/create-question.dto';
-import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -39,7 +38,7 @@ export class TestService {
     ) {}
 
     private readonly PAGINATION_LIMIT_NUMBER_OF_ITEM = 12; //Tối đa 1 trang có 12 item
-    private readonly EXCEL_TASK_MAX_COLUMN = 2;
+    private readonly EXCEL_TASK_MAX_COLUMN = 3;
     private readonly EXCEL_TASK_MAX_ROW = 7;
     private readonly EXCEL_SECTION_MAX_COLUMN = 3;
     private readonly EXCEL_SECTION_MAX_ROW = 27;
@@ -379,12 +378,12 @@ export class TestService {
     }
 
     convertToCreateTestDTO(
-        data: xlsx.WorkBook | GoogleSpreadsheet, 
+        data: xlsx.WorkBook, 
         testName: string,
         testType: string,
-        taskSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
-        sectionSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
-        questionSheet: xlsx.WorkSheet | GoogleSpreadsheetWorksheet,
+        taskSheet: xlsx.WorkSheet,
+        sectionSheet: xlsx.WorkSheet,
+        questionSheet: xlsx.WorkSheet,
         maxTaskRowCount: number, 
         maxTaskColumnCount: number, 
         maxSectionRowCount: number, 
@@ -417,13 +416,13 @@ export class TestService {
             let taskPosition = 0;
             taskData.sections = [];
             for(let col = taskSheetStartColumn; col < maxTaskColumnCount; col++){
-              const cellValue = data instanceof GoogleSpreadsheet ? 
-                                taskSheet.getCell(row, col).value : 
-                                taskSheet[xlsx.utils.encode_cell({r: row, c: col})]?.v;
+              const cellValue = taskSheet[xlsx.utils.encode_cell({r: row, c: col})]?.v;
               if(col===0 && !cellValue){
                 haveTask = false;
                 break;
               }
+
+              console.log(col, cellValue);
     
               switch(col){
                 case 0:
@@ -444,6 +443,7 @@ export class TestService {
     
                   break;
                 case 2:
+                  console.log(cellValue);
                   if(cellValue){
                     if(testType === TestType.WRITING)
                       throw new HttpException(`Task ${row} field "Image link" should not have image on Writing test`, HttpStatus.BAD_REQUEST);
@@ -453,6 +453,7 @@ export class TestService {
                   if(!taskData.image) delete taskData.image;
                   
                   returnData.tasks.push(taskData);
+                  console.log(returnData.tasks);
                   break;
               }
             }
@@ -466,9 +467,7 @@ export class TestService {
             const sectionData = new TestTaskSectionDTO;
             sectionData.questions = [];
             for(let col = sectionSheetStartColumn; col < maxSectionColumnCount; col++){
-              const cellValue = data instanceof GoogleSpreadsheet ? 
-                                sectionSheet.getCell(row, col).value : 
-                                sectionSheet[xlsx.utils.encode_cell({r: row, c: col})]?.v;
+              const cellValue = sectionSheet[xlsx.utils.encode_cell({r: row, c: col})]?.v;
               if(col===0 && !cellValue){
                 hasSection = false;
                 break;
@@ -516,9 +515,7 @@ export class TestService {
             let questionType: any;
             let numberOfChoices: number = 0;
             for(let col = questionSheetStartColumn; col < maxQuestionColumnCount; col++){
-              const cellValue = data instanceof GoogleSpreadsheet ? 
-                                questionSheet.getCell(row, col).formattedValue : 
-                                questionSheet[xlsx.utils.encode_cell({r: row, c: col})]?.w;
+              const cellValue = questionSheet[xlsx.utils.encode_cell({r: row, c: col})]?.w;
               if(col===0 && !cellValue){
                 hasQuestion = false;
                 break;
@@ -720,8 +717,6 @@ export class TestService {
             questionSheetRange.s.r+1,
             questionSheetRange.s.c
           );
-          
-          this.deleteExcel(file);
     
           return returnData;
         }
