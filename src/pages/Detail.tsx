@@ -13,14 +13,14 @@ export default function Detail() {
   const [progressData, setProgressData] = useState<any>(null);
   const navigate = useNavigate();
   const url = import.meta.env.VITE_TEST_API_URL;
-  const progressUrl = "http://localhost:8080/api/submit/progressforadmin";
+  const urlSubmit = import.meta.env.VITE_SUBMIT_API_URL;
+  const progressUrl = urlSubmit+"/progressforadmin";
 
   useEffect(() => {
     if (!id) return;
 
     const fetchAll = async () => {
       try {
-        // Gọi song song 2 API
         const [testRes, progressRes] = await Promise.all([
           axios.get(`${url}/${id}`),
           axios
@@ -28,9 +28,8 @@ export default function Detail() {
             .catch((err) => {
               if (err.response && err.response.status === 404) {
                 console.warn("Không có dữ liệu progress (404).");
-                return null; // ✅ Không ném lỗi, chỉ trả về null
+                return null; 
               }
-              // throw err; // Các lỗi khác vẫn ném ra
             }),
         ]);
 
@@ -141,7 +140,9 @@ export default function Detail() {
 
               {section.questions.map((q, qIndex) => {
                 const ques = q.question;
-                const isFullyWrong = wrongIds.includes(ques._id);
+                if (!ques) return null;
+                const isFullyWrong =ques._id != null && wrongIds.includes(ques._id);
+
 // console.log("" QID:", ques._id, "wrong?", isFullyWrong, "wrongIds:", wrongIds);
                 return (
                   <div
