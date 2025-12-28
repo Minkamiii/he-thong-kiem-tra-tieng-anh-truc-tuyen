@@ -37,10 +37,11 @@ const ReadingTest = ( {tasks, activeTask, questionsContainerRef} ) => {
                         component="img" 
                         src={currentTask?.image} 
                         sx={{
-                            width: 240,
-                            height: 240,
-                            objectFit: 'cover',
-                            alignSelf: 'center',
+                            width: '100%',
+                            maxWidth: 550,
+                            objectFit: 'contain',
+                            display: 'block',
+                            margin: '16px auto'
                         }}
                     />}
                 </Box>

@@ -5,6 +5,7 @@ import Section from './Section';
 const WritingTest = ({ tasks, activeTask, questionsContainerRef}) => {
 
     const currentTask = tasks && tasks[activeTask] ? tasks[activeTask] : null;
+    const image = currentTask?.sections?.[0]?.questions?.[0]?.question?.image;
 
     if (!currentTask) return <Typography>No task data available</Typography>
 
@@ -29,18 +30,37 @@ const WritingTest = ({ tasks, activeTask, questionsContainerRef}) => {
                     <Typography>
                         {currentTask.sections[0].questions[0].question.question}
                     </Typography>
-                    {currentTask?.image && <Box 
+                    {/* {currentTask.sections[0].questions[0].question?.image && <Box 
                         component="img" 
                         src={currentTask?.image}
                         sx={{
-                            width: 120,
-                            height: 120,
+                            width: 550,
+                            height: 550,
                             objectFit: 'cover',
                             alignSelf: 'center',
                             justifySelf: 'center'
                         }}
-                    />}
-                </Box>
+                    />} */}
+                    {image ? (
+                            <Box
+                            component="img"
+                            src={image}
+                            alt="Question image"
+                            sx={{
+                                width: '100%',
+                                maxWidth: 550,
+                                objectFit: 'contain',
+                                display: 'block',
+                                margin: '16px auto'
+                            }}
+                            />
+
+                            ) : (
+                            <Typography sx={{ color: 'gray', mt: 1 }}>
+                                (Không có hình ảnh)
+                            </Typography>
+                            )}
+               </Box>
             </Grid>
 
             {/* Writing Area - Right */}

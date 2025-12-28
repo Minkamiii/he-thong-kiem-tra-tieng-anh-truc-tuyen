@@ -113,7 +113,7 @@ function HistoryTable({
                 onClick={() => handleFilterChange(type)}
               >
                 {type === "all"
-                  ? "Tất cả"
+                  ? "ALL"
                   : type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
             ))}
