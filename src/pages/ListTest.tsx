@@ -30,34 +30,33 @@ export default function Reading({ type }: { type: string }) {
 
   const navigate = useNavigate();
 
-  // 🧩 Fetch tests
   const fetchTests = async (filters?: {
-  testName?: string;
-  active?: string;
-  fromto?: string;
-}) => {
-  setFetching(true);
-  try {
-    let url = `${urls}?page=${currentPage}&type=${type}`;
-    if (filters?.testName)
-      url += `&testName=${encodeURIComponent(filters.testName)}`;
-    if (filters?.active) url += `&active=${filters.active}`;
-    if (filters?.fromto)
-  url += `&fromto=${filters.fromto}`;
+    testName?: string;
+    active?: string;
+    fromto?: string;
+  }) => {
+    setFetching(true);
+    try {
+      let url = `${urls}?page=${currentPage}&type=${type}`;
+      if (filters?.testName)
+        url += `&testName=${encodeURIComponent(filters.testName)}`;
+      if (filters?.active) url += `&active=${filters.active}`;
+      if (filters?.fromto)
+        url += `&fromto=${filters.fromto}`;
 
-    const res = await axios.get(url);
-    const data = res.data;
+      const res = await axios.get(url);
+      const data = res.data;
 
-    setTests(data.data || []);
-    // console.log("Fetched Tests:", data.data || []);
-    setTotalPages(data.totalPages || 1);
-  } catch (error) {
-    console.error("Lỗi khi fetch tests:", error);
-    setTests([]);
-  } finally {
-    setFetching(false);
-  }
-};
+      setTests(data.data || []);
+      // console.log("Fetched Tests:", data.data || []);
+      setTotalPages(data.totalPages || 1);
+    } catch (error) {
+      console.error("Lỗi khi fetch tests:", error);
+      setTests([]);
+    } finally {
+      setFetching(false);
+    }
+  };
 
   useEffect(() => {
     fetchTests();
@@ -83,20 +82,19 @@ export default function Reading({ type }: { type: string }) {
 
       fetchTests();
     } catch (error: any) {
-        console.error(error);
+      console.error(error);
 
-        const backendMessage =
-          error?.response?.data?.message ||
-          error?.message ||
-          "Upload failed";
-        alert("Upload failed: " + backendMessage);
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Upload failed";
+      alert("Upload failed: " + backendMessage);
     } finally {
       setLoading(false);
       handleCloseDialog();
     }
   };
 
-  // 🧹 Đóng dialog
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedFile(null);
@@ -153,12 +151,12 @@ export default function Reading({ type }: { type: string }) {
           gap: 2,
         }}
       >
-        <SearchingTest 
-        key={type}
-        onSearch={(filters) => {
-          setCurrentPage(1);
-          fetchTests(filters);
-        }} />
+        <SearchingTest
+          key={type}
+          onSearch={(filters) => {
+            setCurrentPage(1);
+            fetchTests(filters);
+          }} />
         <Button
           variant="contained"
           sx={{ backgroundColor: "#004080" }}

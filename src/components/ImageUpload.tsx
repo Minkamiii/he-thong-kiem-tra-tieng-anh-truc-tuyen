@@ -20,8 +20,6 @@ export default function ImageManager({
       <Typography variant="subtitle1" sx={{ mb: 1 }}>
         {label}
       </Typography>
-
-      {/* Hiển thị ảnh nếu có */}
       {image && (
         <Box sx={{ mb: 2 }}>
           <img

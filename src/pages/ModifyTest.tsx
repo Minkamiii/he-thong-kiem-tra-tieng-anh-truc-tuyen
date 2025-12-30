@@ -18,7 +18,6 @@ export default function ModifyTestPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ lấy test từ state (truyền khi navigate)
   const stateTest = (location.state as { test?: Test })?.test;
   const [test, setTest] = useState<Test | null>(stateTest || null);
   const [loading, setLoading] = useState(false);
@@ -26,97 +25,92 @@ export default function ModifyTestPage() {
   const [errors, setErrors] = useState<any>({});
 
   const validateTest = () => {
-  const newErrors: any = {};
+    const newErrors: any = {};
 
-  // Test name
-  if (!test?.testName?.trim()) {
-    newErrors.testName = "Test name không được để trống";
-  }
-
-  test?.tasks.forEach((task, taskIndex) => {
-
-    // Reading → passage
-    if (test.type === "reading" && !task.passage?.trim()) {
-      newErrors[`task_${taskIndex}_passage`] = "Passage cannot be empty";
-      console.log("a")
+    if (!test?.testName?.trim()) {
+      newErrors.testName = "Test name không được để trống";
     }
 
-    task.sections.forEach((section, sectionIndex) => {
-
-      // Section title
-      if (!section.title?.trim() && test.type !== "writing") {
-        newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
-          "Section title cannot be empty";
-          console.log("b")
+    test?.tasks.forEach((task, taskIndex) => {
+      if (test.type === "reading" && !task.passage?.trim()) {
+        newErrors[`task_${taskIndex}_passage`] = "Passage cannot be empty";
+        console.log("a")
       }
 
-      // Questions
-      section.questions.forEach((q, qIndex) => {
-        const ques = q.question as Question;
+      task.sections.forEach((section, sectionIndex) => {
+        // Section title
+        if (!section.title?.trim() && test.type !== "writing") {
+          newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
+            "Section title cannot be empty";
+          console.log("b")
+        }
 
-        // Question text
-        if (!ques.question?.trim()) {
-          newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
-            "Question cannot be empty";
+        // Questions
+        section.questions.forEach((q, qIndex) => {
+          const ques = q.question as Question;
+
+          // Question text
+          if (!ques.question?.trim()) {
+            newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
+              "Question cannot be empty";
             console.log("c")
-        }
-
-        if(test.type === "writing" ) {
-        // Fill → answer required
-        if (ques.type === "fill" ) {
-          newErrors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`] =
-            "Answer cannot be empty";
-            console.log("d")
-        }
-
-        // Choice → text + at least 1 correct
-        if (ques.type === "choice") {
-          ques.choices?.forEach((choice, cIndex) => {
-            if (!choice.text?.trim()) {
-              newErrors[
-                `choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`
-              ] = "Choice cannot be empty";
-              console.log("e")
-            }
-          });
-        }
-          if (ques.type === "choice") {
-          if (!ques.keys || ques.keys.length === 0) {
-            newErrors[
-              `choice_key_${taskIndex}_${sectionIndex}_${qIndex}`
-            ] = "Must choose at least one correct answer";
-            console.log("f")
           }
-        }
-        }
+
+          if (test.type === "writing") {
+            // Fill: answer required
+            if (ques.type === "fill") {
+              newErrors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`] =
+                "Answer cannot be empty";
+              console.log("d")
+            }
+
+            // Choice: text + at least 1 correct
+            if (ques.type === "choice") {
+              ques.choices?.forEach((choice, cIndex) => {
+                if (!choice.text?.trim()) {
+                  newErrors[
+                    `choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`
+                  ] = "Choice cannot be empty";
+                  console.log("e")
+                }
+              });
+            }
+            if (ques.type === "choice") {
+              if (!ques.keys || ques.keys.length === 0) {
+                newErrors[
+                  `choice_key_${taskIndex}_${sectionIndex}_${qIndex}`
+                ] = "Must choose at least one correct answer";
+                console.log("f")
+              }
+            }
+          }
+        });
       });
     });
-  });
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
 
   const uploadImage = async (file: File) => {
-  const form = new FormData();
-  form.append("image", file);
-  const res = await axios.post(`${urls}/image`, form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data.url;
-};
+    const form = new FormData();
+    form.append("image", file);
+    const res = await axios.post(`${urls}/image`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.url;
+  };
 
-const deleteImage = async (url: string) => {
-  await axios.delete(`${urls}/image`, { params: { url } });
-};
+  const deleteImage = async (url: string) => {
+    await axios.delete(`${urls}/image`, { params: { url } });
+  };
 
 
   if (!test) {
     return <div>No data to edit (please upload Excel file first)!</div>;
   }
 
-  // ---- Helpers ----
   const handleChange = (
     taskIndex: number,
     sectionIndex: number,
@@ -170,13 +164,12 @@ const deleteImage = async (url: string) => {
     setTest(updated);
   };
 
-  // ✅ gửi POST một test (giống UpdateTestPage)
   const handleAccept = async () => {
     if (!test) return;
     if (!validateTest()) {
-    alert("Please fill in all fields completely!");
-    return;
-  }
+      alert("Please fill in all fields completely!");
+      return;
+    }
     try {
       setLoading(true);
       await axios.post(`${urls}`, test);
@@ -247,8 +240,8 @@ const deleteImage = async (url: string) => {
                 sx={{
                   mb: 3,
                   "& .MuiInputBase-root": {
-                    maxHeight: "200px", // 🔥 giới hạn chiều cao
-                    overflow: "auto",   // 🔥 bật thanh cuộn khi quá dài
+                    maxHeight: "200px",
+                    overflow: "auto",
                   },
                 }}
               />
@@ -256,39 +249,39 @@ const deleteImage = async (url: string) => {
 
             {/* Upload và hiển thị ảnh minh họa */}
             {test.type !== "writing" && (
-            <ImageManager
-              label="Task Image"
-              image={task.image}
-              loading={loading}
-              onUpload={async (file) => {
-                setLoading(true);
-                const url = await uploadImage(file);
+              <ImageManager
+                label="Task Image"
+                image={task.image}
+                loading={loading}
+                onUpload={async (file) => {
+                  setLoading(true);
+                  const url = await uploadImage(file);
 
-                setTest(prev => {
-                  if (!prev) return prev;
-                  const updated = structuredClone(prev);
-                  updated.tasks[taskIndex].image = url;
-                  return updated;
-                });
+                  setTest(prev => {
+                    if (!prev) return prev;
+                    const updated = structuredClone(prev);
+                    updated.tasks[taskIndex].image = url;
+                    return updated;
+                  });
 
-                setLoading(false);
-              }}
-              onDelete={async () => {
-                if (!task.image) return;
-                setLoading(true);
+                  setLoading(false);
+                }}
+                onDelete={async () => {
+                  if (!task.image) return;
+                  setLoading(true);
 
-                await deleteImage(task.image);
+                  await deleteImage(task.image);
 
-                setTest(prev => {
-                  if (!prev) return prev;
-                  const updated = structuredClone(prev);
-                  updated.tasks[taskIndex].image = undefined;
-                  return updated;
-                });
+                  setTest(prev => {
+                    if (!prev) return prev;
+                    const updated = structuredClone(prev);
+                    updated.tasks[taskIndex].image = undefined;
+                    return updated;
+                  });
 
-                setLoading(false);
-              }}
-            />
+                  setLoading(false);
+                }}
+              />
             )}
 
             {test.type === "listening" && (
@@ -358,58 +351,58 @@ const deleteImage = async (url: string) => {
             {task.sections.map((section, sectionIndex) => (
               <Box key={sectionIndex} sx={{ mb: 3 }}>
                 {(test.type !== "writing") && (
-                <TextField
-                  fullWidth
-                  label="Section Title"
-                  sx={{ mb: 2 }}
-                  value={section.title}
-                  error={!!errors[`section_${taskIndex}_${sectionIndex}_title`]}
-                  helperText={errors[`section_${taskIndex}_${sectionIndex}_title`]}
-                  onChange={(e) => {
-                    const updated = { ...test };
-                    updated.tasks[taskIndex].sections[sectionIndex].title = e.target.value;
-                    setTest(updated);
-                  }}
-                />
+                  <TextField
+                    fullWidth
+                    label="Section Title"
+                    sx={{ mb: 2 }}
+                    value={section.title}
+                    error={!!errors[`section_${taskIndex}_${sectionIndex}_title`]}
+                    helperText={errors[`section_${taskIndex}_${sectionIndex}_title`]}
+                    onChange={(e) => {
+                      const updated = { ...test };
+                      updated.tasks[taskIndex].sections[sectionIndex].title = e.target.value;
+                      setTest(updated);
+                    }}
+                  />
                 )}
 
                 {/* --- Upload và hiển thị ảnh cho SECTION --- */}
                 <Box sx={{ mb: 3 }}>
                   {/* Hiển thị ảnh hiện tại nếu có */}
                   {(test.type !== "writing") && (
-                  <ImageManager
-                    label="Section Image"
-                    image={section.image}
-                    loading={loading}
-                    onUpload={async (file) => {
-                      setLoading(true);
-                      const url = await uploadImage(file);
+                    <ImageManager
+                      label="Section Image"
+                      image={section.image}
+                      loading={loading}
+                      onUpload={async (file) => {
+                        setLoading(true);
+                        const url = await uploadImage(file);
 
-                      setTest(prev => {
-                        if (!prev) return prev;
-                        const updated = structuredClone(prev);
-                        updated.tasks[taskIndex].sections[sectionIndex].image = url;
-                        return updated;
-                      });
+                        setTest(prev => {
+                          if (!prev) return prev;
+                          const updated = structuredClone(prev);
+                          updated.tasks[taskIndex].sections[sectionIndex].image = url;
+                          return updated;
+                        });
 
-                      setLoading(false);
-                    }}
-                    onDelete={async () => {
-                      if (!section.image) return;
-                      setLoading(true);
+                        setLoading(false);
+                      }}
+                      onDelete={async () => {
+                        if (!section.image) return;
+                        setLoading(true);
 
-                      await deleteImage(section.image);
+                        await deleteImage(section.image);
 
-                      setTest(prev => {
-                        if (!prev) return prev;
-                        const updated = structuredClone(prev);
-                        updated.tasks[taskIndex].sections[sectionIndex].image = undefined;
-                        return updated;
-                      });
+                        setTest(prev => {
+                          if (!prev) return prev;
+                          const updated = structuredClone(prev);
+                          updated.tasks[taskIndex].sections[sectionIndex].image = undefined;
+                          return updated;
+                        });
 
-                      setLoading(false);
-                    }}
-                  />
+                        setLoading(false);
+                      }}
+                    />
                   )}
                 </Box>
                 {/* --- Hết phần upload ảnh cho SECTION --- */}
@@ -437,21 +430,21 @@ const deleteImage = async (url: string) => {
                       {/* Fill có đáp án */}
                       {test.type !== "writing" && (
                         <>
-                      {ques.type === "fill" && (
-                        <TextField
-                          fullWidth
-                          label="Answer"
-                          sx={{ mb: 2 }}
-                          value={ques.key || ""}
-                          error={!!errors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`]}
-                          helperText={errors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`]}
-                          onChange={(e) =>
-                            handleChange(taskIndex, sectionIndex, qIndex, "key", e.target.value)
-                          }
-                        />
+                          {ques.type === "fill" && (
+                            <TextField
+                              fullWidth
+                              label="Answer"
+                              sx={{ mb: 2 }}
+                              value={ques.key || ""}
+                              error={!!errors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`]}
+                              helperText={errors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`]}
+                              onChange={(e) =>
+                                handleChange(taskIndex, sectionIndex, qIndex, "key", e.target.value)
+                              }
+                            />
+                          )}
+                        </>
                       )}
-                      </>
-                    )}
                       {/* 🖼️ Upload ảnh cho question dạng writing */}
                       {test.type === "writing" && (
                         <Box sx={{ mb: 2 }}>
@@ -521,34 +514,34 @@ const deleteImage = async (url: string) => {
                       {/* Choice có nhiều đáp án */}
                       {test.type !== "writing" && (
                         <>
-                      {ques.type === "choice" &&
-                        ques.choices?.map((choice, cIndex) => (
-                          <Box key={cIndex} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-                            <TextField
-                              fullWidth
-                              label={`Answer ${cIndex + 1}`}
-                              value={choice.text}
-                              error={!!errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
-                              helperText={errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
-                              onChange={(e) =>
-                                handleChoiceChange(taskIndex, sectionIndex, qIndex, cIndex, e.target.value)
-                              }
-                            />
-                            <input
-                              type="checkbox"
-                              checked={ques.keys?.includes(cIndex) || false}
-                              onChange={(e) =>
-                                handleCorrectChoice(taskIndex, sectionIndex, qIndex, cIndex, e.target.checked)
-                              }
-                            />
-                            <Typography variant="body2">Correct</Typography>
-                            {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`] && (
-                              <Typography color="red">
-                                {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`]}
-                              </Typography>
-                            )}
-                          </Box>
-                        ))}
+                          {ques.type === "choice" &&
+                            ques.choices?.map((choice, cIndex) => (
+                              <Box key={cIndex} sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+                                <TextField
+                                  fullWidth
+                                  label={`Answer ${cIndex + 1}`}
+                                  value={choice.text}
+                                  error={!!errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
+                                  helperText={errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
+                                  onChange={(e) =>
+                                    handleChoiceChange(taskIndex, sectionIndex, qIndex, cIndex, e.target.value)
+                                  }
+                                />
+                                <input
+                                  type="checkbox"
+                                  checked={ques.keys?.includes(cIndex) || false}
+                                  onChange={(e) =>
+                                    handleCorrectChoice(taskIndex, sectionIndex, qIndex, cIndex, e.target.checked)
+                                  }
+                                />
+                                <Typography variant="body2">Correct</Typography>
+                                {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`] && (
+                                  <Typography color="red">
+                                    {errors[`choice_key_${taskIndex}_${sectionIndex}_${qIndex}`]}
+                                  </Typography>
+                                )}
+                              </Box>
+                            ))}
                         </>
                       )}
                     </Card>

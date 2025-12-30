@@ -14,7 +14,7 @@ export default function Detail() {
   const navigate = useNavigate();
   const url = import.meta.env.VITE_TEST_API_URL;
   const urlSubmit = import.meta.env.VITE_SUBMIT_API_URL;
-  const progressUrl = urlSubmit+"/progressforadmin";
+  const progressUrl = urlSubmit + "/progressforadmin";
 
   useEffect(() => {
     if (!id) return;
@@ -28,7 +28,7 @@ export default function Detail() {
             .catch((err) => {
               if (err.response && err.response.status === 404) {
                 console.warn("Không có dữ liệu progress (404).");
-                return null; 
+                return null;
               }
             }),
         ]);
@@ -58,7 +58,7 @@ export default function Detail() {
     const confirmDelete = window.confirm("Are you sure you want to delete this test?");
     if (!confirmDelete) return;
     console.log("Deleting test with ID:", id);
-    console.log("DELETE URL:", `${url}/${id}`);   
+    console.log("DELETE URL:", `${url}/${id}`);
     try {
       await axios.delete(`${url}/${id}`);
       alert("Delete successful!");
@@ -141,9 +141,9 @@ export default function Detail() {
               {section.questions.map((q, qIndex) => {
                 const ques = q.question;
                 if (!ques) return null;
-                const isFullyWrong =ques._id != null && wrongIds.includes(ques._id);
+                const isFullyWrong = ques._id != null && wrongIds.includes(ques._id);
 
-// console.log("" QID:", ques._id, "wrong?", isFullyWrong, "wrongIds:", wrongIds);
+                // console.log("" QID:", ques._id, "wrong?", isFullyWrong, "wrongIds:", wrongIds);
                 return (
                   <div
                     key={qIndex}
@@ -157,15 +157,15 @@ export default function Detail() {
                       {ques.question}
                     </p>
 
-                      {ques.image && (
-                        <div className="question-image">
-                          <img
-                            src={ques.image}
-                            alt="Question illustration"
-                            className="detail-image"
-                          />
-                        </div>
-                      )}
+                    {ques.image && (
+                      <div className="question-image">
+                        <img
+                          src={ques.image}
+                          alt="Question illustration"
+                          className="detail-image"
+                        />
+                      </div>
+                    )}
 
 
                     {ques.type === "choice" && ques.choices && (
@@ -196,8 +196,6 @@ export default function Detail() {
           ))}
         </div>
       ))}
-
-      {/* --- NÚT HÀNH ĐỘNG --- */}
       <div className="detail-actions">
         <button className="btn-update" onClick={handleUpdate}>
           Update

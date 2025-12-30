@@ -4,13 +4,13 @@ export interface Choice {
 }
 
 export interface Question {
-  _id?: string; // id của question trong DB
+  _id?: string;
   question: string;
   type: "choice" | "fill" | "essay";
   choices?: Choice[];
   image?: string;
-  keys?: number[]; // cho choice
-  key?: string; // cho fill
+  keys?: number[];
+  key?: string;
 }
 
 export interface Section {
@@ -18,14 +18,14 @@ export interface Section {
   image?: string;
   questions: {
     index: number;
-    question:  Question; // khi fetch thô thì là id (string), khi populate thì là object Question
+    question: Question;
   }[];
 }
 
 export interface Task {
-  audio?: string;   // cho listening
-  passage?: string; // cho reading
-  image?: string;   // cho writing
+  audio?: string;
+  passage?: string;
+  image?: string;
   sections: Section[];
 }
 

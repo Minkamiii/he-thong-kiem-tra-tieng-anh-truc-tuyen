@@ -23,76 +23,66 @@ export default function UpdateTestPage() {
   const [errors, setErrors] = useState<any>({});
 
   const validateTest = () => {
-  const newErrors: any = {};
+    const newErrors: any = {};
 
-  // Kiểm tra test name
-  if (!test?.testName?.trim()) {
-    newErrors.testName = "Test name can not be empty";
-  }
-
-  test?.tasks.forEach((task, taskIndex) => {
-    // Reading: kiểm tra passage
-    if (test.type === "reading" && !task.passage?.trim()) {
-      newErrors[`task_${taskIndex}_passage`] = "Passage can not be empty";
+    if (!test?.testName?.trim()) {
+      newErrors.testName = "Test name can not be empty";
     }
 
-    // Kiểm tra trong sections
-
-    task.sections.forEach((section, sectionIndex) => {
-      if (!section.title?.trim()&& test.type !== "writing") {
-        newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
-          "Section title can not be empty";
+    test?.tasks.forEach((task, taskIndex) => {
+      if (test.type === "reading" && !task.passage?.trim()) {
+        newErrors[`task_${taskIndex}_passage`] = "Passage can not be empty";
       }
 
-      // Kiểm tra câu hỏi
-      section.questions.forEach((q, qIndex) => {
-        const ques = q.question;
-
-        if (!ques.question?.trim()&& ques.type !== "fill") {
-          newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
-            "Question can not be empty";
+      task.sections.forEach((section, sectionIndex) => {
+        if (!section.title?.trim() && test.type !== "writing") {
+          newErrors[`section_${taskIndex}_${sectionIndex}_title`] =
+            "Section title can not be empty";
         }
 
-        // Fill → kiểm tra answer
-        if (ques.type === "fill" && !ques.key?.trim()) {
-          newErrors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`] =
-            "Answer can not be empty";
-        }
+        section.questions.forEach((q, qIndex) => {
+          const ques = q.question;
 
-        // Choice → kiểm tra đáp án + phải có ít nhất 1 đáp án đúng
-        if (ques.type === "choice") {
-          ques.choices?.forEach((c, cIndex) => {
-            if (!c.text?.trim()) {
-              newErrors[
-                `choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`
-              ] = "Choice can not be empty";
-            }
-          });
-
-          if (!ques.keys || ques.keys.length === 0) {
-            newErrors[
-              `choice_key_${taskIndex}_${sectionIndex}_${qIndex}`
-            ] = "Must choose at least one correct answer";
+          if (!ques.question?.trim() && ques.type !== "fill") {
+            newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
+              "Question can not be empty";
           }
-        }
+
+          if (ques.type === "fill" && !ques.key?.trim()) {
+            newErrors[`fill_${taskIndex}_${sectionIndex}_${qIndex}_key`] =
+              "Answer can not be empty";
+          }
+
+          if (ques.type === "choice") {
+            ques.choices?.forEach((c, cIndex) => {
+              if (!c.text?.trim()) {
+                newErrors[
+                  `choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`
+                ] = "Choice can not be empty";
+              }
+            });
+
+            if (!ques.keys || ques.keys.length === 0) {
+              newErrors[
+                `choice_key_${taskIndex}_${sectionIndex}_${qIndex}`
+              ] = "Must choose at least one correct answer";
+            }
+          }
+        });
       });
     });
-  });
 
-  setErrors(newErrors);
-  console.log("Validation errors:", newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    console.log("Validation errors:", newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-
-  // Fetch test theo id
   useEffect(() => {
     axios.get(`${urls}/${id}`).then((res) => {
       setTest(res.data);
     });
   }, [id]);
 
-  // Cập nhật text field chung
   const handleChange = (
     taskIndex: number,
     sectionIndex: number,
@@ -109,7 +99,6 @@ export default function UpdateTestPage() {
     setTest(updated);
   };
 
-  // Cập nhật đáp án choice
   const handleChoiceChange = (
     taskIndex: number,
     sectionIndex: number,
@@ -128,7 +117,6 @@ export default function UpdateTestPage() {
     setTest(updated);
   };
 
-  // Chọn đáp án đúng (choice)
   const handleCorrectChoice = (
     taskIndex: number,
     sectionIndex: number,
@@ -144,16 +132,14 @@ export default function UpdateTestPage() {
     setTest(updated);
   };
 
-  // Gửi update
   const handleAccept = async () => {
     console.log("Validating test before update:", test);
     if (!test) return;
     if (!validateTest()) {
-    alert("Please fill in all fields completely!");
-    return;
-  }
+      alert("Please fill in all fields completely!");
+      return;
+    }
     try {
-      // bỏ các field không cần
       const { createdAt, updatedAt, __v, ...cleaned } = test as any;
       // console.log("Gửi test:", cleaned);
       await axios.put(`${urls}/${id}`, cleaned);
@@ -209,8 +195,6 @@ export default function UpdateTestPage() {
       {test.tasks.map((task, taskIndex) => (
         <Card key={taskIndex} sx={{ mb: 3 }}>
           <CardContent>
-
-            {/* Reading mới có passage */}
             {test.type === "reading" && (
               <TextField
                 fullWidth
@@ -227,8 +211,8 @@ export default function UpdateTestPage() {
                 sx={{
                   mb: 3,
                   "& .MuiInputBase-root": {
-                    maxHeight: "200px", // 🔥 giới hạn chiều cao
-                    overflow: "auto",   // 🔥 bật thanh cuộn khi quá dài
+                    maxHeight: "200px",
+                    overflow: "auto",
                   },
                 }}
               />
@@ -282,8 +266,6 @@ export default function UpdateTestPage() {
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
                   Audio
                 </Typography>
-
-                {/* Hiển thị audio nếu có */}
                 {task.audio && (
                   <audio
                     controls
@@ -308,7 +290,7 @@ export default function UpdateTestPage() {
                       if (!file) return;
 
                       const formData = new FormData();
-                      formData.append("audio", file); // 👈 đúng tên theo Swagger
+                      formData.append("audio", file);
 
                       try {
                         const res = await axios.post(
@@ -331,7 +313,6 @@ export default function UpdateTestPage() {
                         alert("Error uploading audio!");
                       }
 
-                      // Reset input để lần sau chọn lại cùng file vẫn trigger onChange
                       e.target.value = "";
                     }}
                   />
@@ -344,18 +325,18 @@ export default function UpdateTestPage() {
               <Box key={sectionIndex} sx={{ mb: 3 }}>
                 {test.type !== "writing" && (
                   <TextField
-                  fullWidth
-                  label="Section Title"
-                  sx={{ mb: 2 }}
-                  value={section.title}
-                  error={!!errors[`section_${taskIndex}_${sectionIndex}_title`]}
-                  helperText={errors[`section_${taskIndex}_${sectionIndex}_title`]}
-                  onChange={(e) => {
-                    const updated = { ...test };
-                    updated.tasks[taskIndex].sections[sectionIndex].title = e.target.value;
-                    setTest(updated);
-                  }}
-                />
+                    fullWidth
+                    label="Section Title"
+                    sx={{ mb: 2 }}
+                    value={section.title}
+                    error={!!errors[`section_${taskIndex}_${sectionIndex}_title`]}
+                    helperText={errors[`section_${taskIndex}_${sectionIndex}_title`]}
+                    onChange={(e) => {
+                      const updated = { ...test };
+                      updated.tasks[taskIndex].sections[sectionIndex].title = e.target.value;
+                      setTest(updated);
+                    }}
+                  />
                 )}
 
 
@@ -409,7 +390,7 @@ export default function UpdateTestPage() {
                       setLoading(false);
                     }}
                   />
-                  )}
+                )}
 
 
                 {section.questions.map((q, qIndex) => {
@@ -445,7 +426,7 @@ export default function UpdateTestPage() {
                           image={typeof ques === "object" ? ques.image : undefined}
                           loading={loading}
                           onDelete={async () => {
-                            if (typeof ques !== "object") return; // tránh lỗi runtime
+                            if (typeof ques !== "object") return;
 
                             setLoading(true);
                             await axios.delete(`${urls}/image`, {
@@ -470,7 +451,7 @@ export default function UpdateTestPage() {
                             setLoading(false);
                           }}
                           onUpload={async (file) => {
-                            if (typeof ques !== "object") return; // tránh lỗi runtime
+                            if (typeof ques !== "object") return;
 
                             setLoading(true);
 
@@ -541,8 +522,8 @@ export default function UpdateTestPage() {
                               fullWidth
                               label={`Answer ${cIndex + 1}`}
                               value={choice.text}
-                                error={!!errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
-                                helperText={errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
+                              error={!!errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
+                              helperText={errors[`choice_${taskIndex}_${sectionIndex}_${qIndex}_${cIndex}`]}
                               onChange={(e) =>
                                 handleChoiceChange(
                                   taskIndex,
@@ -562,10 +543,10 @@ export default function UpdateTestPage() {
                                 const q = updated.tasks[taskIndex].sections[sectionIndex].questions[qIndex].question as Question;
                                 if (!q.keys) q.keys = [];
                                 if (e.target.checked) {
-                                  // thêm đáp án đúng
+
                                   q.keys.push(cIndex);
                                 } else {
-                                  // bỏ đáp án đúng
+
                                   q.keys = q.keys.filter((k) => k !== cIndex);
                                 }
                                 setTest(updated);

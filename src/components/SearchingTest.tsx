@@ -22,10 +22,9 @@ export default function SearchingTest({
     to: "",
   });
 
-  // 👉 hàm reset form
   const handleReset = () => {
     setFilters({ testName: "", active: "", from: "", to: "" });
-    onReset?.(); // gọi callback nếu có
+    onReset?.();
   };
 
   const handleSearchClick = () => {
@@ -42,7 +41,7 @@ export default function SearchingTest({
       active: filters.active,
     });
   };
-  
+
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>

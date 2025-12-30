@@ -21,7 +21,6 @@ export default function Home() {
         borderRadius: "16px",
       }}
     >
-      {/* Ảnh */}
       <img
         src={images[index]}
         alt="Slide"
@@ -33,7 +32,6 @@ export default function Home() {
         }}
       />
 
-      {/* Mũi tên trái */}
       <IconButton
         onClick={prev}
         sx={{

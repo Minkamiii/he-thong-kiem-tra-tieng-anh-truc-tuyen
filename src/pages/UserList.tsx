@@ -29,18 +29,14 @@ export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-
-  // Pagination state
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
-  // 🔹 Lấy danh sách user theo trang và keyword
   const fetchUsers = async (pageNumber: number, keyword: string) => {
     setLoading(true);
     try {
       const result = await getAllUsers(pageNumber, keyword);
-      // Giả sử API trả về: { content: User[], totalPages: number, totalItems: number, pageSize: number }
       setUsers(result.data || []);
       setTotalPages(result.totalPages || 0);
       setPageSize(result.pageSize || 10);
@@ -53,18 +49,15 @@ export default function UserList() {
     }
   };
 
-  // Load dữ liệu ban đầu
   useEffect(() => {
     fetchUsers(page, searchQuery);
   }, [page, searchQuery]);
 
-  // 🔹 Tìm kiếm
   const handleSearch = (query: string) => {
-    setPage(0); // reset page
+    setPage(0);
     setSearchQuery(query);
   };
 
-  // --- Form Add User ---
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -108,7 +101,7 @@ export default function UserList() {
     const phoneRegex = /^(0\d{9}|\+84\d{9})$/;
 
     if (!formData.username) newErrors.username = "Please enter username";
-    if(formData.username.length < 6) newErrors.username = "Username must be at least 6 characters long";
+    if (formData.username.length < 6) newErrors.username = "Username must be at least 6 characters long";
     if (!formData.email) newErrors.email = "Please enter email";
     else if (!emailRegex.test(formData.email))
       newErrors.email = "Invalid email format";
@@ -144,10 +137,10 @@ export default function UserList() {
     };
 
     try {
-      await addUser(newUserData); // giả sử addUser chỉ cần 1 tham số
+      await addUser(newUserData);
       alert("Add user successfully.");
       handleClose();
-      fetchUsers(page, searchQuery); // reload danh sách
+      fetchUsers(page, searchQuery);
     } catch (err: any) {
       console.error("Lỗi khi thêm user:", err);
       setSubmitError(
@@ -157,9 +150,8 @@ export default function UserList() {
     }
   };
 
-  // --- Xử lý chuyển trang ---
   const handleChangePage = (_: any, newPage: number) => {
-    setPage(newPage - 1); // backend page bắt đầu từ 0
+    setPage(newPage - 1);
   };
 
   return (
@@ -225,7 +217,6 @@ export default function UserList() {
         </Table>
       </TableContainer>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <Box display="flex" justifyContent="center" mt={3}>
           <Pagination

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./css/Login.css";
 import { useNavigate } from "react-router-dom";
-import authApi from "../api/AuthApi"; // import API login
+import authApi from "../api/AuthApi";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -19,15 +19,15 @@ export default function Login() {
       const res = await authApi.login({ username, password });
       // res: { token, authentication }
 
-    if (res.authentication) {
-      localStorage.setItem("userId", res.userId);
-      localStorage.setItem("accessToken", res.accessToken);
-      localStorage.setItem("refreshToken", res.refreshToken);
-      // console.log("111");
-      navigate("/home");
-    } else {
-      setError("Account or password is incorrect");
-    }
+      if (res.authentication) {
+        localStorage.setItem("userId", res.userId);
+        localStorage.setItem("accessToken", res.accessToken);
+        localStorage.setItem("refreshToken", res.refreshToken);
+        // console.log("111");
+        navigate("/home");
+      } else {
+        setError("Account or password is incorrect");
+      }
     } catch (err: any) {
       console.error("Lỗi chi tiết:", err);
       setError(

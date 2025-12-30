@@ -19,7 +19,7 @@ export interface Section {
   image?: string;
   questions: {
     index: number;
-    question: Question;  // luôn là Question, không phải string
+    question: Question;
   }[];
 }
 

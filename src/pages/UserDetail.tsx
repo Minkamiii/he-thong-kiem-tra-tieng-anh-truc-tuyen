@@ -86,20 +86,19 @@ export default function UserDetail() {
     );
   }
 
-  // ✅ Hàm kiểm tra form
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^(0\d{9}|\+84\d{9})$/;
 
     if (!formData?.username?.trim()) newErrors.username = "Please enter username";
-    if(formData?.username && formData.username.length < 6) newErrors.username = "Username must be at least 6 characters long";
+    if (formData?.username && formData.username.length < 6) newErrors.username = "Username must be at least 6 characters long";
     if (!formData?.email?.trim()) newErrors.email = "Please enter email";
     else if (!emailRegex.test(formData.email))
       newErrors.email = "Email invalid";
     if (!formData?.phoneNum?.trim()) newErrors.phoneNum = "Please enter number phone";
-  else if (!phoneRegex.test(formData.phoneNum))
-    newErrors.phoneNum = "Number phone invalid";
+    else if (!phoneRegex.test(formData.phoneNum))
+      newErrors.phoneNum = "Number phone invalid";
     if (!formData?.dob?.trim()) newErrors.dob = "Please choose date of birth";
     if (!formData?.roles?.length) newErrors.roles = "Please choose role";
 
@@ -116,7 +115,6 @@ export default function UserDetail() {
     } catch (error) {
       console.error("Failed to delete user:", error);
       alert("Only super admin can delete user");
-      // setError("Xóa người dùng thất bại.");
       // console.log("Delete user failed")
       navigate(-1)
     }
@@ -130,7 +128,7 @@ export default function UserDetail() {
 
     const updatedUser: AddUserRequest = {
       username: formData.username,
-      password: formData.password || "", // giữ nguyên hoặc bỏ qua nếu backend không cần
+      password: formData.password || "",
       email: formData.email,
       phoneNum: formData.phoneNum,
       dob: formData.dob,
