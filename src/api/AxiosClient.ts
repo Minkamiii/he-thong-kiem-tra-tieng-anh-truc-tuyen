@@ -77,7 +77,6 @@ axiosClient.interceptors.response.use(
 
         if (!accessToken) throw new Error("No access token");
 
-        // 🔥 Cập nhật token mới
         localStorage.setItem("accessToken", accessToken);
         if (newRefreshToken) {
           localStorage.setItem("refreshToken", newRefreshToken);

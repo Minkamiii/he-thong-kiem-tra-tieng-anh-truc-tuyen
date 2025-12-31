@@ -78,7 +78,7 @@ export default function Detail() {
   if (!test) return <p className="detail-notfound">Test not found</p>;
 
   const wrongIds = progressData?.["100%_answered_wrong_question"] || [];
-
+  
   return (
     <div className="detail-container">
       {/* --- THÔNG TIN TEST --- */}
