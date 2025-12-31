@@ -28,7 +28,7 @@ export default function ModifyTestPage() {
     const newErrors: any = {};
 
     if (!test?.testName?.trim()) {
-      newErrors.testName = "Test name không được để trống";
+      newErrors.testName = "Test name cannot be empty";
     }
 
     test?.tasks.forEach((task, taskIndex) => {
@@ -50,7 +50,7 @@ export default function ModifyTestPage() {
           const ques = q.question as Question;
 
           // Question text
-          if (!ques.question?.trim()) {
+          if (!ques.question?.trim() && ques.type !== "fill") {
             newErrors[`q_${taskIndex}_${sectionIndex}_${qIndex}_question`] =
               "Question cannot be empty";
             console.log("c")

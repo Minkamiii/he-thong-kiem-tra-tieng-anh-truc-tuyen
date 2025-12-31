@@ -8,15 +8,15 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.request.use((config) => {
-  const refreshToken = localStorage.getItem("refreshToken");
+  const accessToken = localStorage.getItem("accessToken");
 
   const isAuthUrl =
     config.url?.includes("/api/auth/loginAdmin") ||
     config.url?.includes("/api/auth/refresh") ||
     config.url?.includes("/api/auth/logout");
 
-  if (refreshToken && !isAuthUrl) {
-    config.headers.Authorization = `Bearer ${refreshToken}`;
+  if (accessToken && !isAuthUrl) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return config;
@@ -46,8 +46,8 @@ axiosClient.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then((newRefreshToken) => {
-          originalRequest.headers.Authorization = `Bearer ${newRefreshToken}`;
+        }).then((newAccessToken) => {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosClient(originalRequest);
         });
       }
@@ -55,9 +55,10 @@ axiosClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) {
         localStorage.clear();
+        window.location.href = "/";
         return Promise.reject(error);
       }
 
@@ -67,26 +68,31 @@ axiosClient.interceptors.response.use(
           {},
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${refreshToken}`,
             },
           }
         );
 
-        const newRefreshToken = res.data?.refreshToken;
-        if (!newRefreshToken) throw new Error("No refresh token");
+        const { accessToken, refreshToken: newRefreshToken } = res.data;
 
-        localStorage.setItem("refreshToken", newRefreshToken);
+        if (!accessToken) throw new Error("No access token");
 
-        processQueue(null, newRefreshToken);
+        // 🔥 Cập nhật token mới
+        localStorage.setItem("accessToken", accessToken);
+        if (newRefreshToken) {
+          localStorage.setItem("refreshToken", newRefreshToken);
+        }
 
-        originalRequest.headers.Authorization = `Bearer ${newRefreshToken}`;
+        processQueue(null, accessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosClient(originalRequest);
 
       } catch (err) {
         processQueue(err, null);
         localStorage.clear();
         window.location.href = "/";
-        alert("Login session expried. Please login again")
+        alert("Login session expired. Please login again");
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
