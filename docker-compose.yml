@@ -1,0 +1,192 @@
+version: '3.8'
+
+networks:
+  ielts-network:
+    driver: bridge
+
+services:
+  # ================= DATABASE ZONE (MySQL) =================
+
+  # =========================================
+  # 1. Database for USER SERVICE (Port 3307)
+  # =========================================
+  user-db:
+    image: mysql:8.0
+    container_name: ielts-user-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: userservice
+      MYSQL_ROOT_PASSWORD: 12345
+    ports:
+      - "3307:3306" # Mapping host port 3307 to container port 3306
+    volumes:
+      - ./mysql_data_user:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - ielts-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p12345"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================
+  # 2. Database for SUBMIT SERVICE (Port 3308)
+  # =========================================
+  submit-db:
+    image: mysql:8.0
+    container_name: ielts-submit-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: submit
+      MYSQL_ROOT_PASSWORD: 12345
+    ports:
+      - "3308:3306" # Mapping host port 3308 to container port 3306
+    volumes:
+      - ./mysql_data_submit:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - ielts-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p12345"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================
+  # 3. PhpMyAdmin (Manage MySQL DB)
+  # =========================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ielts-phpmyadmin
+    restart: always
+    environment:
+      PMA_HOSTS: user-db, submit-db
+      PMA_ARBITRARY: 1
+    ports:
+      - "8088:80"
+    networks:
+      - ielts-network
+
+  # ================= JAVA SPRING BOOT SERVICES =================
+  
+  # =========================================
+  # 1. BACKEND: USER SERVICE
+  # =========================================
+  user-service:
+    build: ./user-service  # Directory to folder with Dockerfile
+    container_name: ielts-user-service
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    environment:
+      # Override settings in application.yaml
+      # In Docker, host is the service name (user-db), internal port is 3306
+      SPRING_DATASOURCE_URL: jdbc:mysql://user-db:3306/userservice?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 12345
+    networks:
+      - ielts-network
+    depends_on:
+      user-db:
+        condition: service_healthy # Only run after user-db is healthy
+
+  # =========================================
+  # 2. BACKEND: SUBMIT SERVICE
+  # =========================================
+  submit-service:
+    build: ./submit_service # Directory to folder with Dockerfile
+    container_name: ielts-submit-service
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      # Connect to submit-db
+      SPRING_DATASOURCE_URL: jdbc:mysql://submit-db:3306/submit?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 12345
+      # Call User Service (use container name and internal port)
+      USER_SERVICE_URL: http://user-service:8081/userservice/api/user/
+    networks:
+      - ielts-network
+    depends_on:
+      submit-db:
+        condition: service_healthy
+
+  # ================= NESTJS SERVICES (MONGO ATLAS) =================
+
+  # =========================================
+  # 1. BACKEND: TEST SERVICE
+  # =========================================  
+  test-service:
+    build: ./test-service
+    container_name: ielts-test-service
+    restart: on-failure
+    volumes:
+      - ./test-service/uploads:/app/uploads
+    environment:
+      # Thay chuỗi kết nối Mongo Atlas thật của bạn vào đây
+      PORT: 8000
+      MONGO_URI: mongodb+srv://root:1234@do-an-tot-nghiep.dsna4qi.mongodb.net/test?retryWrites=true&w=majority&appName=Do-an-tot-nghiep
+      BASE_URL: http://localhost:8888
+      BASE_COMMENT_SERVICE_LINK: http://comment-service:8001/api/comment
+      APP_PORT: 8000
+    networks:
+      - ielts-network
+
+  # =========================================
+  # 2. BACKEND: COMMENT SERVICE
+  # =========================================  
+  comment-service:
+    build: ./comment-service
+    container_name: ielts-comment-service
+    restart: on-failure
+    environment:
+      # Thay chuỗi kết nối Mongo Atlas thật của bạn vào đây
+      PORT: 8001
+      APP_PORT: 8001
+      MONGO_URI: mongodb+srv://root:1234@do-an-tot-nghiep.dsna4qi.mongodb.net/comment?retryWrites=true&w=majority&appName=Do-an-tot-nghiep
+    networks:
+      - ielts-network
+
+  # ================= PYTHON FASTAPI SERVICES =================
+
+  # =========================================
+  # 1. BACKEND: GRADING SERVICE
+  # ========================================= 
+  grading-service:
+    build: ./grading-service
+    container_name: ielts-grading-service
+    restart: on-failure
+    environment:
+      PORT: 8003
+      GOOGLE_API_KEY: "AIzaSyD5C3HwglTfY1eiFias2mCQ3I0Mhqe62x4"
+    networks:
+      - ielts-network
+
+  # =========================================
+  # 2. BACKEND: GATEWAY SERVICE
+  # ========================================= 
+  gateway-service:
+    build: ./gateway-service
+    container_name: ielts-gateway
+    restart: on-failure
+    ports:
+      - "8888:8888" # Chỉ mở duy nhất cổng này ra ngoài cho Frontend
+    environment:
+      # Truyền URL nội bộ cho code Python main.py đọc
+      USER_SERVICE_URL: http://user-service:8081
+      SUBMIT_SERVICE_URL: http://submit-service:8080 # Check lại xem submit có prefix ko
+      TEST_SERVICE_URL: http://test-service:8000
+      COMMENT_SERVICE_URL: http://comment-service:8001
+      GRADING_SERVICE_URL: http://grading-service:8003
+    networks:
+      - ielts-network
+    depends_on:
+      - user-service
+      - submit-service
+      - test-service
+      - comment-service
+      - grading-service

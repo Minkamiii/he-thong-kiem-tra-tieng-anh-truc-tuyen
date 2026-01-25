@@ -1,0 +1,8 @@
+2 service java có test rồi thích thì dùng
+Up lại ảnh đối với test, cả file nghe do service test lấy link theo be của thằng cầm folder
+Thân gửi app như ...
+Tài khoản sẵn cho admin: 
+    Username: super_admin
+    Pass: superadmin123
+User/thí sinh tự tạo
+Thay biến gg api key docker-compose của grading service (tự tạo tk trên gg AI studio)
